@@ -1,0 +1,624 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.goose_db_version": {
+      "name": "goose_db_version",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "version_id": {
+          "name": "version_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_applied": {
+          "name": "is_applied",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tstamp": {
+          "name": "tstamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.blocks": {
+      "name": "blocks",
+      "schema": "",
+      "columns": {
+        "hash": {
+          "name": "hash",
+          "type": "bytea",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "size": {
+          "name": "size",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "stripped_size": {
+          "name": "stripped_size",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weight": {
+          "name": "weight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "height": {
+          "name": "height",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash_merkle_root": {
+          "name": "hash_merkle_root",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "time": {
+          "name": "time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "median_time": {
+          "name": "median_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nonce": {
+          "name": "nonce",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "bits": {
+          "name": "bits",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "difficulty": {
+          "name": "difficulty",
+          "type": "double precision",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chainwork": {
+          "name": "chainwork",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "orphan": {
+          "name": "orphan",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "blocks_height_key": {
+          "columns": [
+            "height"
+          ],
+          "nullsNotDistinct": false,
+          "name": "blocks_height_key"
+        }
+      }
+    },
+    "public.transactions": {
+      "name": "transactions",
+      "schema": "",
+      "columns": {
+        "txid": {
+          "name": "txid",
+          "type": "bytea",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "tx_hash": {
+          "name": "tx_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "version": {
+          "name": "version",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "size": {
+          "name": "size",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vsize": {
+          "name": "vsize",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "weight": {
+          "name": "weight",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locktime": {
+          "name": "locktime",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fee": {
+          "name": "fee",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "block_hash": {
+          "name": "block_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "index": {
+          "name": "index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "transactions_block_hash_index": {
+          "name": "transactions_block_hash_index",
+          "columns": [
+            {
+              "expression": "block_hash",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "index",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int4_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "where": "(block_hash IS NOT NULL)",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "transactions_block_hash_fkey": {
+          "name": "transactions_block_hash_fkey",
+          "tableFrom": "transactions",
+          "tableTo": "blocks",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "block_hash"
+          ],
+          "columnsTo": [
+            "hash"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "public.tx_outputs": {
+      "name": "tx_outputs",
+      "schema": "",
+      "columns": {
+        "block_hash": {
+          "name": "block_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "txid": {
+          "name": "txid",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "index": {
+          "name": "index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "value": {
+          "name": "value",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "scriptpubkey": {
+          "name": "scriptpubkey",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "tx_outputs_block_hash_fkey": {
+          "name": "tx_outputs_block_hash_fkey",
+          "tableFrom": "tx_outputs",
+          "tableTo": "blocks",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "block_hash"
+          ],
+          "columnsTo": [
+            "hash"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tx_outputs_txid_fkey": {
+          "name": "tx_outputs_txid_fkey",
+          "tableFrom": "tx_outputs",
+          "tableTo": "transactions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "txid"
+          ],
+          "columnsTo": [
+            "txid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "tx_outputs_pkey": {
+          "name": "tx_outputs_pkey",
+          "columns": [
+            "block_hash",
+            "txid",
+            "index"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "public.tx_inputs": {
+      "name": "tx_inputs",
+      "schema": "",
+      "columns": {
+        "block_hash": {
+          "name": "block_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "txid": {
+          "name": "txid",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "index": {
+          "name": "index",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "hash_prevout": {
+          "name": "hash_prevout",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "index_prevout": {
+          "name": "index_prevout",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sequence": {
+          "name": "sequence",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "coinbase": {
+          "name": "coinbase",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "txinwitness": {
+          "name": "txinwitness",
+          "type": "bytea[]",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "tx_inputs_hash_prevout_index": {
+          "name": "tx_inputs_hash_prevout_index",
+          "columns": [
+            {
+              "expression": "hash_prevout",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int8_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "index_prevout",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "int8_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "where": "(hash_prevout IS NOT NULL)",
+          "with": {}
+        },
+        "tx_inputs_txid_index": {
+          "name": "tx_inputs_txid_index",
+          "columns": [
+            {
+              "expression": "txid",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "bytea_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "tx_inputs_block_hash_fkey": {
+          "name": "tx_inputs_block_hash_fkey",
+          "tableFrom": "tx_inputs",
+          "tableTo": "blocks",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "block_hash"
+          ],
+          "columnsTo": [
+            "hash"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "tx_inputs_txid_fkey": {
+          "name": "tx_inputs_txid_fkey",
+          "tableFrom": "tx_inputs",
+          "tableTo": "transactions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "txid"
+          ],
+          "columnsTo": [
+            "txid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "tx_inputs_pkey": {
+          "name": "tx_inputs_pkey",
+          "columns": [
+            "block_hash",
+            "txid",
+            "index"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    },
+    "public.vmetaouts": {
+      "name": "vmetaouts",
+      "schema": "",
+      "columns": {
+        "block_hash": {
+          "name": "block_hash",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "txid": {
+          "name": "txid",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tx_index": {
+          "name": "tx_index",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outpoint_txid": {
+          "name": "outpoint_txid",
+          "type": "bytea",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "outpoint_index": {
+          "name": "outpoint_index",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "burn_increment": {
+          "name": "burn_increment",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "covenant_action": {
+          "name": "covenant_action",
+          "type": "covenant_action",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "claim_height": {
+          "name": "claim_height",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "expire_height": {
+          "name": "expire_height",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "vmetaouts_block_hash_fkey": {
+          "name": "vmetaouts_block_hash_fkey",
+          "tableFrom": "vmetaouts",
+          "tableTo": "blocks",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "block_hash"
+          ],
+          "columnsTo": [
+            "hash"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "vmetaouts_txid_fkey": {
+          "name": "vmetaouts_txid_fkey",
+          "tableFrom": "vmetaouts",
+          "tableTo": "transactions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "txid"
+          ],
+          "columnsTo": [
+            "txid"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "vmetaouts_outpoint_txid_fkey": {
+          "name": "vmetaouts_outpoint_txid_fkey",
+          "tableFrom": "vmetaouts",
+          "tableTo": "transactions",
+          "schemaTo": "public",
+          "columnsFrom": [
+            "outpoint_txid"
+          ],
+          "columnsTo": [
+            "txid"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "vmetaouts_pkey": {
+          "name": "vmetaouts_pkey",
+          "columns": [
+            "block_hash",
+            "txid",
+            "tx_index"
+          ]
+        }
+      },
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {
+    "public.covenant_action": {
+      "name": "covenant_action",
+      "values": [
+        "RESERVE",
+        "BID",
+        "TRANSFER"
+      ],
+      "schema": "public"
+    }
+  },
+  "schemas": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  },
+  "internal": {
+    "tables": {
+      "tx_inputs": {
+        "columns": {
+          "txinwitness": {
+            "isArray": true,
+            "dimensions": 1,
+            "rawType": "bytea"
+          }
+        }
+      }
+    }
+  }
+}
