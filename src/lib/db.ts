@@ -6,5 +6,6 @@ import * as schema from '$lib/schema';
 
 const pool = new Pool({ connectionString: DB_URL });
 const db = drizzle(pool, { schema });
+// const db = drizzle(pool, { schema , logger:true});
 
 export default db;

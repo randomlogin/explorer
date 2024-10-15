@@ -1,39 +1,52 @@
 import db from '$lib/db';
 import { error, json } from '@sveltejs/kit';
-import { type RequestHandler } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
-import { spaces, spacesHistory } from '$lib/schema';
 
-export const GET: RequestHandler = async function ({ request, url, params }) {
-    const spaceName = `@${params.name}`;
-    const spacesDb = await db.query.spaces.findFirst({
-        extras: {
-            rank: sql`
-                        (select rank from (
-                            select name, dense_rank() over(order by bid_amount desc, name_sha256) as rank from spaces
-                            where status = 'pre-auction'
-                        ) where name = ${spaceName})
-                    `.as('rank'),
-            top_10_cutoff_bid: sql`
-                        (select bid_amount from (
-                            select name, bid_amount, dense_rank() over(order by bid_amount desc, name_sha256) as rank from spaces
-                            where status = 'pre-auction'
-                        ) where rank <= 10 order by rank desc limit 1)
-                    `.as('top_10_cutoff_bid')
-        },
-        orderBy: spaces.id,
-        where: sql`${spaces.name} = ${spaceName}`,
-        with: {
-            history: {
-                columns: { id: true, action: true, bid_amount: true, txid: true, createdAt: true, meta: true },
-                with: { transaction: { with: { block: { columns: { time: true } } } } },
-                orderBy: (history, { desc }) => desc(history.id),
-            },
-        }
-    });
+export const GET: RequestHandler = async function ({ params }) {
+    let spaceName = params.name;
+    
+    console.log(params)
+    console.log(spaceName)
+    if (spaceName.startsWith('@')) {
+        spaceName = spaceName.slice(1);
+    }
 
-    if (!spacesDb)
-        error(404, { error: "Space not found" });
+    const queryResult = await db.execute(sql`
+        SELECT 
+            v.block_hash,
+            v.txid,
+            v.tx_index,
+            v.outpoint_txid,
+            v.outpoint_index,
+            v.name,
+            v.burn_increment,
+            v.covenant_action,
+            v.claim_height,
+            v.expire_height,
+            b.height AS block_height,
+            b.time AS block_time
+        FROM 
+            vmetaouts v
+        JOIN 
+            blocks b ON v.block_hash = b.hash
+        WHERE
+            v.name = ${spaceName}
+        ORDER BY 
+            b.height DESC, v.tx_index DESC
+    `);
 
-    return json(spacesDb);
+    if (queryResult.rows.length === 0) {
+        return error(404, "Space not found");
+    }
+
+    // Process the result to convert Buffers to hex strings
+    const processedResult = queryResult.rows.map(row => ({
+        ...row,
+        block_hash: row.block_hash.toString('hex'),
+        txid: row.txid.toString('hex'),
+        outpoint_txid: row.outpoint_txid ? row.outpoint_txid.toString('hex') : null,
+    }));
+
+    return json(processedResult);
 };

@@ -1,0 +1,55 @@
+.transaction-details {
+    @apply flex flex-wrap gap-5 p-5 md:p-8 bg-[#0b0d10] light:bg-gray-100 rounded-xl;
+}
+
+.transaction-id {
+    @apply w-full text-gray-500;
+}
+
+.transaction-id-link {
+    @apply text-gray-300 light:text-gray-600 break-all;
+}
+
+.section {
+    @apply flex flex-col basis-full lg:basis-[45%] grow;
+}
+
+.section-title {
+    @apply text-xl mb-1 pb-2 border-b border-b-gray-500;
+}
+
+.section-content {
+    @apply flex flex-col gap-4 p-5;
+}
+
+.input-content {
+    @apply pl-1;
+}
+
+.arrow-icon {
+    @apply w-[16px] h-[16px] mr-4;
+}
+
+.item {
+    @apply flex items-center;
+}
+
+.output-item {
+    @apply flex items-center justify-between;
+}
+
+.output-address {
+    @apply text-gray-500 truncate max-w-[70%];
+}
+
+.output-value {
+    @apply text-right;
+}
+
+.spender-info {
+    @apply text-sm text-gray-500;
+}
+
+.more-items {
+    @apply text-gray-500;
+}

@@ -1,8 +1,8 @@
-import { error, type Actions, type ServerLoad, redirect } from '@sveltejs/kit';
-import { object, string } from 'zod';
+import { error } from '@sveltejs/kit';
 import { PUBLIC_BTC_NETWORK } from "$env/static/public";
+import {  type ServerLoad } from '@sveltejs/kit';
 
-export const load: ServerLoad = async ({ fetch, locals, params }) => {
+export const load: ServerLoad = async ({ fetch, params }) => {
     const transaction = await fetch(`/api/transactions/${params.txid}`);
     if (transaction.status != 200)
         error(transaction.status, { message: 'Transaction not found'});

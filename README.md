@@ -1,8 +1,10 @@
-# SpacesProtocol Explorer & Indexer
+# SpacesProtocol Explorer 
 
-This is a monorepo containing two projects located in the `explorer` and `indexer` directories.
+This is a repo for spaces protocol explorer's frontend. For the indexer please refer to this [repo](https://github.com/spacesprotocol/explorer-indexer).
 
 ## Indexer
+
+
 
 Indexer is a  script written in TypeScript that runs every minute and fetches new blocks from `bitcoind` daemon, queries `spaced` for information about the fetched blocks and writes the relevant information to the database.
 

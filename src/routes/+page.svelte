@@ -1,5 +1,6 @@
 <script lang="ts">
   import Countdown from "$lib/components/Countdown.svelte";
+  import Pagination from "$lib/components/Pagination.svelte";
   import SortSelector from "$lib/components/SortSelector.svelte";
   import statusMeta from "$lib/statusMeta";
   import dayjs from "dayjs";
@@ -12,7 +13,7 @@
   export let data;
   const numberFormatter = new Intl.NumberFormat();
   
-  let currentBlockHeight = data.blockStats?.blockHeight;
+  let currentBlockHeight = data.blockStats?.height;
   let sortOptions = [
     { name: "Ending soonest", key: "ending", direction: "asc" }, 
     { name: "Highest price", key: "price", direction: "desc" }, 

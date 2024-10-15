@@ -3,6 +3,7 @@ import { fail, type Actions, type ServerLoad } from '@sveltejs/kit';
 export const load: ServerLoad = async ({ fetch, locals, url }) => {
 
     let searchParams = new URLSearchParams(url.search);
+    console.log("in search params", searchParams)
 
     searchParams.set('status', 'auction');
     

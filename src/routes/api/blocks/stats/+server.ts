@@ -5,7 +5,6 @@ import { blocks } from '$lib/schema';
 
 export const GET: RequestHandler = async function ({ request, url, params }) {
     const stats = await db.query.blocks.findFirst()
-    // const stats = await db.query.blockStats.findFirst();
 
     return json(stats ?? {});
 };
