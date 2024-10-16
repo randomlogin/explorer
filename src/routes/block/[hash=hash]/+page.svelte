@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { page } from '$app/stores'; // Importing the page store to access URL params
     import { pushState } from '$app/navigation';
-    import Block from '$lib/components/Block.svelte';
+    import BlockHeader from '$lib/components/BlockHeader.svelte';
     import BlockTxs from '$lib/components/BlockTxs.svelte';
 
     let blockHeader = null;
@@ -50,7 +50,7 @@
 
 <section>
     {#if blockHeader}
-        <Block {blockHeader} />
+        <BlockHeader {blockHeader} />
     {:else if errorHeader}
         <p>Error loading block header: {errorHeader}</p>
     {:else}

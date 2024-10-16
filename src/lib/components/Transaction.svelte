@@ -13,7 +13,7 @@
 <div class="transaction-container">
     <div class="transaction-header">
         <h1 class="transaction-title">Transaction</h1> 
-        <span class="transaction-id">#{data.txid}</span>
+        <span class="transaction-id">{data.txid}</span>
     </div>
     <div class="transaction-details">
         <a href={`/block/${data.block.height}`} class="block-link">
@@ -29,6 +29,10 @@
         <div class="detail-item">
             <span class="detail-value">{data.version}</span>
             <span class="detail-label">Version</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-value">{data.index}</span>
+            <span class="detail-label">Index in the block</span>
         </div>
         <div class="detail-item">
             <span class="detail-value">{data.locktime}</span>

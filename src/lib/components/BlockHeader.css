@@ -1,0 +1,31 @@
+.block-container {
+    @apply flex flex-col grow p-5 px-10 pt-0 md:pt-5 md:px-16 gap-5;
+}
+
+.block-header {
+    @apply flex flex-wrap gap-2 items-center mb-7;
+}
+
+.block-title {
+    @apply font-bold text-3xl;
+}
+
+.block-hash {
+    @apply top-1 break-all relative text-gray-500;
+}
+
+.block-details {
+    @apply flex flex-wrap gap-10 mb-10;
+}
+
+.detail-item {
+    @apply flex flex-col grow;
+}
+
+.detail-value {
+    @apply text-xl text-[#ec8e32] font-semibold;
+}
+
+.detail-label {
+    @apply text-gray-500;
+}

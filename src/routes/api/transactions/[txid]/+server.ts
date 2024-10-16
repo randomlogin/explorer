@@ -14,6 +14,7 @@ export const GET: RequestHandler = async function ({ params }) {
             transactions.txid,
             transactions.tx_hash,
             transactions.version AS tx_version,
+            transactions.index AS tx_index,
             transactions.size AS tx_size,
             transactions.vsize AS tx_vsize,
             transactions.weight AS tx_weight,

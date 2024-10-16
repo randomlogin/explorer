@@ -26,6 +26,7 @@ export function processTransactions(queryResult, parseAddresses = true) {
                 size: row.tx_size,
                 vsize: row.tx_vsize,
                 weight: row.tx_weight,
+                index: row.tx_index,
                 locktime: row.tx_locktime,
                 fee: row.tx_fee,
                 block: {
