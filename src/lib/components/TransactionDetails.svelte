@@ -27,7 +27,7 @@
                 </div>
             {/each}
             {#if transaction.inputs.length > maxInputsOutputs}
-                <div class="more-items">... and {transaction.inputs.length - maxInputsOutputs} more</div>
+                <div class="more-items">... other inputs omitted </div>
             {/if}
         </div>
     </div>
@@ -58,7 +58,7 @@
                 </div>
             {/each}
             {#if transaction.outputs.length > maxInputsOutputs}
-                <div class="more-items">... and {transaction.outputs.length - maxInputsOutputs} more</div>
+                <div class="more-items">... other outputs omitted</div>
             {/if}
         </div>
     </div>

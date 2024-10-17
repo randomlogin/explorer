@@ -35,7 +35,6 @@ export const GET: RequestHandler = async function ({ request, url }) {
             }
         }
     } 
-    // gelse {
     const names = await db
     .selectDistinct({
         name: vmetaouts.name,
@@ -48,10 +47,7 @@ export const GET: RequestHandler = async function ({ request, url }) {
     for (const space of names) {
         result.push({type: "space", value: space})
     }
-    console.log("mynames", names)
-    // }
 
-    // const result = await db.select().from(spaces).where(sql`similarity(${spaces.name}, ${search}) > 0`).orderBy(sql`similarity(${spaces.name}, ${search}) desc`).limit(3);
 
     return json(result);
 }

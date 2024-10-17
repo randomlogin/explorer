@@ -1,6 +1,7 @@
 <script lang="ts">
   import "../app.css";
   import { page } from "$app/stores";
+  import { get } from 'svelte/store'; // To access store values safely
   import Spinner from "$lib/components/Spinner.svelte";
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
@@ -35,7 +36,7 @@
     showSearchResults = false;
     highlightedResultIdx = -1;
     searchResults = await fetch("/api/search?q=" + search).then((x) => x.json());
-    console.log("in layout", searchResults)
+    /* console.log("search results in layout", searchResults) */
     searching = false;
     if (!navigatingToSpacePage)
       showSearchResults = true;
@@ -64,12 +65,14 @@
   }
 
   function navigateToResult(result: any) {
+
     const { type, value } = result;
 
     if (type === "transaction") {
       goto(`/tx/${value.txid}`).then(() => { search = ""; });
     } else if (type === "block") {
-      goto(`/block/${value.hash}`).then(() => { search = ""; });
+      console.log("trying to go to block ${value.hash}")
+      goto(`/block/${value.hash}`, {invalidateAll: false}).then(() => { search = ""; }).catch(err => console.log(err));
     } else if (type === "space") {
       goto(`/spaces/${value.name}`).then(() => { search = "";});
     }
