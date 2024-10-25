@@ -5,8 +5,6 @@
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(LocalizedFormat);
 
-    const numberFormatter = new Intl.NumberFormat();
-
     export let blockHeader;
 </script>
 

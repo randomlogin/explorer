@@ -37,9 +37,9 @@
 }
 
 .block-details {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: var(--space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-10);
   margin-bottom: var(--space-8);
 }
 
@@ -54,30 +54,23 @@
   color: var(--color-primary);
   font-weight: 600;
   transition: var(--transition-colors);
-}
-
-/* Special handling for hash values */
-.detail-item:has(.detail-label:contains("Merkle Root")) .detail-value,
-.detail-item:has(.detail-label:contains("Hash")) .detail-value {
   word-break: break-all;
   font-family: monospace;
-  font-size: var(--text-base);
 }
 
 .detail-label {
   color: var(--text-muted);
   transition: var(--transition-colors);
-  font-size: var(--text-lg); /* Increased from text-base */
+  font-size: var(--text-lg);
   font-weight: 500;
 }
 
-/* Responsive adjustments */
 @media (max-width: 640px) {
-  .block-details {
-    grid-template-columns: 1fr;
-  }
-  
   .detail-value {
     font-size: var(--text-lg);
+  }
+  
+  .block-details {
+    gap: var(--space-6) var(--space-6);
   }
 }
