@@ -1,44 +1,48 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { page } from '$app/stores'; // Importing the page store to access URL params
+    import { page } from '$app/stores';
+    import { goto } from '$app/navigation';
+    import { browser } from '$app/environment';
+    import { blockStore, totalPages } from '$lib/stores/blockStore';
     import BlockHeader from '$lib/components/BlockHeader.svelte';
     import BlockTxs from '$lib/components/BlockTxs.svelte';
-    import { blockStore } from '$lib/stores/blockStore'; // Adjust the path as necessary
 
+    // Get height from URL params
+    $: hash = $page.params.hash;
+    $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
 
+    // Initial data fetch when component mounts
+    $: if (browser && hash) {
+        blockStore.fetchBlockData(hash, currentPage);
+    }
 
-
-    $: blockHeader = $blockStore.blockHeader
-    $: errorHeader = $blockStore.blockHeaderError
-    $: blockTxs = $blockStore.blockTransactions
-    $: errorTxs = $blockStore.blockTransactionsError
-        
-
-    onMount(() => {
-        const pageFromUrl = parseInt($page.url.searchParams.get('page') || '1');
-        const offset = (pageFromUrl - 1) * $blockStore.txsPerPage;
-        blockStore.update(store => ({ ...store, page: pageFromUrl, offset }));
-        blockStore.fetchBlockData($page.params.height, offset, $blockStore.txsPerPage);
-    });
+    async function handlePageChange(newPage: number) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', newPage.toString());
+        await goto(url.toString(), { keepFocus: true });
+    }
 </script>
 
-<section>
-    {#if blockHeader}
-        <BlockHeader {blockHeader} />
-    {:else if errorHeader}
-        <p>Error loading block header: {errorHeader}</p>
-    {:else}
-        <p>Loading Block Header...</p>
-    {/if}
-</section>
-
-<section>
-    {#if blockTxs.length > 0}
-        <BlockTxs />
-    {:else if errorTxs}
-        <p>Error loading block transactions: {errorTxs}</p>
-    {:else}
-        <p>Loading Block Transactions...</p>
-    {/if}
-</section>
+{#if $blockStore.error}
+    <div class="error">
+        Error loading block: {$blockStore.error}
+    </div>
+{:else if !$blockStore.header}
+    <div class="loading">Loading block data...</div>
+{:else}
+    <section>
+        <BlockHeader blockHeader={$blockStore.header} />
+    </section>
+    <section>
+        <BlockTxs
+            transactions={$blockStore.transactions}
+            pagination={{
+                currentPage: $blockStore.pagination.currentPage,
+                totalPages: $totalPages,
+                offset: $blockStore.pagination.offset,
+                limit: $blockStore.pagination.limit
+            }}
+            onPageChange={handlePageChange}
+        />
+    </section>
+{/if}
 

@@ -6,8 +6,6 @@ import { sql } from 'drizzle-orm';
 export const GET: RequestHandler = async function ({ params }) {
     let spaceName = params.name;
     
-    console.log(params)
-    console.log(spaceName)
     if (spaceName.startsWith('@')) {
         spaceName = spaceName.slice(1);
     }
