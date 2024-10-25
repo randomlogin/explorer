@@ -2,7 +2,7 @@ import db from '$lib/db';
 import { error, json } from '@sveltejs/kit';
 import { type RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
-import { processTransactions } from '$routes/api/block/txs';
+import { processTransactions } from '$lib/utils/transaction-processor';
 
 export const GET: RequestHandler = async function ({ params }) {
     const txid = Buffer.from(params.txid, 'hex');

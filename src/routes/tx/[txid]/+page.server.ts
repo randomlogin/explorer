@@ -1,5 +1,4 @@
 import { error } from '@sveltejs/kit';
-import { PUBLIC_BTC_NETWORK } from "$env/static/public";
 import {  type ServerLoad } from '@sveltejs/kit';
 
 export const load: ServerLoad = async ({ fetch, params }) => {

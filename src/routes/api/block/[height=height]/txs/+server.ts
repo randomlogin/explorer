@@ -2,7 +2,7 @@ import db from '$lib/db';
 import { json } from '@sveltejs/kit';
 import { type RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
-import { processTransactions } from '$routes/api/block/txs';
+import { processTransactions } from '$lib/utils/transaction-processor';
 
 export const GET: RequestHandler = async function ({ url, params }) {
     const startTime = performance.now();
