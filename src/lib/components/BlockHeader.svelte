@@ -1,6 +1,6 @@
 <script lang="ts">
     import dayjs from 'dayjs';
-    import './BlockHeader.css';
+    import '$lib/styles/BlockHeader.css';
 
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(LocalizedFormat);

@@ -1,27 +1,41 @@
 <script lang="ts">
-    import Pagination from '$lib/components/Pagination.svelte';
+    import { blockStore, totalPages } from '$lib/stores/blockStore';
+    import Pagination from './Pagination.svelte';
     import TransactionDetails from '$lib/components/TransactionDetails.svelte';
     import TransactionLink from '$lib/components/TransactionLink.svelte';
-    import './BlockTxs.css';
+    import '$lib/styles/BlockTxs.css';
 
-    export let blockTxs = []; 
-    export let offset = 0; 
-    export let tx_count = 0; 
-    export let txsPerPage = 15; 
-    export let currentPage = 1; 
-    export let onPageChange; 
+    interface PaginationInfo {
+        currentPage: number;
+        totalPages: number;
+        offset: number;
+        limit: number;
+    }
+
+    export let transactions: Transaction[];
+    export let pagination: PaginationInfo;
+    export let onPageChange: (page: number) => Promise<void>;
+    
+    $: currentPage = $blockStore.pagination.currentPage;
+    $: offset = $blockStore.pagination.offset;
 </script>
 
 <div class="transactions-container">
-    {#each blockTxs as tx, tx_index}
-    <div class="transaction-card">
-        <h2 class="transaction-id">
-            <span class="transaction-id-link">
-                Transaction #{tx_index+offset} <TransactionLink txid={tx.txid} />
-            </span>
-        </h2>
-        <TransactionDetails transaction={tx} />
-    </div>
+    {#each transactions as transaction, index}
+        <div class="transaction-card">
+            <h2 class="transaction-id">
+                <span class="transaction-number">#{offset + index + 1}</span>
+                <TransactionLink txid={transaction.txid} />
+            </h2>
+            <TransactionDetails {transaction} />
+        </div>
     {/each}
 </div>
-<Pagination {currentPage} {tx_count} {txsPerPage} on:pageChange={onPageChange} />
+
+{#if $totalPages > 1}
+    <Pagination
+        currentPage={pagination.currentPage}
+        totalPages={pagination.totalPages}
+        on:pageChange={async (e) => await onPageChange(e.detail)}
+    />
+{/if}

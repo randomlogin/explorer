@@ -32,7 +32,7 @@ export function processTransactions(queryResult, parseAddresses = true) {
                 block: {
                     height: row.block_height,
                     time: row.block_time,
-                    hash: row.block_hash ? row.block_hash.toString('hex') : null
+                    hash: row.block_hash ? row.block_hash.toString('hex') : undefined
                 },
                 confirmations: row.max_height - row.block_height + 1,
                 inputs: [],

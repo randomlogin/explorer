@@ -4,7 +4,7 @@
     export let showAllInputsOutputs = false;
     export let maxInputsOutputs = showAllInputsOutputs ? Infinity : 5;
     import { numberFormatter } from '$lib/utils/formatters';
-    import './TransactionDetails.css';
+    import '$lib/styles/TransactionDetails.css';
 
 </script>
 

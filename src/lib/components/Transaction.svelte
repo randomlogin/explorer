@@ -7,7 +7,7 @@
 
     export let data;
 
-    import './Transaction.css';
+    import '$lib/styles/Transaction.css';
 </script>
 
 <div class="transaction-container">
@@ -23,7 +23,7 @@
             </div>
         </a>
         <div class="detail-item">
-            <span class="detail-value">{dayjs.unix(data.block.time).format('lll')}</span>
+            <span class="detail-value">{dayjs.unix(data.block.time).format('MMM DD, HH:MM')}</span>
             <span class="detail-label">Time</span>
         </div>
         <div class="detail-item">

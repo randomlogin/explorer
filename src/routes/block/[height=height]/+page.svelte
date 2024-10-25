@@ -1,70 +1,50 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { page } from '$app/stores'; // Importing the page store to access URL params
-    import { pushState } from '$app/navigation';
+    import { page } from '$app/stores';
+    import { goto } from '$app/navigation';
+    import { browser } from '$app/environment';
+    import { blockStore, totalPages } from '$lib/stores/blockStore';
     import BlockHeader from '$lib/components/BlockHeader.svelte';
     import BlockTxs from '$lib/components/BlockTxs.svelte';
+    import { invalidateAll } from '$app/navigation';
+    
+    export let data;
 
-    let blockHeader = null;
-    let blockTxs = [];   
-    let errorHeader = null;
-    let errorTxs = null;  
-
-    let txsPerPage = 25;    // Number of transactions per page
-    let tx_count = 0;       // Total transaction count
-
-    const query = $page.url.searchParams; 
-    let currentPage = parseInt(query.get('page')) || 1;
-    let offset = (currentPage - 1) * txsPerPage;
-
-    const height = $page.params.height;
-    async function fetchData() {
-        try {
-            const headerResponse = await fetch(`/api/block/${height}/header`);
-            if (!headerResponse.ok) throw new Error(`Error fetching block header: ${headerResponse.statusText}`);
-            blockHeader = await headerResponse.json();
-            tx_count = blockHeader.tx_count;
-        } catch (error) {
-            errorHeader = error.message; // Capture any errors
-        }
-
-        try {
-            const txsResponse = await fetch(`/api/block/${height}/txs?offset=${offset}&limit=${txsPerPage}`);
-            if (!txsResponse.ok) throw new Error(`Error fetching block transactions: ${txsResponse.statusText}`);
-            blockTxs = await txsResponse.json(); 
-        } catch (error) {
-            errorTxs = error.message; 
-        }
+    async function handlePageChange(newPage: number) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('page', newPage.toString());
+        await goto(url.toString(), { keepFocus: true });
     }
 
-    function handlePageChange(event) {
-        const newPage = event.detail; 
-        currentPage = newPage; // Update currentPage
-        offset = (currentPage - 1) * txsPerPage;
-        pushState(`?page=${currentPage}`);
-        fetchData(); 
+    // Optional: Handle client-side navigation between pages
+    $: if (browser && $page.url.searchParams.get('page')) {
+        const pageNum = parseInt($page.url.searchParams.get('page') || '1');
+        if (pageNum !== $blockStore.pagination.currentPage) {
+            blockStore.fetchBlockData(data.height, pageNum);
+        }
     }
-
-    onMount(fetchData);
 </script>
 
-<section>
-    {#if blockHeader}
-        <BlockHeader {blockHeader} />
-    {:else if errorHeader}
-        <p>Error loading block header: {errorHeader}</p>
-    {:else}
-        <p>Loading Block Header...</p>
-    {/if}
-</section>
+{#if $blockStore.error}
+    <div class="error">
+        Error loading block: {$blockStore.error}
+    </div>
+{:else if !$blockStore.header}
+    <div class="loading">Loading block data...</div>
+{:else}
+    <section>
+        <BlockHeader blockHeader={$blockStore.header} />
+    </section>
 
-<section>
-    {#if blockTxs.length > 0}
-        <BlockTxs {blockTxs} {offset} currentPage={currentPage} {tx_count} {txsPerPage} onPageChange={handlePageChange} />
-    {:else if errorTxs}
-        <p>Error loading block transactions: {errorTxs}</p>
-    {:else}
-        <p>Loading Block Transactions...</p>
-    {/if}
-</section>
-
+    <section>
+        <BlockTxs 
+            transactions={$blockStore.transactions} 
+            pagination={{
+                currentPage: $blockStore.pagination.currentPage,
+                totalPages: $totalPages,
+                offset: $blockStore.pagination.offset,
+                limit: $blockStore.pagination.limit
+            }}
+            onPageChange={handlePageChange} 
+        />
+    </section>
+{/if}

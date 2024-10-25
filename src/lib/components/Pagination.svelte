@@ -1,108 +1,100 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
-    export let currentPage; 
-    export let tx_count;  
-    export let txsPerPage; 
+    import { slide } from 'svelte/transition';
+    import '$lib/styles/Pagination.css';
 
-    const dispatch = createEventDispatcher();
-    const totalPages = Math.ceil(tx_count / txsPerPage);
+    export let currentPage: number;
+    export let totalPages: number;
+    
+    const dispatch = createEventDispatcher<{
+        pageChange: number;
+    }>();
 
-    function changePage(page) {
+    function changePage(page: number) {
         if (page !== currentPage && page >= 1 && page <= totalPages) {
             dispatch('pageChange', page);
         }
     }
 
-    function getPages(currentPage) {
-        const visibleRange = 1;
-        const start = Math.max(currentPage - visibleRange, 1);
-        const end = Math.min(currentPage + visibleRange, totalPages);
-        const pages: number[] = [];
-
-        for (let i = start; i <= end; i++) {
-            pages.push(i);
+    function getPageNumbers(current: number, total: number): Array<number | null> {
+        const delta = 1; // Number of pages to show on each side of current page
+        const pages: Array<number | null> = [];
+        
+        // Always show first page
+        pages.push(1);
+        
+        if (current > 2 + delta) {
+            pages.push(null); // Add ellipsis
         }
-
-        if (start > 1) {
-            if (start > 2) {
-                pages.unshift(-1); 
+        
+        // Calculate range around current page
+        const rangeStart = Math.max(2, current - delta);
+        const rangeEnd = Math.min(total - 1, current + delta);
+        
+        for (let i = rangeStart; i <= rangeEnd; i++) {
+            if (i !== 1 && i !== total) { // Skip if already added first or last page
+                pages.push(i);
             }
-            pages.unshift(1);
         }
-        if (end < totalPages) {
-            if (end < totalPages - 1) {
-                pages.push(-2); // Represents "..."
-            }
-            pages.push(totalPages); // Always show the last page
+        
+        if (current < total - (1 + delta)) {
+            pages.push(null); // Add ellipsis
         }
+        
+        // Always show last page if there's more than one page
+        if (total > 1) {
+            pages.push(total);
+        }
+        
         return pages;
     }
 
-    $: pages = getPages(currentPage);
+    $: pageNumbers = getPageNumbers(currentPage, totalPages);
 </script>
 
-<div class="pagination">
-    <button on:click={() => changePage(currentPage - 1)} disabled={currentPage === 1} class:inactive={currentPage === 1}>Previous</button>
+<nav 
+    class="pagination"
+    aria-label="Pagination"
+    transition:slide
+>
+    <button 
+        class="pagination-button"
+        on:click={() => changePage(currentPage - 1)}
+        disabled={currentPage === 1}
+        aria-label="Previous page"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
 
-    {#each pages as page}
-        {#if page < 0}
-            <span class="ellipsis">&hellip;</span>
-        {:else if currentPage === page}
-            <button class="active" on:click={() => changePage(page)}>
-                {page} <!-- Display actual page number -->
-            </button>
-        {:else}
-            <button class="inactive" on:click={() => changePage(page)}>
-                {page} <!-- Display actual page number -->
-            </button>
-        {/if}
-    {/each}
+    <div class="page-numbers">
+        {#each pageNumbers as pageNum}
+            {#if pageNum === null}
+                <span class="ellipsis" aria-hidden="true">&hellip;</span>
+            {:else}
+                <button
+                    class="page-number"
+                    class:active={currentPage === pageNum}
+                    on:click={() => changePage(pageNum)}
+                    aria-label="Go to page {pageNum}"
+                    aria-current={currentPage === pageNum ? 'page' : undefined}
+                >
+                    {pageNum}
+                </button>
+            {/if}
+        {/each}
+    </div>
 
-    <button on:click={() => changePage(currentPage + 1)} disabled={currentPage === totalPages} class:inactive={currentPage === totalPages}>Next</button>
-</div>
-
-<style>
-    .pagination {
-        display: flex;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-top: 1rem;
-    }
-
-    .pagination button, .pagination span {
-        padding: 0.5rem 1rem;
-        border: none;
-        border-radius: 5px;
-        background-color: #0b0d10;
-        color: white;
-        cursor: pointer;
-        transition: background-color 0.3s;
-    }
-
-    .pagination button:hover:not(:disabled) {
-        background-color: #ec8e32; /* Hover effect */
-    }
-
-    .pagination button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .pagination button.active {
-        background-color: #ec8e32; /* Active page button */
-    }
-
-    .pagination button.inactive {
-        background-color: gray; /* Inactive page button */
-        color: white;
-    }
-
-    .pagination span.ellipsis {
-        padding: 0.5rem 1rem;
-        color: #999;
-        cursor: default;
-        background-color: transparent; /* Ellipsis styling */
-    }
-</style>
-
+    <button 
+        class="pagination-button"
+        on:click={() => changePage(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        aria-label="Next page"
+    >
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+</nav>
 

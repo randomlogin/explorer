@@ -36,7 +36,9 @@ export const GET: RequestHandler = async function ({ url, params }) {
         transactions.locktime,
         transactions.fee
     FROM transactions
-    WHERE transactions.block_hash = ${block_hash}
+    WHERE transactions.block_hash = (
+        SELECT hash FROM blocks WHERE blocks.hash = ${block_hash}
+    )
     LIMIT ${limit} OFFSET ${offset}),
     limited_tx_inputs AS (
         SELECT
@@ -50,26 +52,41 @@ export const GET: RequestHandler = async function ({ url, params }) {
             ROW_NUMBER() OVER (PARTITION BY tx_inputs.txid ORDER BY tx_inputs.index ASC) AS rn
         FROM tx_inputs
         WHERE tx_inputs.txid IN (SELECT txid FROM limited_transactions)
-        ORDER BY tx_inputs.index
+        ORDER BY tx_inputs.index ASC
     ),
-    limited_tx_outputs AS (
-        SELECT
+    limited_tx_outputs as (
+        select
             tx_outputs.txid,
-            tx_outputs.index AS output_index,
-            tx_outputs.value AS output_value,
-            tx_outputs.scriptpubkey AS output_scriptpubkey,
-            ROW_NUMBER() OVER (PARTITION BY tx_outputs.txid ORDER BY tx_outputs.index ASC) AS rn
-        FROM tx_outputs
-        WHERE tx_outputs.txid IN (SELECT txid FROM limited_transactions)
-        ORDER BY tx_outputs.index
+            tx_outputs.index as output_index,
+            tx_outputs.value as output_value,
+            tx_outputs.scriptpubkey as output_scriptpubkey,
+            row_number() over (partition by tx_outputs.txid order by tx_outputs.index asc) as rn
+        from tx_outputs
+        where tx_outputs.txid in (select txid from limited_transactions)
+        order by tx_outputs.index ASC
+    ),
+    limited_vmetaouts AS (
+        SELECT
+            vmetaouts.txid,
+            vmetaouts.tx_index,
+            vmetaouts.outpoint_txid,
+            vmetaouts.outpoint_index,
+            vmetaouts.name,
+            vmetaouts.burn_increment,
+            vmetaouts.covenant_action,
+            vmetaouts.claim_height,
+            vmetaouts.expire_height,
+            ROW_NUMBER() OVER (PARTITION BY vmetaouts.txid ORDER BY vmetaouts.tx_index ASC) AS rn
+        FROM vmetaouts
+        WHERE vmetaouts.txid IN (SELECT txid FROM limited_transactions)
     )
     SELECT
         limited_transactions.txid AS txid,
         limited_transactions.tx_hash AS tx_hash,
         limited_transactions.version AS tx_version,
         limited_transactions.size AS tx_size,
-        limited_transactions.vsize AS tx_vsize,
         limited_transactions.index AS tx_index,
+        limited_transactions.vsize AS tx_vsize,
         limited_transactions.weight AS tx_weight,
         limited_transactions.locktime AS tx_locktime,
         limited_transactions.fee AS tx_fee,
@@ -83,12 +100,16 @@ export const GET: RequestHandler = async function ({ url, params }) {
 
         limited_tx_outputs.output_index AS output_index,
         limited_tx_outputs.output_value AS output_value,
-        limited_tx_outputs.output_scriptpubkey AS output_scriptpubkey
+        limited_tx_outputs.Output_scriptpubkey AS output_scriptpubkey
 
     FROM limited_transactions
-    LEFT JOIN limited_tx_inputs ON limited_tx_inputs.txid = limited_transactions.txid AND limited_tx_inputs.rn BETWEEN ${input_offset + 1} AND ${input_offset + input_limit}
-    LEFT JOIN limited_tx_outputs ON limited_tx_outputs.txid = limited_transactions.txid AND limited_tx_outputs.rn BETWEEN ${output_offset + 1} AND ${output_offset + output_limit}
-    ORDER BY limited_transactions.txid;
+LEFT JOIN limited_tx_inputs ON limited_tx_inputs.txid = limited_transactions.txid AND limited_tx_inputs.rn BETWEEN ${input_offset + 1} AND ${input_offset + input_limit}
+LEFT JOIN limited_tx_outputs ON limited_tx_outputs.txid = limited_transactions.txid AND limited_tx_outputs.rn BETWEEN ${output_offset + 1} AND ${output_offset + output_limit}
+    LEFT JOIN limited_vmetaouts ON limited_vmetaouts.txid = limited_tx_outputs.txid AND limited_vmetaouts.tx_index = limited_tx_outputs.output_index AND limited_vmetaouts.rn BETWEEN ${output_offset + 1} AND ${output_offset + output_limit}
+  
+ORDER BY limited_transactions.index;
+
+
     `);
 
     const txs = processTransactions(queryResult, true);

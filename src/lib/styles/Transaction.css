@@ -1,0 +1,60 @@
+@import 'variables.css';
+
+.transaction-container {
+    padding: var(--space-4);
+    
+    @media (min-width: 768px) {
+        padding: var(--space-6) var(--space-10);
+    }
+}
+
+.transaction-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+    margin-bottom: var(--space-6);
+}
+
+.transaction-title {
+    font-weight: 700;
+    font-size: var(--text-3xl);
+    color: var(--text-primary);
+}
+
+.transaction-id {
+    color: var(--text-muted);
+    word-break: break-all;
+}
+
+.transaction-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: var(--space-6);
+    margin-bottom: var(--space-8);
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+}
+
+.detail-value {
+    font-size: var(--text-xl);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.detail-label {
+    color: var(--text-muted);
+    font-size: var(--text-base);
+}
+
+.block-link {
+    text-decoration: none;
+}
+
+.block-link:hover .detail-value {
+    text-decoration: underline;
+}

@@ -18,5 +18,12 @@ if (SSL_CERT_PATH && SSL_KEY_PATH) {
 
 export default defineConfig({
 	plugins: [sveltekit()],
+  css: {
+    preprocessorOptions: {
+      css: {
+        imports: true
+      }
+    }
+  },
 	server
 });
