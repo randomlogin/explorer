@@ -10,9 +10,14 @@
     $: height = $page.params.height;
     $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
 
-    // Initial data fetch when component mounts
     $: if (browser && height) {
-        blockStore.fetchBlockData(height, currentPage);
+        const currentBlockHeight = $blockStore.currentHeight;
+        const currentStorePage = $blockStore.pagination.currentPage;
+        
+        // Only fetch if height changed OR if it's the same height but different page
+        if (currentBlockHeight !== height || (currentBlockHeight === height && currentStorePage !== currentPage)) {
+            blockStore.fetchBlockData(height, currentPage);
+        }
     }
 
     async function handlePageChange(newPage: number) {

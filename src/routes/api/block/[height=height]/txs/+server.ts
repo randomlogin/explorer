@@ -5,6 +5,7 @@ import { sql } from 'drizzle-orm';
 import { processTransactions } from '$lib/utils/transaction-processor';
 
 export const GET: RequestHandler = async function ({ url, params }) {
+    console.log('asking for tx', params)
     const startTime = performance.now();
     let limit = parseInt(url.searchParams.get('limit') || '25');
     if (limit > 50) {

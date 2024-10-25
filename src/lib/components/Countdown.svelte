@@ -1,5 +1,5 @@
 <script lang='ts'>
-    import { formatDuration } from "$lib/utils";
+    import { formatDuration } from "$lib/utils/formatters";
     import { onMount } from "svelte";
     export let seconds: number;
 

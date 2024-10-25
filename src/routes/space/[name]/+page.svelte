@@ -1,10 +1,8 @@
 <script lang="ts">
-  import { decodeScriptPubKeyToTaprootAddress, formatDuration } from "$lib/utils.js";
+  import { decodeScriptPubKeyToTaprootAddress, formatDuration } from "$lib/utils/formatters";
   import dayjs from "dayjs";
   import LocalizedFormat from "dayjs/plugin/localizedFormat";
   import { PUBLIC_BTC_NETWORK } from "$env/static/public";
-  import Countdown from "$lib/components/Countdown.svelte";
-  import { page } from '$app/stores';
   import TransactionLink from '$lib/components/TransactionLink.svelte';
   import './styles/SpacePage.css';
   dayjs.extend(LocalizedFormat);

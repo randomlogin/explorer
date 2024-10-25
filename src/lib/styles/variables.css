@@ -49,6 +49,12 @@
   --transition-colors: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out, color 0.2s ease-in-out;
   --transition-opacity: opacity 0.2s ease-in-out;
   --transition-shadow: box-shadow 0.2s ease-in-out;
+
+    /* Colors */
+  --color-primary-dark: #c76a1c;
+
+  /* Container */
+  --container-width: 1280px;
   
   /* Shadows */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);

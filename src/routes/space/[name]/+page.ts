@@ -1,5 +1,4 @@
 import { error, type Actions, type ServerLoad } from '@sveltejs/kit';
-
 export const load: ServerLoad = async ({ fetch, locals, params }) => {
     const spaceName = params.name;
     const [space, blockStats] = await Promise.all([

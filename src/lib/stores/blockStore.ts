@@ -1,5 +1,5 @@
 import { writable, derived, get } from 'svelte/store';
-import type { Block, Transaction } from '$lib/types';
+import type { Transaction } from '$lib/types/transaction';
 
 type BlockState = {
     currentHeight: string | null;
@@ -82,8 +82,5 @@ function createBlockStore() {
 }
 
 export const blockStore = createBlockStore();
-
-export const totalPages = derived(
-    blockStore,
-    $blockStore => Math.ceil($blockStore.txCount / $blockStore.pagination.limit)
+export const totalPages = derived( blockStore, $blockStore => Math.ceil($blockStore.txCount / $blockStore.pagination.limit)
 );
