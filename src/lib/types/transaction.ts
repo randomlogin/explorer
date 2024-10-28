@@ -27,6 +27,25 @@ export interface TransactionInput {
     txinwitness: any; // Define more specific type if possible
 }
 
+// export interface TransactionOutput {
+//     index: number;
+//     value: number;
+//     scriptpubkey: string | null;
+//     address: string | null;
+//     spender: {
+//         txid: string;
+//         index: number;
+//     } | null;
+// }
+
+export type SpaceAction = {
+    type: 'bid' | 'register' | 'transfer' | 'reserve';
+    value?: number;  // for bids
+    address?: string; // for transfers
+    name: string;  // Name involved in the action
+};
+
+// Update TransactionOutput type to include optional space_action
 export interface TransactionOutput {
     index: number;
     value: number;
@@ -36,5 +55,5 @@ export interface TransactionOutput {
         txid: string;
         index: number;
     } | null;
+    space_action?: SpaceAction;
 }
-

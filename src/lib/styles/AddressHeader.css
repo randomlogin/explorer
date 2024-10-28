@@ -1,0 +1,39 @@
+    .address-container {
+        @apply bg-white rounded-lg shadow-md p-6 mb-6;
+    }
+
+    .address-header {
+        @apply flex flex-col gap-2 mb-6 pb-4 border-b;
+    }
+
+    .address-title {
+        @apply text-2xl font-bold text-gray-800;
+    }
+
+    .address-hash {
+        @apply font-mono text-sm text-gray-600;
+    }
+
+    .address-details {
+        @apply grid gap-4;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+
+    .detail-item {
+        @apply flex flex-col gap-1;
+    }
+
+    .detail-value {
+        @apply text-lg font-medium text-gray-900;
+    }
+
+    .detail-label {
+        @apply text-sm text-gray-500;
+    }
+
+    /* For better mobile display */
+    @media (max-width: 640px) {
+        .address-details {
+            @apply grid-cols-1;
+        }
+    }

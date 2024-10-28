@@ -1,11 +1,11 @@
 <script lang="ts">
-    import TransactionLink from './TransactionLink.svelte';
+    import TransactionLink from '$lib/components/TransactionLink.svelte';
+ import AddressLink from '$lib/components/AddressLink.svelte';
     export let transaction;
     export let showAllInputsOutputs = false;
     export let maxInputsOutputs = showAllInputsOutputs ? Infinity : 5;
-    import { numberFormatter } from '$lib/utils/formatters';
+    import { formatBTC } from '$lib/utils/formatters';
     import '$lib/styles/TransactionDetails.css';
-
 </script>
 
 <div class="transaction-io">
@@ -40,18 +40,31 @@
                         <div class="output-details">
                             <span class="output-address" title={output.address || output.scriptpubkey}>
                                 {#if output.address}
-                                    {output.address}
+                                    <AddressLink address={output.address} />
                                 {:else}
-                                    Scriptpubkey: {output.scriptpubkey.slice(0, 20)}...
+                                    <span class="font-mono">Scriptpubkey: {output.scriptpubkey.slice(0, 20)}...</span>
                                 {/if}
                             </span>
                             <div class="output-value-container">
-                                <span class="output-value">{numberFormatter.format(output.value)} satoshi</span>
+                                <span class="output-value">{formatBTC(output.value)}</span>
                             </div>
                         </div>
-                        {#if output.spender}
-                            <div class="spender-info mt-2"> <!-- Ensure this is on a new line -->
-                                Spent in: <TransactionLink txid={output.spender.txid} outputIndex={output.spender.index} />
+                        {#if output.space_action}
+                            <div class="space-action">
+                                <div class="space-action-details">
+                                <span>Spaces action: </span>
+                                    {output.space_action.type} <a href="/space/{output.space_action.name}" class="space-action-name">{output.space_action.name}</a>
+                                </div>
+                                {#if output.space_action.value || output.space_action.address}
+                                    <div class="space-action-additional">
+                                        {#if output.space_action.value}
+                                            <span>Value: {formatBTC(output.space_action.value)}</span>
+                                        {/if}
+                                        {#if output.space_action.address}
+                                            <span>To: <AddressLink address={output.space_action.address} /></span>
+                                        {/if}
+                                    </div>
+                                {/if}
                             </div>
                         {/if}
                     </div>

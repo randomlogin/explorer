@@ -1,19 +1,19 @@
 <script lang="ts">
-  import { decodeScriptPubKeyToTaprootAddress, formatDuration } from "$lib/utils/formatters";
+  import { formatDuration } from "$lib/utils/formatters";
+  import { decodeScriptPubKeyToTaprootAddress } from "$lib/utils/address-parsers";
   import dayjs from "dayjs";
   import LocalizedFormat from "dayjs/plugin/localizedFormat";
   import { PUBLIC_BTC_NETWORK } from "$env/static/public";
+  import { page } from '$app/stores';
   import TransactionLink from '$lib/components/TransactionLink.svelte';
-  import './styles/SpacePage.css';
+  import '$lib/styles/SpacePage.css';
   dayjs.extend(LocalizedFormat);
 
   export let data;
   let space = data.space;
-  let blockStats = data.blockStats;
   $: {
     if (data) {
       space = data.space;
-      blockStats = data.blockStats;
     }
   }
 
@@ -29,7 +29,7 @@
   $: latestEvent = space[0];
   $: outpoint = `${latestEvent?.outpoint_txid}:${latestEvent?.outpoint_index}`;
   $: currentOwner = latestEvent?.script_pubkey ? decodeScriptPubKeyToTaprootAddress(latestEvent.script_pubkey, PUBLIC_BTC_NETWORK) : null;
-  $: currentBlockHeight = blockStats.height;
+  $: currentBlockHeight = space[0].max_height;
   $: expiryHeight = latestEvent?.expire_height;
 
   $: auctionHeader = latestEvent?.covenant_action === "BID" 

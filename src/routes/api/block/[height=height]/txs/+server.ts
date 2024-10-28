@@ -4,6 +4,10 @@ import { type RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 import { processTransactions } from '$lib/utils/transaction-processor';
 
+import { addMockSpaceActions } from '$lib/utils/mockSpaceActions';
+
+// const response: Transaction[] = await fetch('/api/transactions').then(r => r.json());
+
 export const GET: RequestHandler = async function ({ url, params }) {
     console.log('asking for tx', params)
     const startTime = performance.now();
@@ -110,5 +114,8 @@ ORDER BY limited_transactions.index;
     const totalResponseTime = endTime - startTime;
 
     console.log(`GET request for block height ${params.height} with limit ${limit} - Total Response Time: ${totalResponseTime.toFixed(2)} ms`);
-    return json(txs);
+
+const enrichedTransactions = addMockSpaceActions(txs);
+    // return json(txs);
+    return json(enrichedTransactions);
 }

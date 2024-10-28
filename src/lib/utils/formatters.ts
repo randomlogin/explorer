@@ -39,3 +39,18 @@ export function formatDuration(seconds: number): string {
 
     return result;
 }
+
+export function formatBTC(satoshis: bigint): string {
+    // 0.0001 BTC = 10000 satoshis
+    const BTC_THRESHOLD = 10000n;
+
+    if (satoshis >= BTC_THRESHOLD) {
+        // Convert to BTC and format with 8 decimal places
+        const btc = Number(satoshis) / 100000000;
+        return btc.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 4 }) + ' BTC';
+        // return btc.toLocaleString('en-US', { minimumFractionDigits: 8, maximumFractionDigits: 8 }) + ' BTC';
+    } else {
+        // Show in satoshis
+        return satoshis.toLocaleString() + ' sat';
+    }
+}

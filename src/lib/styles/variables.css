@@ -50,6 +50,9 @@
   --transition-opacity: opacity 0.2s ease-in-out;
   --transition-shadow: box-shadow 0.2s ease-in-out;
 
+    --transition-duration: 200ms;
+    --transition-timing: ease-in-out;
+
     /* Colors */
   --color-primary-dark: #c76a1c;
 

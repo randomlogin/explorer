@@ -3,7 +3,7 @@
   import statusMeta from "$lib/statusMeta";
   import dayjs from "dayjs";
   import LocalizedFormat from "dayjs/plugin/localizedFormat";
-  import "$lib/styles//SpaceCard.css";  
+  import "$lib/styles/SpaceCard.css";  
 
   dayjs.extend(LocalizedFormat);
 
@@ -57,17 +57,5 @@
       </div>
     </div>
 
-    <div class="history-container">
-      <div class="history-divider"></div>
-      <div class="history-grid">
-        {#each space.history.filter((x) => x.action == "bid") as bid}
-          <span class="history-amount">{bid.bid_amount}</span>
-          <span class="history-sat">SAT</span>
-          <span class="history-time">
-            {dayjs.unix(bid.transaction.block.time).format("MMM DD, HH:MM")}
-          </span>
-        {/each}
-      </div>
-    </div>
   </div>
 </a>

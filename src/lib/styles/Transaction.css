@@ -1,3 +1,4 @@
+/* $lib/styles/Transaction.css */
 @import 'variables.css';
 
 .transaction-container {
@@ -29,9 +30,17 @@
 
 .transaction-details {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: var(--space-6);
     margin-bottom: var(--space-8);
+    
+    /* Default for mobile */
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    
+    /* Force one line on desktop */
+    @media (min-width: 1280px) {
+        grid-template-columns: repeat(6, 1fr);
+        gap: var(--space-4);
+    }
 }
 
 .detail-item {
@@ -51,10 +60,3 @@
     font-size: var(--text-base);
 }
 
-.block-link {
-    text-decoration: none;
-}
-
-.block-link:hover .detail-value {
-    text-decoration: underline;
-}

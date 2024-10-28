@@ -1,17 +1,19 @@
 <script lang="ts">
     import dayjs from 'dayjs';
     import '$lib/styles/BlockHeader.css';
-
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
+    import CopyButton from '$lib/components/CopyButton.svelte';
     dayjs.extend(LocalizedFormat);
-
     export let blockHeader;
 </script>
 
 <div class="block-container">
     <div class="block-header">
         <h1 class="block-title">Block</h1> 
-        <span class="block-hash">{blockHeader.hash}</span>
+        <div class="flex items-center gap-2">
+            <span class="block-hash">{blockHeader.hash}</span>
+            <CopyButton value={blockHeader.hash} />
+        </div>
     </div>
     <div class="block-details">
         <div class="detail-item">
@@ -47,7 +49,10 @@
             <span class="detail-label">Nonce</span>
         </div>
         <div class="detail-item">
-            <span class="detail-value">{blockHeader.hash_merkle_root}</span>
+            <div class="flex items-center gap-2">
+                <span class="detail-value">{blockHeader.hash_merkle_root}</span>
+                <CopyButton value={blockHeader.hash_merkle_root} />
+            </div>
             <span class="detail-label">Merkle Root</span>
         </div>
         <div class="detail-item">

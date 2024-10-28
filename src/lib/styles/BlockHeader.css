@@ -74,3 +74,19 @@
     gap: var(--space-6) var(--space-6);
   }
 }
+
+/* .block-details { */
+/*   display: flex; */
+/*   flex-wrap: wrap; */
+/*   gap: var(--space-8) var(--space-10); */
+/*   margin-bottom: var(--space-8); */
+/* } */
+/*  */
+/* .detail-value { */
+/*   font-size: var(--text-xl); */
+/*   color: var(--color-primary); */
+/*   font-weight: 600; */
+/*   transition: color var(--transition-duration) var(--transition-timing); */
+/*   word-break: break-all; */
+/*   font-family: monospace; */
+/* } */

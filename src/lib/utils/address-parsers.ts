@@ -1,7 +1,7 @@
-import { bech32m } from 'bech32';
-import { Buffer } from 'buffer';
+import { bech32m, bech32 } from 'bech32';
 import bs58 from 'bs58';
 import { PUBLIC_BTC_NETWORK } from "$env/static/public";
+import { Buffer } from 'buffer';
 
 export function parseAddress(scriptPubKey: Buffer): string | null {
     return parseP2PKHScriptPubKey(scriptPubKey) ||
@@ -50,10 +50,93 @@ export function parseP2WSH(scriptPubKey: Buffer) {
     return bech32m.encode(prefix, [0].concat(words));
 }
 
-// Remove or comment out this function as it's not needed
-// function publicKeyHashToAddress(publicKeyHash) {
-//     const prefix = 'bc'; // 'bc' for mainnet; use 'tb' for testnet
-//     const words = bech32m.toWords(publicKeyHash);
-//     return bech32m.encode(prefix, 0x00, words); // 0x00 is the version for P2WPKH
-// }
 
+type Network = 'mainnet' | 'testnet';
+
+const NETWORK_VERSIONS = {
+  mainnet: {
+    p2pkh: 0x00, // addresses start with '1'
+    p2sh: 0x05,  // addresses start with '3'
+    bech32: 'bc'
+  },
+  testnet: {
+    p2pkh: 0x6f, // addresses start with 'm' or 'n'
+    p2sh: 0xc4,  // addresses start with '2'
+    bech32: 'tb'
+  }
+};
+
+export function addressToScriptPubKey(address: string): string {
+    try {
+        // Handle bech32/bech32m addresses (starting with bc1 or tb1)
+        if (address.toLowerCase().startsWith('bc1') || address.toLowerCase().startsWith('tb1')) {
+            let decoded;
+            try {
+                // Try bech32m first (for taproot addresses)
+                decoded = bech32m.decode(address);
+            } catch {
+                // Fall back to bech32 (for SegWit v0 addresses)
+                decoded = bech32.decode(address);
+            }
+
+            const words = decoded.words;
+            const version = words[0];
+            const data = Buffer.from(bech32.fromWords(words.slice(1)));
+
+            // P2WPKH (version 0, length 20)
+            if (version === 0 && data.length === 20) {
+                return Buffer.concat([
+                    Buffer.from('0014', 'hex'), // OP_0 + Push 20 bytes
+                    data
+                ]).toString('hex');
+            }
+
+            // P2WSH (version 0, length 32)
+            if (version === 0 && data.length === 32) {
+                return Buffer.concat([
+                    Buffer.from('0020', 'hex'), // OP_0 + Push 32 bytes
+                    data
+                ]).toString('hex');
+            }
+
+            // P2TR (Taproot, version 1, length 32)
+            if (version === 1 && data.length === 32) {
+                return Buffer.concat([
+                    Buffer.from('5120', 'hex'), // OP_1 + Push 32 bytes
+                    data
+                ]).toString('hex');
+            }
+
+            throw new Error('Unsupported witness version or program length');
+        }
+
+        // Legacy address decoding
+        const decoded = Buffer.from(bs58.decode(address));
+        const version = decoded[0];
+        const hash = decoded.slice(1, -4); // Remove version byte and checksum
+
+        // P2PKH (starts with 1 or m/n)
+        if (version === 0x00 || version === 0x6f) {
+            return Buffer.concat([
+                Buffer.from('76a914', 'hex'), // OP_DUP + OP_HASH160 + Push 20 bytes
+                hash,
+                Buffer.from('88ac', 'hex')    // OP_EQUALVERIFY + OP_CHECKSIG
+            ]).toString('hex');
+        }
+
+        // P2SH (starts with 3 or 2)
+        if (version === 0x05 || version === 0xc4) {
+            return Buffer.concat([
+                Buffer.from('a914', 'hex'),   // OP_HASH160 + Push 20 bytes
+                hash,
+                Buffer.from('87', 'hex')      // OP_EQUAL
+            ]).toString('hex');
+        }
+
+        throw new Error('Unsupported address format');
+
+    } catch (error) {
+        console.error('Error converting address to scriptPubKey:', error);
+        throw error;
+    }
+}

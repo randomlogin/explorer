@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { blockStore, totalPages } from '$lib/stores/blockStore';
     import Pagination from './Pagination.svelte';
     import TransactionDetails from '$lib/components/TransactionDetails.svelte';
     import TransactionLink from '$lib/components/TransactionLink.svelte';
@@ -16,15 +15,29 @@
     export let pagination: PaginationInfo;
     export let onPageChange: (page: number) => Promise<void>;
     
-    $: currentPage = $blockStore.pagination.currentPage;
-    $: offset = $blockStore.pagination.offset;
+    let showOnlySpaceActions = false;
+    
+    $: filteredTransactions = showOnlySpaceActions 
+        ? transactions.filter(tx => tx.outputs.some(output => output.space_action))
+        : transactions;
 </script>
 
+<div class="filter-container mb-4">
+    <label class="flex items-center space-x-2 text-sm">
+        <input 
+            type="checkbox" 
+            bind:checked={showOnlySpaceActions} 
+            class="form-checkbox h-4 w-4 text-orange-600" 
+        />
+        <span>Show only transactions with Space Actions</span>
+    </label>
+</div>
+
 <div class="transactions-container">
-    {#each transactions as transaction, index}
+    {#each filteredTransactions as transaction}
         <div class="transaction-card">
             <h2 class="transaction-id">
-                <span class="transaction-number">#{offset + index + 1}</span>
+                <span class="transaction-number">#{transaction.index}</span>
                 <TransactionLink txid={transaction.txid} />
             </h2>
             <TransactionDetails {transaction} />
@@ -32,7 +45,7 @@
     {/each}
 </div>
 
-{#if $totalPages > 1}
+{#if pagination.totalPages > 1}
     <Pagination
         currentPage={pagination.currentPage}
         totalPages={pagination.totalPages}

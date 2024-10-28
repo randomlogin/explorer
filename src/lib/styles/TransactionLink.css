@@ -1,0 +1,14 @@
+@import 'variables.css';
+
+.transaction-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: monospace;
+    /* Ensure font size stays consistent */
+    font-size: inherit;
+    transition: color var(--transition-duration) var(--transition-timing);
+}
+
+.transaction-link:hover {
+    color: var(--color-primary);
+}

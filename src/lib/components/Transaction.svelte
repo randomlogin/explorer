@@ -1,7 +1,7 @@
 <script lang="ts">
     import dayjs from 'dayjs';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
-    import TransactionDetails from './TransactionDetails.svelte';
+    import TransactionDetails from '$lib/components/TransactionDetails.svelte';
     import { numberFormatter } from '$lib/utils/formatters';
     dayjs.extend(LocalizedFormat);
 
