@@ -3,7 +3,6 @@
   import statusMeta from "$lib/statusMeta";
   import dayjs from "dayjs";
   import LocalizedFormat from "dayjs/plugin/localizedFormat";
-  import "$lib/styles/SpaceCard.css";  
 
   dayjs.extend(LocalizedFormat);
 
@@ -59,3 +58,28 @@
 
   </div>
 </a>
+<style>
+@import '$lib/styles/variables.css';
+
+.space-card-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6) 0;
+  gap: var(--space-2);
+  border-radius: var(--border-radius-3xl);
+  border: var(--border-width-1) solid var(--color-primary);
+  border-bottom-width: var(--border-width-8);
+  width: 100%;
+  max-width: 220px;
+  cursor: pointer;
+  background: var(--bg-primary-light);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-all);
+}
+
+.space-card-container:hover {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
+}
+</style>

@@ -66,13 +66,15 @@
 }
 
 /* Dark theme */
-[data-theme="black"] {
+[data-theme="dark"] {
   --bg-primary: #161616;
   --bg-secondary: #1e1e1e;
   --text-primary: #ffffff;
   --text-muted: #9ca3af;
   --border-color: #2d2d2d;
   --border-hover: #404040;
+  --space-action-bg: rgb(49, 46, 43);
+  --space-action-text: rgb(255, 169, 122);
 }
 
 /* Apply theme colors to body */

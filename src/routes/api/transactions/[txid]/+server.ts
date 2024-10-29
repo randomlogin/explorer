@@ -7,7 +7,8 @@ import { processTransactions } from '$lib/utils/transaction-processor';
 export const GET: RequestHandler = async function ({ params }) {
     const txid = Buffer.from(params.txid, 'hex');
 
-    console.log(txid)
+    const startTime = performance.now();
+    // console.log("txid in api methid", txid)
     const queryResult = await db.execute(sql`
     WITH transaction_data AS (
         SELECT
@@ -28,17 +29,22 @@ export const GET: RequestHandler = async function ({ params }) {
         JOIN blocks ON transactions.block_hash = blocks.hash
         WHERE transactions.txid = ${txid}
     ),
-    tx_inputs_data AS (
+      tx_inputs_data AS (
         SELECT
-            txid,
-            index AS input_index,
-            hash_prevout AS input_hash_prevout,
-            index_prevout AS input_index_prevout,
-            sequence AS input_sequence,
-            coinbase AS input_coinbase,
-            txinwitness AS input_txinwitness
-        FROM tx_inputs
-        WHERE txid = ${txid}
+            ti.txid,
+            ti.index AS input_index,
+            ti.hash_prevout AS input_hash_prevout,
+            ti.index_prevout AS input_index_prevout,
+            ti.sequence AS input_sequence,
+            ti.coinbase AS input_coinbase,
+            ti.txinwitness AS input_txinwitness,
+            prev_out.scriptpubkey AS input_prev_scriptpubkey,
+            prev_out.value AS input_prev_value
+        FROM tx_inputs ti
+        LEFT JOIN tx_outputs prev_out
+            ON ti.hash_prevout = prev_out.txid
+            AND ti.index_prevout = prev_out.index
+        WHERE ti.txid = ${txid}
     ),
     tx_outputs_data AS (
         SELECT
@@ -59,6 +65,8 @@ export const GET: RequestHandler = async function ({ params }) {
         tx_inputs_data.input_sequence,
         tx_inputs_data.input_coinbase,
         tx_inputs_data.input_txinwitness,
+        tx_inputs_data.input_prev_scriptpubkey,
+        tx_inputs_data.input_prev_value,
         tx_outputs_data.output_index,
         tx_outputs_data.output_value,
         tx_outputs_data.output_scriptpubkey,
@@ -79,6 +87,9 @@ export const GET: RequestHandler = async function ({ params }) {
 
     // transaction.confirmations = transaction.max_height - transaction.block.height;
     // console.log(json(transaction))
+    const endTime = performance.now();
+    const totalResponseTime = endTime - startTime;
+    console.log(`in transaction by txid ${params.txid} Total Response Time: ${totalResponseTime.toFixed(2)} ms`);
 
     return json(transaction);
 }

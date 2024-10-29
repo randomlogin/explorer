@@ -1,4 +1,5 @@
 import { bech32m, bech32 } from 'bech32';
+import { createHash } from 'crypto';
 import bs58 from 'bs58';
 import { PUBLIC_BTC_NETWORK } from "$env/static/public";
 import { Buffer } from 'buffer';
@@ -20,14 +21,30 @@ export function decodeScriptPubKeyToTaprootAddress(scriptPubKey: Buffer, network
     return bech32m.encode(hrp, [1].concat(pubkeyBits));
 }
 
-export function parseP2PKHScriptPubKey(scriptPubKey: Buffer) {
-    if (scriptPubKey.length !== 25 || scriptPubKey[0] !== 0x76 || scriptPubKey[1] !== 0xa9 || scriptPubKey[2] !== 0x14 || scriptPubKey[23] !== 0x88 || scriptPubKey[24] !== 0xac) {
+
+export function parseP2PKHScriptPubKey(scriptPubKey: Buffer): string | null {
+    if (scriptPubKey.length !== 25 ||
+        scriptPubKey[0] !== 0x76 ||
+        scriptPubKey[1] !== 0xa9 ||
+        scriptPubKey[2] !== 0x14 ||
+        scriptPubKey[23] !== 0x88 ||
+        scriptPubKey[24] !== 0xac) {
         return null;
     }
+
     const pubKeyHash = scriptPubKey.slice(3, 23);
     const prefix = PUBLIC_BTC_NETWORK === 'mainnet' ? 0x00 : 0x6f;
     const payload = Buffer.concat([Buffer.from([prefix]), pubKeyHash]);
-    return bs58.encode(payload);
+
+    // Calculate checksum (double SHA256)
+    const hash = createHash('sha256').update(payload).digest();
+    const hash2 = createHash('sha256').update(hash).digest();
+    const checksum = hash2.slice(0, 4);
+
+    // Combine version, pubkey hash, and checksum
+    const finalPayload = Buffer.concat([payload, checksum]);
+
+    return bs58.encode(finalPayload);
 }
 
 export function parseP2WPKH(scriptPubKey: Buffer) {
@@ -50,21 +67,6 @@ export function parseP2WSH(scriptPubKey: Buffer) {
     return bech32m.encode(prefix, [0].concat(words));
 }
 
-
-type Network = 'mainnet' | 'testnet';
-
-const NETWORK_VERSIONS = {
-  mainnet: {
-    p2pkh: 0x00, // addresses start with '1'
-    p2sh: 0x05,  // addresses start with '3'
-    bech32: 'bc'
-  },
-  testnet: {
-    p2pkh: 0x6f, // addresses start with 'm' or 'n'
-    p2sh: 0xc4,  // addresses start with '2'
-    bech32: 'tb'
-  }
-};
 
 export function addressToScriptPubKey(address: string): string {
     try {

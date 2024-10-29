@@ -20,11 +20,14 @@ export interface Transaction {
 
 export interface TransactionInput {
     index: number;
-    hash_prevout: string | null;
+    hash_prevout: string;
     index_prevout: number;
     sequence: number;
     coinbase: string | null;
-    txinwitness: any; // Define more specific type if possible
+    txinwitness: string | null;
+    prev_scriptpubkey?: string;
+    sender_address?: string;
+    prev_value?: number;
 }
 
 // export interface TransactionOutput {

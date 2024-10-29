@@ -1,7 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
     import { slide } from 'svelte/transition';
-    import '$lib/styles/Pagination.css';
 
     export let currentPage: number;
     export let totalPages: number;
@@ -97,4 +96,71 @@
         </svg>
     </button>
 </nav>
+<style>
+@import '$lib/styles/variables.css';
 
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+}
+
+.page-numbers {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pagination-button,
+.page-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.5rem;
+  height: 2.5rem;
+  padding: var(--space-2);
+  border: var(--border-width-1) solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: var(--transition-colors);
+}
+
+.pagination-button:hover:not(:disabled),
+.page-number:not(.active):hover {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-hover);
+}
+
+.pagination-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.page-number.active {
+  background-color: var(--color-primary);
+  color: white;
+  font-weight: 500;
+}
+
+.ellipsis {
+  color: var(--text-muted);
+  padding: 0 var(--space-2);
+}
+
+@media (max-width: 640px) {
+  .page-numbers {
+    gap: var(--space-2);
+  }
+  
+  .pagination-button,
+  .page-number {
+    min-width: 2rem;
+    height: 2rem;
+    padding: var(--space-2);
+  }
+}
+</style>

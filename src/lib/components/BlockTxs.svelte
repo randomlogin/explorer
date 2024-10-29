@@ -2,7 +2,6 @@
     import Pagination from './Pagination.svelte';
     import TransactionDetails from '$lib/components/TransactionDetails.svelte';
     import TransactionLink from '$lib/components/TransactionLink.svelte';
-    import '$lib/styles/BlockTxs.css';
 
     interface PaginationInfo {
         currentPage: number;
@@ -52,3 +51,34 @@
         on:pageChange={async (e) => await onPageChange(e.detail)}
     />
 {/if}
+<style>
+@import '$lib/styles/variables.css';
+
+.transactions-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+  padding: var(--space-4);
+  background: var(--bg-primary);
+  border-radius: var(--border-radius-lg);
+  transition: var(--transition-colors);
+}
+
+.transaction-card {
+  background: var(--bg-secondary);
+  border: var(--border-width-1) solid var(--border-color);
+  border-radius: var(--border-radius-xl);
+  padding: var(--space-6);
+  color: var(--text-primary);
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-all);
+}
+
+.transaction-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+  box-shadow: var(--shadow-md);
+}
+</style>

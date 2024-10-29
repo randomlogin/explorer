@@ -48,10 +48,15 @@ export const GET: RequestHandler = async function ({ url, params }) {
             tx_inputs.sequence AS input_sequence,
             tx_inputs.coinbase AS input_coinbase,
             tx_inputs.txinwitness AS input_txinwitness,
+            prev_out.scriptpubkey AS input_prev_scriptpubkey,
+            prev_out.value AS input_prev_value,
             ROW_NUMBER() OVER (PARTITION BY tx_inputs.txid ORDER BY tx_inputs.index ASC) AS rn
-        FROM tx_inputs
+        FROM tx_inputs 
+        LEFT JOIN tx_outputs prev_out
+            ON tx_inputs.hash_prevout = prev_out.txid
+            AND tx_inputs.index_prevout = prev_out.index
         WHERE tx_inputs.txid IN (SELECT txid FROM limited_transactions)
-        ORDER BY tx_inputs.index
+        ORDER BY tx_inputs.index ASC
     ),
     limited_tx_outputs as (
         select
@@ -96,6 +101,8 @@ export const GET: RequestHandler = async function ({ url, params }) {
         limited_tx_inputs.input_sequence AS input_sequence,
         limited_tx_inputs.input_coinbase AS input_coinbase,
         limited_tx_inputs.input_txinwitness AS input_txinwitness,
+        limited_tx_inputs.input_prev_scriptpubkey,
+        limited_tx_inputs.input_prev_value,
 
         limited_tx_outputs.output_index AS output_index,
         limited_tx_outputs.output_value AS output_value,

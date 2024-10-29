@@ -1,0 +1,84 @@
+@import 'variables.css';
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    color: var(--text-primary);
+    transition: var(--transition-colors);
+}
+
+@media (min-width: 768px) {
+    .container {
+        padding: var(--space-6) var(--space-10);
+    }
+}
+
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+    margin-bottom: var(--space-6);
+}
+
+.title {
+    font-weight: 700;
+    font-size: var(--text-3xl);
+    color: var(--text-primary);
+}
+
+.hash {
+    position: relative;
+    top: var(--space-2);
+    word-break: break-all;
+    color: var(--text-muted);
+    transition: var(--transition-colors);
+    font-family: monospace;
+}
+
+.details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8) var(--space-10);
+    margin-bottom: var(--space-8);
+}
+
+@media (min-width: 1280px) {
+    .details {
+        gap: var(--space-6);
+    }
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+}
+
+.detail-value {
+    font-size: var(--text-xl);
+    color: var(--color-primary);
+    font-weight: 600;
+    transition: var(--transition-colors);
+    word-break: break-all;
+    font-family: monospace;
+}
+
+@media (max-width: 640px) {
+    .detail-value {
+        font-size: var(--text-lg);
+    }
+    
+    .details {
+        gap: var(--space-6) var(--space-6);
+    }
+}
+
+.detail-label {
+    color: var(--text-muted);
+    transition: var(--transition-colors);
+    font-size: var(--text-lg);
+    font-weight: 500;
+}

@@ -1,13 +1,16 @@
 <script lang="ts">
     import TransactionLink from '$lib/components/TransactionLink.svelte';
- import AddressLink from '$lib/components/AddressLink.svelte';
+    import AddressLink from '$lib/components/AddressLink.svelte';
     export let transaction;
     export let showAllInputsOutputs = false;
     export let maxInputsOutputs = showAllInputsOutputs ? Infinity : 5;
     import { formatBTC } from '$lib/utils/formatters';
-    import '$lib/styles/TransactionDetails.css';
 </script>
-
+<div class="debug-theme" style="position: fixed; bottom: 10px; right: 10px; padding: 10px; background: var(--bg-primary); color: var(--text-primary); font-family: monospace; font-size: 12px; z-index: 9999;">
+    <div>space-action-bg: <span style="background: var(--space-action-bg); padding: 2px 8px;">test</span></div>
+    <div>space-action-text: <span style="color: var(--space-action-text);">test</span></div>
+    <div>text-muted: <span style="color: var(--text-muted);">test</span></div>
+</div>
 <div class="transaction-io">
     <div class="io-section inputs">
         <h2 class="section-title">Inputs</h2>
@@ -16,9 +19,23 @@
                 <div class="item-wrapper">
                     <div class="item">
                         {#if input.coinbase}
-                            <span class="text-gray-500">Coinbase input</span>
+                            <span class="coinbase-input">Coinbase input</span>
                         {:else}
-                            <TransactionLink txid={input.hash_prevout} truncate={false} maxLength={30} />
+                            <div class="input-details">
+                                <div class="input-left">
+                                    {#if input.sender_address}
+                                        <div class="address">
+                                            Address <AddressLink address={input.sender_address} truncate={false}  />
+                                        </div>
+                                    {/if}
+                                    <div class="transaction">
+                                       Tx <TransactionLink txid={input.hash_prevout} truncate={false} maxLength={30} />
+                                    </div>
+                                </div>
+                                <div class="input-right">
+                                    <span class="value">{formatBTC(input.prev_value)}</span>
+                                </div>
+                            </div>
                         {/if}
                     </div>
                     {#if index < transaction.inputs.slice(0, maxInputsOutputs).length - 1}
@@ -31,6 +48,7 @@
             {/if}
         </div>
     </div>
+
     <div class="io-section outputs">
         <h2 class="section-title">Outputs</h2>
         <div class="section-content">
@@ -38,21 +56,30 @@
                 <div class="item-wrapper">
                     <div class="output-item">
                         <div class="output-details">
-                            <span class="output-address" title={output.address || output.scriptpubkey}>
-                                {#if output.address}
-                                    <AddressLink address={output.address} />
+                            <div class="output-left">
+                                <div class="address">
+                                    {#if output.address}
+                                        Address <AddressLink address={output.address} />
+                                    {:else}
+                                        <span class="font-mono">Scriptpubkey: {output.scriptpubkey.slice(0, 20)}...</span>
+                                    {/if}
+                                </div>
+                                    <div class="transaction">
+                                {#if output.spender}
+                                        Spent in: <TransactionLink txid={output.spender.txid} truncate={false} maxLength={30} />
                                 {:else}
-                                    <span class="font-mono">Scriptpubkey: {output.scriptpubkey.slice(0, 20)}...</span>
+                                    Unspent
                                 {/if}
-                            </span>
-                            <div class="output-value-container">
-                                <span class="output-value">{formatBTC(output.value)}</span>
+                                    </div>
+                            </div>
+                            <div class="output-right">
+                                <span class="value">{formatBTC(output.value)}</span>
                             </div>
                         </div>
                         {#if output.space_action}
                             <div class="space-action">
                                 <div class="space-action-details">
-                                <span>Spaces action: </span>
+                                    <span>Spaces action: </span>
                                     {output.space_action.type} <a href="/space/{output.space_action.name}" class="space-action-name">{output.space_action.name}</a>
                                 </div>
                                 {#if output.space_action.value || output.space_action.address}
@@ -68,6 +95,9 @@
                             </div>
                         {/if}
                     </div>
+                    {#if index < transaction.outputs.slice(0, maxInputsOutputs).length - 1}
+                        <div class="separator"></div>
+                    {/if}
                 </div>
             {/each}
             {#if transaction.outputs.length > maxInputsOutputs}
@@ -76,3 +106,159 @@
         </div>
     </div>
 </div>
+<style>
+@import '$lib/styles/variables.css';
+
+
+.section-title {
+    font-size: var(--text-xl);
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: var(--border-width-1) solid var(--text-muted);
+}
+
+.section-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.item, .output-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.output-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.output-details {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+}
+
+.separator {
+    display: none;
+}
+
+.transaction-io {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+    margin-top: var(--space-10);
+}
+
+.io-section {
+    flex: 1;
+}
+
+
+.more-items {
+    color: var(--text-muted);
+    margin-top: var(--space-2);
+}
+
+.item-wrapper {
+    margin-bottom: var(--space-4);
+}
+
+.item-wrapper:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .transaction-io {
+        grid-template-columns: 1fr;
+    }
+}
+/* Replace `text-gray-500` in the template */
+.coinbase-input {
+    color: var(--text-muted);
+}
+
+/* Space action styles need dark theme support */
+.space-action {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    background-color: var(--space-action-bg);
+    color: var(--space-action-text);
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    margin-top: 0.5rem;
+}
+
+.space-action-name {
+    font-weight: 500;
+    color: var(--space-action-text);
+    text-decoration: none;
+}
+
+.space-action-details {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.25rem;
+}
+
+
+.space-action-additional {
+    margin-top: 0.25rem;
+}
+
+.space-action-name:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.input-details,
+.output-details {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--space-4);
+}
+
+.input-left,
+.output-left {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+    min-width: 0;
+}
+.address,
+.transaction {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.address {
+    font-size: var(--text-base);
+}
+
+.transaction {
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+/* Add these new styles to handle the link text overflow */
+:global(.address a),
+:global(.transaction a) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+</style>

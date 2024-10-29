@@ -2,20 +2,20 @@
     import dayjs from 'dayjs';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     import TransactionDetails from '$lib/components/TransactionDetails.svelte';
-    import { numberFormatter } from '$lib/utils/formatters';
+    import CopyButton from '$lib/components/CopyButton.svelte';
+    /* import { numberFormatter } from '$lib/utils/formatters'; */
     dayjs.extend(LocalizedFormat);
 
     export let data;
-
-    import '$lib/styles/Transaction.css';
 </script>
 
-<div class="transaction-container">
-    <div class="transaction-header">
-        <h1 class="transaction-title">Transaction</h1> 
-        <span class="transaction-id">{data.txid}</span>
+<div class="container">
+    <div class="header">
+        <h1 class="title">Transaction</h1> 
+        <span class="hash">{data.txid}</span>
+        <CopyButton value={data.txid} />
     </div>
-    <div class="transaction-details">
+    <div class="details">
         <a href={`/block/${data.block.height}`} class="block-link">
             <div class="detail-item">
                 <span class="detail-value">{data.block.height}</span>
@@ -35,6 +35,14 @@
             <span class="detail-label">Index in the block</span>
         </div>
         <div class="detail-item">
+            <span class="detail-value">{data.weight}</span>
+            <span class="detail-label">Weight</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-value">{data.fee}</span>
+            <span class="detail-label">Fee</span>
+        </div>
+        <div class="detail-item">
             <span class="detail-value">{data.locktime}</span>
             <span class="detail-label">Lock Time</span>
         </div>
@@ -42,6 +50,14 @@
             <span class="detail-value">{data.confirmations}</span>
             <span class="detail-label">Confirmations</span>
         </div>
+        <div class="detail-item">
+            <span class="detail-value">PLACEHOLDER</span>
+            <span class="detail-label">Spaces Actions</span>
+        </div>
     </div>
     <TransactionDetails transaction={data} showAllInputsOutputs={true} />
 </div>
+
+<style>
+@import '$lib/styles/headers.css';
+</style>

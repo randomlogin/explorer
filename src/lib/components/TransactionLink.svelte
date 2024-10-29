@@ -13,3 +13,19 @@
 <a {href} class="mono-link" title={txid}>
     {displayTxid}
 </a>
+<style>
+@import '$lib/styles/variables.css';
+
+.transaction-link {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-family: monospace;
+    /* Ensure font size stays consistent */
+    font-size: inherit;
+    transition: color var(--transition-duration) var(--transition-timing);
+}
+
+.transaction-link:hover {
+    color: var(--color-primary);
+}
+</style>
