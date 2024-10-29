@@ -6,7 +6,6 @@
   import { PUBLIC_BTC_NETWORK } from "$env/static/public";
   import { page } from '$app/stores';
   import TransactionLink from '$lib/components/TransactionLink.svelte';
-  import '$lib/styles/SpacePage.css';
   dayjs.extend(LocalizedFormat);
 
   export let data;

@@ -1,5 +1,4 @@
 import { bech32m, bech32 } from 'bech32';
-import { createHash } from 'crypto';
 import bs58 from 'bs58';
 import { PUBLIC_BTC_NETWORK } from "$env/static/public";
 import { Buffer } from 'buffer';
@@ -21,6 +20,19 @@ export function decodeScriptPubKeyToTaprootAddress(scriptPubKey: Buffer, network
     return bech32m.encode(hrp, [1].concat(pubkeyBits));
 }
 
+async function sha256(data: Uint8Array): Promise<Uint8Array> {
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    return new Uint8Array(hashBuffer);
+}
+
+function sha256Sync(data: Uint8Array): Uint8Array {
+    // This is a fallback if you absolutely need synchronous operation
+    // Consider using the async version above instead
+    let hashArray = Array.from(new Uint8Array(
+        crypto.subtle.digest('SHA-256', data)
+    ));
+    return new Uint8Array(hashArray);
+}
 
 export function parseP2PKHScriptPubKey(scriptPubKey: Buffer): string | null {
     if (scriptPubKey.length !== 25 ||
@@ -37,8 +49,8 @@ export function parseP2PKHScriptPubKey(scriptPubKey: Buffer): string | null {
     const payload = Buffer.concat([Buffer.from([prefix]), pubKeyHash]);
 
     // Calculate checksum (double SHA256)
-    const hash = createHash('sha256').update(payload).digest();
-    const hash2 = createHash('sha256').update(hash).digest();
+    const hash = sha256Sync(payload);
+    const hash2 = sha256Sync(hash);
     const checksum = hash2.slice(0, 4);
 
     // Combine version, pubkey hash, and checksum

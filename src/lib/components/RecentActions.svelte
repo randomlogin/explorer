@@ -79,7 +79,7 @@
                                 <div class="space-action-details">
                                     <span>{action.type} <a href="/spaces/{action.name}" class="space-action-name"> {action.name} </a> </span>
                                     {#if action.value}
-                                        <span>{formatBTC(action.value)}</span>
+                                        <span class="bid-value">{formatBTC(action.value)}</span>
                                     {/if}
                                 </div>
                                 <div class="action-meta">
@@ -155,10 +155,6 @@
   color: var(--text-muted);
 }
 
-.block-info {
-  display: flex;
-  gap: var(--space-3);
-}
 
 .block-link {
   color: var(--text-muted);
@@ -169,25 +165,9 @@
   color: var(--color-primary);
 }
 
-.time {
-  color: var(--text-muted);
-}
-
-.loading, .error {
-  padding: var(--space-4);
-  text-align: center;
-  color: var(--text-muted);
-}
 
 .error {
   color: var(--color-error);
-}
-
-.recent-actions-outer {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  padding: 0 var(--space-4);
 }
 
 .recent-actions-container {

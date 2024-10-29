@@ -6,11 +6,6 @@
     export let maxInputsOutputs = showAllInputsOutputs ? Infinity : 5;
     import { formatBTC } from '$lib/utils/formatters';
 </script>
-<div class="debug-theme" style="position: fixed; bottom: 10px; right: 10px; padding: 10px; background: var(--bg-primary); color: var(--text-primary); font-family: monospace; font-size: 12px; z-index: 9999;">
-    <div>space-action-bg: <span style="background: var(--space-action-bg); padding: 2px 8px;">test</span></div>
-    <div>space-action-text: <span style="color: var(--space-action-text);">test</span></div>
-    <div>text-muted: <span style="color: var(--text-muted);">test</span></div>
-</div>
 <div class="transaction-io">
     <div class="io-section inputs">
         <h2 class="section-title">Inputs</h2>
