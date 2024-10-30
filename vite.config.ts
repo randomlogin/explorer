@@ -18,6 +18,9 @@ if (SSL_CERT_PATH && SSL_KEY_PATH) {
 
 export default defineConfig({
 	plugins: [sveltekit()],
+  optimizeDeps: {
+    include: ['lucide-svelte']
+  },
   css: {
     preprocessorOptions: {
       css: {
