@@ -6,7 +6,6 @@
   import NavigationLinks from "./NavigationLinks.svelte";
   import MobileMenu from "./MobileMenu.svelte";
   import ThemeToggle from "$lib/components/ThemeToggle.svelte";
-
   let mobileMenuOpen = false;
 </script>
 
@@ -16,8 +15,8 @@
   </div>
 {/if}
 
-<div class="shadow-sm mb-10 flex justify-center">
-  <div class="container flex p-2 px-2 md:px-10 items-center gap-2 md:gap-5">
+<div class="layout-header shadow-sm mb-10">
+  <div class="layout-header-content max-w-[1280px] w-full mx-auto flex p-2 px-2 md:px-10 items-center gap-2 md:gap-5">
     <Logo />
     <SearchBar />
     <NavigationLinks />
@@ -41,3 +40,14 @@
     </div>
   </div>
 </div>
+
+<style>
+  .layout-header {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .layout-header-content {
+    display: flex;
+  }
+</style>
