@@ -5,21 +5,42 @@
     import { blockStore, totalPages } from '$lib/stores/blockStore';
     import BlockHeader from '$lib/components/BlockHeader.svelte';
     import BlockTxs from '$lib/components/BlockTxs.svelte';
+    import { onDestroy } from 'svelte';
 
-    // Get height from URL params
+    // Get hash from URL params
     $: hash = $page.params.hash;
     $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
 
-    // Initial data fetch when component mounts
-    $: if (browser && hash) {
-        blockStore.fetchBlockData(hash, currentPage);
+    // Track previous values to prevent unnecessary reloads
+    let previousHash: string | null = null;
+    let previousPage: number | null = null;
+
+    // Handle initial load and subsequent navigation
+    $: if (browser && hash && (hash !== previousHash || currentPage !== previousPage)) {
+        loadBlockData();
+    }
+
+    async function loadBlockData() {
+        try {
+            await blockStore.fetchBlockData(hash, currentPage);
+            // Update previous values after successful fetch
+            previousHash = hash;
+            previousPage = currentPage;
+        } catch (error) {
+            console.error('Failed to load block data:', error);
+        }
     }
 
     async function handlePageChange(newPage: number) {
         const url = new URL(window.location.href);
         url.searchParams.set('page', newPage.toString());
-        await goto(url.toString(), { keepFocus: true });
+        await goto(url.toString(), { keepFocus: true, replaceState: true });
     }
+
+    // Clear block data when component is destroyed
+    onDestroy(() => {
+        blockStore.clearBlock();
+    });
 </script>
 
 {#if $blockStore.error}
@@ -45,4 +66,3 @@
         />
     </section>
 {/if}
-
