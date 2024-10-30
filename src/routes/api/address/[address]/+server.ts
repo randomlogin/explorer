@@ -22,7 +22,9 @@ export async function GET({ params, url }) {
                 COUNT(DISTINCT o.txid) as received_count,
                 COALESCE(SUM(o.value), 0) as total_received
             FROM tx_outputs o
+            JOIN blocks b ON o.block_hash = b.hash
             WHERE o.scriptPubKey = ${scriptPubKey}
+            AND b.orphan = false
         ),
         spent_stats AS (
             SELECT
@@ -30,6 +32,7 @@ export async function GET({ params, url }) {
                 COALESCE(SUM(o.value), 0) as total_spent
             FROM tx_outputs o
             JOIN tx_inputs i ON o.txid = i.hash_prevout AND o.index = i.index_prevout
+            JOIN blocks b ON i.block_hash = b.hash
             WHERE o.scriptPubKey = ${scriptPubKey}
         )
         SELECT
@@ -61,7 +64,9 @@ export async function GET({ params, url }) {
                 -- Receiving transactions
                 SELECT o.block_hash, o.txid
                 FROM tx_outputs o
+                JOIN blocks b ON o.block_hash = b.hash
                 WHERE o.scriptPubKey = ${scriptPubKey}
+                AND b.orphan = false
 
                 UNION
 
@@ -69,7 +74,9 @@ export async function GET({ params, url }) {
                 SELECT i.block_hash, i.txid
                 FROM tx_outputs o
                 JOIN tx_inputs i ON o.txid = i.hash_prevout AND o.index = i.index_prevout
+                JOIN blocks b ON i.block_hash = b.hash
                 WHERE o.scriptPubKey = ${scriptPubKey}
+                AND b.orphan = false
             ) AS addr_txs
             JOIN transactions t ON addr_txs.block_hash = t.block_hash AND addr_txs.txid = t.txid
             JOIN blocks b ON t.block_hash = b.hash

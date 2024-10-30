@@ -220,6 +220,18 @@
     gap: var(--space-4);
 }
 
+.input-right,
+.output-right {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden; /* Ensure content doesn't overflow */
+    flex-shrink: 0; /* Prevent value from shrinking */
+    padding-left: var(--space-4); /* Ensure some space from the address */
+}
+
 .input-left,
 .output-left {
     display: flex;
@@ -227,6 +239,7 @@
     gap: var(--space-2);
     flex: 1;
     min-width: 0;
+    overflow: hidden; /* Ensure content doesn't overflow */
 }
 .address,
 .transaction {
@@ -234,9 +247,12 @@
     gap: var(--space-2);
     align-items: center;
     min-width: 0;
+    width: 100%; /* Take full width */
     white-space: nowrap;
     overflow: hidden;
 }
+
+
 
 .address {
     font-size: var(--text-base);
@@ -253,7 +269,29 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    min-width: 0; /* Enable truncation */
 }
 
+
+.output-details {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: var(--space-4);
+    align-items: flex-start; /* Align items to top */
+}
+
+/* Label text (Address:, Tx:, etc) */
+.address > :first-child {
+    flex-shrink: 0; /* Don't shrink the label */
+}
+
+
+.value {
+    color: var(--color-primary);
+    font-weight: 600;
+    white-space: nowrap;
+    text-align: right; /* Ensure right alignment */
+}
 
 </style>

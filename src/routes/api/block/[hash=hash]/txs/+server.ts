@@ -66,6 +66,8 @@ export const GET: RequestHandler = async function ({ url, params }) {
             tx_outputs.index as output_index,
             tx_outputs.value as output_value,
             tx_outputs.scriptpubkey as output_scriptpubkey,
+            tx_outputs.spender_txid AS output_spender_txid,
+            tx_outputs.spender_index AS output_spender_index,
             row_number() over (partition by tx_outputs.txid order by tx_outputs.index asc) as rn
         from tx_outputs
         where tx_outputs.txid in (select txid from limited_transactions)
@@ -108,7 +110,9 @@ export const GET: RequestHandler = async function ({ url, params }) {
 
         limited_tx_outputs.output_index AS output_index,
         limited_tx_outputs.output_value AS output_value,
-        limited_tx_outputs.Output_scriptpubkey AS output_scriptpubkey
+        limited_tx_outputs.Output_scriptpubkey AS output_scriptpubkey,
+        limited_tx_outputs.output_spender_txid,
+        limited_tx_outputs.output_spender_index
 
     FROM limited_transactions
 LEFT JOIN limited_tx_inputs ON limited_tx_inputs.txid = limited_transactions.txid AND limited_tx_inputs.rn BETWEEN ${input_offset + 1} AND ${input_offset + input_limit}

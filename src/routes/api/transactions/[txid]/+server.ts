@@ -27,7 +27,8 @@ export const GET: RequestHandler = async function ({ params }) {
             (SELECT COALESCE(MAX(height), -1) FROM blocks)::integer AS max_height
         FROM transactions
         JOIN blocks ON transactions.block_hash = blocks.hash
-        WHERE transactions.txid = ${txid}
+        WHERE transactions.txid = ${txid} 
+        ORDER by block_height DESC
     ),
       tx_inputs_data AS (
         SELECT
