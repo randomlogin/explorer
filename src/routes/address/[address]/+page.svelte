@@ -48,4 +48,4 @@
 </script>
 
 <AddressHeader address={data.address} stats={data.stats}/>
-<BlockTxs {transactions} {pagination} onPageChange={handlePageChange} />
+<BlockTxs {transactions} {pagination} onPageChange={handlePageChange} showTransactionTime={true} />

@@ -31,17 +31,7 @@ export function createTransaction(row: any): Transaction {
 
     return transaction;
 }
-// export function createTransactionInput(row: any): TransactionInput {
-//     return {
-//         index: row.input_index,
-//         hash_prevout: row.input_hash_prevout ? row.input_hash_prevout.toString('hex') : null,
-//         index_prevout: row.input_index_prevout,
-//         sequence: row.input_sequence,
-//         coinbase: row.input_coinbase ? row.input_coinbase.toString('hex') : null,
-//         txinwitness: row.input_txinwitness
-//     };
-// }
-//
+
 export function createTransactionInput(row: any): TransactionInput {
     return {
         index: row.input_index,

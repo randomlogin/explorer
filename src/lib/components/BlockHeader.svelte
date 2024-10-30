@@ -1,7 +1,7 @@
 <script lang="ts">
     import dayjs from 'dayjs';
-    import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     import CopyButton from '$lib/components/CopyButton.svelte';
+    import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(LocalizedFormat);
     export let blockHeader;
 </script>

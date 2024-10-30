@@ -59,7 +59,12 @@ export async function GET({ params, url }) {
 
         const queryResult = await db.execute(sql`
         WITH address_transactions AS (
-            SELECT DISTINCT t.txid, t.block_hash, b.height, t.index as tx_index
+            SELECT DISTINCT 
+            t.txid,
+            t.block_hash,
+            t.index as tx_index,
+            b.height as block_height,
+            b.time as block_time
             FROM (
                 -- Receiving transactions
                 SELECT o.block_hash, o.txid
@@ -160,7 +165,6 @@ export async function GET({ params, url }) {
                 hasMore: false
             });
         }
-
         const hasMore = queryResult.rows.length > limit;
         const rows = hasMore ? queryResult.rows.slice(0, -1) : queryResult.rows;
 

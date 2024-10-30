@@ -1,7 +1,10 @@
 <script lang="ts">
+    import dayjs from 'dayjs';
     import Pagination from './Pagination.svelte';
     import TransactionDetails from '$lib/components/TransactionDetails.svelte';
     import TransactionLink from '$lib/components/TransactionLink.svelte';
+    import LocalizedFormat from 'dayjs/plugin/localizedFormat';
+    dayjs.extend(LocalizedFormat);
 
     interface PaginationInfo {
         currentPage: number;
@@ -13,6 +16,7 @@
     export let transactions: Transaction[];
     export let pagination: PaginationInfo;
     export let onPageChange: (page: number) => Promise<void>;
+    export let showTransactionTime: bool = false;
     
     let showOnlySpaceActions = false;
     
@@ -38,6 +42,12 @@
             <h2 class="transaction-id">
                 <span class="transaction-number">Tx #{transaction.index}</span>
                 <TransactionLink txid={transaction.txid} />
+                {#if showTransactionTime}
+
+                    <span class="transaction-time">
+                        {dayjs.unix(transaction.block.time).format('MMM D, YYYY HH:mm ')}
+                    </span>
+                {/if}
             </h2>
             <TransactionDetails {transaction} />
         </div>
@@ -80,5 +90,11 @@
   transform: translateY(-2px);
   border-color: var(--border-hover);
   box-shadow: var(--shadow-md);
+}
+
+.transaction-time {
+    color: var(--text-muted);
+    font-size: 0.9em;
+    white-space: nowrap;
 }
 </style>

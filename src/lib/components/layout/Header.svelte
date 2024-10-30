@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { page } from "$app/stores";
   import { PUBLIC_BTC_NETWORK } from "$env/static/public";
   import Logo from "./Logo.svelte";
   import SearchBar from "./SearchBar.svelte";
