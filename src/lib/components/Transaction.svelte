@@ -46,10 +46,12 @@
             <span class="detail-value">{data.locktime}</span>
             <span class="detail-label">Lock Time</span>
         </div>
+        {#if data.block && data.block.height >= 0}
         <div class="detail-item">
             <span class="detail-value">{data.confirmations}</span>
             <span class="detail-label">Confirmations</span>
         </div>
+        {/if}
         <div class="detail-item">
             <span class="detail-value">PLACEHOLDER</span>
             <span class="detail-label">Spaces Actions</span>

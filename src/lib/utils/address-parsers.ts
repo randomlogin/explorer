@@ -1,13 +1,43 @@
-import { bech32m, bech32 } from 'bech32';
+import { bech32m } from 'bech32';
 import bs58 from 'bs58';
 import { PUBLIC_BTC_NETWORK } from "$env/static/public";
 import { Buffer } from 'buffer';
+import { sha256 as sha256Hasher } from '@noble/hashes/sha256';
+
+function sha256Sync(data: Uint8Array): Uint8Array {
+    return sha256Hasher.create().update(data).digest();
+}
 
 export function parseAddress(scriptPubKey: Buffer): string | null {
     return parseP2PKHScriptPubKey(scriptPubKey) ||
+           parseP2SHScriptPubKey(scriptPubKey) ||  // Added P2SH parsing
            parseP2WPKH(scriptPubKey) ||
            parseP2WSH(scriptPubKey) ||
            decodeScriptPubKeyToTaprootAddress(scriptPubKey, PUBLIC_BTC_NETWORK);
+}
+
+export function parseP2SHScriptPubKey(scriptPubKey: Buffer): string | null {
+    // Check P2SH pattern: OP_HASH160 (0xa9) + Push 20 bytes (0x14) + <20 bytes> + OP_EQUAL (0x87)
+    if (scriptPubKey.length !== 23 ||
+        scriptPubKey[0] !== 0xa9 ||
+        scriptPubKey[1] !== 0x14 ||
+        scriptPubKey[22] !== 0x87) {
+        return null;
+    }
+
+    const scriptHash = scriptPubKey.slice(2, 22);
+    const prefix = PUBLIC_BTC_NETWORK === 'mainnet' ? 0x05 : 0xc4;  // 0x05 for mainnet, 0xc4 for testnet
+    const payload = Buffer.concat([Buffer.from([prefix]), scriptHash]);
+
+    // Double SHA256 for checksum
+    const hash1 = sha256Sync(payload);
+    const hash2 = sha256Sync(hash1);
+    const checksum = hash2.slice(0, 4);
+
+    // Combine version, script hash, and checksum
+    const finalPayload = Buffer.concat([payload, Buffer.from(checksum)]);
+
+    return bs58.encode(finalPayload);
 }
 
 export function decodeScriptPubKeyToTaprootAddress(scriptPubKey: Buffer, network = 'mainnet') {
@@ -18,20 +48,6 @@ export function decodeScriptPubKeyToTaprootAddress(scriptPubKey: Buffer, network
     const hrp = network === 'mainnet' ? 'bc' : 'tb';
     const pubkeyBits = bech32m.toWords(pubkeyBytes);
     return bech32m.encode(hrp, [1].concat(pubkeyBits));
-}
-
-async function sha256(data: Uint8Array): Promise<Uint8Array> {
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    return new Uint8Array(hashBuffer);
-}
-
-function sha256Sync(data: Uint8Array): Uint8Array {
-    // This is a fallback if you absolutely need synchronous operation
-    // Consider using the async version above instead
-    let hashArray = Array.from(new Uint8Array(
-        crypto.subtle.digest('SHA-256', data)
-    ));
-    return new Uint8Array(hashArray);
 }
 
 export function parseP2PKHScriptPubKey(scriptPubKey: Buffer): string | null {

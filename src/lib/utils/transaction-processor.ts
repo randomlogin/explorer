@@ -2,7 +2,7 @@ import type { Transaction, TransactionInput, TransactionOutput } from '$lib/type
 import { parseAddress } from '$lib/utils/address-parsers';
 
 export function createTransaction(row: any): Transaction {
-    return {
+    const transaction: Transaction = {
         txid: row.txid.toString('hex'),
         tx_hash: row.tx_hash.toString('hex'),
         version: row.tx_version,
@@ -12,17 +12,25 @@ export function createTransaction(row: any): Transaction {
         index: row.tx_index,
         locktime: row.tx_locktime,
         fee: row.tx_fee,
-        block: {
-            height: row.block_height,
-            time: row.block_time,
-            hash: row.block_hash ? row.block_hash.toString('hex') : undefined
-        },
-        confirmations: row.max_height - row.block_height + 1,
         inputs: [],
         outputs: []
     };
-}
 
+    // Add block and confirmations only if block data exists
+    if (row.block_height !== null && row.block_time !== null) {
+        transaction.block = {
+            height: row.block_height,
+            time: row.block_time,
+            ...(row.block_hash && { hash: row.block_hash.toString('hex') })
+        };
+        
+        if (typeof row.max_height === 'number') {
+            transaction.confirmations = row.max_height - row.block_height + 1;
+        }
+    }
+
+    return transaction;
+}
 // export function createTransactionInput(row: any): TransactionInput {
 //     return {
 //         index: row.input_index,
@@ -43,10 +51,8 @@ export function createTransactionInput(row: any): TransactionInput {
         coinbase: row.input_coinbase ? row.input_coinbase.toString('hex') : null,
         txinwitness: row.input_txinwitness,
         prev_value: row.input_prev_value,
-        prev_scriptpubkey: row.input_prev_scriptpubkey ?
-            row.input_prev_scriptpubkey.toString('hex') : undefined,
-        sender_address: row.input_prev_scriptpubkey ?
-            parseAddress(row.input_prev_scriptpubkey) : null
+        prev_scriptpubkey: row.input_prev_scriptpubkey ?  row.input_prev_scriptpubkey.toString('hex') : undefined,
+        sender_address: row.input_prev_scriptpubkey ?  parseAddress(row.input_prev_scriptpubkey) : null
     };
 }
 

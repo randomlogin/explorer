@@ -8,7 +8,7 @@ export interface Transaction {
     index: number;
     locktime: number;
     fee: number;
-    block: {
+    block?: {
         height: number;
         time: number;
         hash?: string;

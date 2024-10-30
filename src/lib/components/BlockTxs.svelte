@@ -36,7 +36,7 @@
     {#each filteredTransactions as transaction}
         <div class="transaction-card">
             <h2 class="transaction-id">
-                <span class="transaction-number">#{transaction.index}</span>
+                <span class="transaction-number">Tx #{transaction.index}</span>
                 <TransactionLink txid={transaction.txid} />
             </h2>
             <TransactionDetails {transaction} />

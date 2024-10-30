@@ -20,13 +20,14 @@
                                 <div class="input-left">
                                     {#if input.sender_address}
                                         <div class="address">
-                                            Address <AddressLink address={input.sender_address} truncate={false}  />
+                                            Address <AddressLink address={input.sender_address} truncate={true}  />
                                         </div>
                                     {/if}
                                     <div class="transaction">
-                                       Tx <TransactionLink txid={input.hash_prevout} truncate={false} maxLength={30} />
+                                       Tx <TransactionLink txid={input.hash_prevout} truncate={false} maxLength={20} />
                                     </div>
                                 </div>
+
                                 <div class="input-right">
                                     <span class="value">{formatBTC(input.prev_value)}</span>
                                 </div>
@@ -54,7 +55,7 @@
                             <div class="output-left">
                                 <div class="address">
                                     {#if output.address}
-                                        Address <AddressLink address={output.address} />
+                                            Address <AddressLink address={output.address} truncate={true}  />
                                     {:else}
                                         <span class="font-mono">Scriptpubkey: {output.scriptpubkey.slice(0, 20)}...</span>
                                     {/if}
@@ -136,6 +137,22 @@
     width: 100%;
 }
 
+/* .item, .output-item { */
+/*     display: flex; */
+/*     width: 100%; */
+/* } */
+
+/* .coinbase-input { */
+/*     color: var(--text-muted); */
+/*     width: 100%; */
+/* } */
+
+.input-details, .output-details {
+    display: flex;
+    width: 100%;
+    gap: var(--space-4);
+}
+
 .separator {
     display: none;
 }
@@ -171,9 +188,6 @@
     }
 }
 /* Replace `text-gray-500` in the template */
-.coinbase-input {
-    color: var(--text-muted);
-}
 
 /* Space action styles need dark theme support */
 .space-action {
@@ -212,25 +226,6 @@
     text-underline-offset: 2px;
 }
 
-.input-details,
-.output-details {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    gap: var(--space-4);
-}
-
-.input-right,
-.output-right {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    flex: 1;
-    min-width: 0;
-    overflow: hidden; /* Ensure content doesn't overflow */
-    flex-shrink: 0; /* Prevent value from shrinking */
-    padding-left: var(--space-4); /* Ensure some space from the address */
-}
 
 .input-left,
 .output-left {
@@ -239,7 +234,7 @@
     gap: var(--space-2);
     flex: 1;
     min-width: 0;
-    overflow: hidden; /* Ensure content doesn't overflow */
+    overflow: hidden;
 }
 .address,
 .transaction {
