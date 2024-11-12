@@ -149,7 +149,11 @@
                    {#if result.type === "transaction"}
                      Transaction: {result.value.txid}
                    {:else if result.type === "block"}
+                     {#if result.value.height == -2 }
+                     Orphaned block: {result.value.hash}
+                     {:else }
                      Block #{result.value.height}: {result.value.hash}
+                     {/if}
                    {:else if result.type === "space"}
                      Space: {result.value.name}
                    {:else if result.type === "address"}

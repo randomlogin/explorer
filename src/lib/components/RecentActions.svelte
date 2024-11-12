@@ -10,28 +10,17 @@
     let loading = true;
     let error: string | null = null;
 
-    function formatValue(value: number): string {
-        if (value >= 1000000) {
-            return `${(value / 1000000).toFixed(2)}M sats`;
-        } else if (value >= 1000) {
-            return `${(value / 1000).toFixed(2)}K sats`;
-        }
-        return `${value} sats`;
-    }
-
     async function fetchRecentActions() {
         try {
-            const response = await fetch('/api/actions/recent');
+            const response = await fetch('/api/spaces/recent');
             if (!response.ok) throw new Error('Failed to fetch recent actions');
-            const data = await response.json();
-            actions = data.actions;
+            actions = await response.json();
         } catch (e) {
             error = e instanceof Error ? e.message : 'Failed to load recent actions';
         } finally {
             loading = false;
         }
     }
-
     onMount(() => {
         fetchRecentActions();
     });
@@ -77,27 +66,27 @@
                         {#each actions as action}
                             <div class="action-card">
                                 <div class="space-action-details">
-                                    <span>{action.type} <a href="/spaces/{action.name}" class="space-action-name"> {action.name} </a> </span>
-                                    {#if action.value}
-                                        <span class="bid-value">{formatBTC(action.value)}</span>
+                                    <span>{action.action} <a href="/space/{action.name}" class="space-action-name"> {action.name} </a> </span>
+                                    {#if action.action == 'BID' && action.total_burned}
+                                        <span class="bid-value">{formatBTC(action.total_burned)}</span>
                                     {/if}
                                 </div>
                                 <div class="action-meta">
                                     <div class="action-meta">
                                         <div class="meta-item">
                                             <span class="meta-label">Block</span>
-                                            <a href="/block/{action.block.height}" class="meta-value block-link">
-                                                #{action.block.height}
+                                            <a href="/block/{action.height}" class="meta-value block-link">
+                                                #{action.height}
                                             </a>
                                         </div>
                                         <div class="meta-item">
                                             <span class="meta-label">Tx</span>
-                                            <TransactionLink txid={action.transaction.txid} outputIndex={action.transaction.output_index} truncate={true} maxLength={8} />
+                                            <TransactionLink txid={action.txid} truncate={true} maxLength={8} />
                                         </div>
                                         <div class="meta-item">
                                             <span class="meta-label">Time</span>
                                             <span class="meta-value">
-                                                {dayjs.unix(action.block.time).format('HH:mm')}
+                                                {dayjs.unix(action.time).format('DD MMM HH:mm')}
                                             </span>
                                         </div>
                                     </div>

@@ -57,7 +57,25 @@ export const GET: RequestHandler = async function ({ params }) {
             spender_index AS output_spender_index
         FROM tx_outputs
         WHERE txid = ${txid}
+    ),
+    tx_vmetaout AS (
+        SELECT
+            txid,
+            value AS vmetaout_value,
+            name AS vmetaout_name,
+            reason AS vmetaout_reason,
+            action AS vmetaout_action,
+            burn_increment AS vmetaout_burn_increment,
+            total_burned AS vmetaout_total_burned,
+            claim_height AS vmetaout_claim_height,
+            expire_height AS vmetaout_expire_height,
+            script_error AS vmetaout_script_error,
+            signature AS vmetaout_signature,
+            scriptPubKey AS vmetaout_scriptPubKey
+        FROM vmetaouts
+        WHERE txid = ${txid} AND name is not null
     )
+
     SELECT
         transaction_data.*,
         tx_inputs_data.input_index,
@@ -72,12 +90,25 @@ export const GET: RequestHandler = async function ({ params }) {
         tx_outputs_data.output_value,
         tx_outputs_data.output_scriptpubkey,
         tx_outputs_data.output_spender_txid,
-        tx_outputs_data.output_spender_index
+        tx_outputs_data.output_spender_index,
+        tx_vmetaout.vmetaout_value,
+        tx_vmetaout.vmetaout_name,
+        tx_vmetaout.vmetaout_action,
+        tx_vmetaout.vmetaout_burn_increment,
+        tx_vmetaout.vmetaout_total_burned,
+        tx_vmetaout.vmetaout_claim_height,
+        tx_vmetaout.vmetaout_expire_height,
+        tx_vmetaout.vmetaout_script_error,
+        tx_vmetaout.vmetaout_scriptPubKey,
+        tx_vmetaout.vmetaout_signature,
+        tx_vmetaout.vmetaout_reason
     FROM transaction_data
     LEFT JOIN tx_inputs_data ON transaction_data.txid = tx_inputs_data.txid
     LEFT JOIN tx_outputs_data ON transaction_data.txid = tx_outputs_data.txid
+    LEFT JOIN tx_vmetaout ON transaction_data.txid = tx_vmetaout.txid
     ORDER BY tx_inputs_data.input_index, tx_outputs_data.output_index
     `);
+
 
 
     if (queryResult.rows.length === 0) {

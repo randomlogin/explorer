@@ -10,6 +10,7 @@ export async function GET({ params, url }) {
     const startTime = performance.now();
     try {
         const limit = Number(url.searchParams.get('limit')) || 25;
+        const outputsLimit = 10
         const cursor = url.searchParams.get('cursor');
 
         const scriptPubKeyHex = addressToScriptPubKey(params.address);
@@ -58,97 +59,107 @@ export async function GET({ params, url }) {
         }
 
         const queryResult = await db.execute(sql`
-        WITH address_transactions AS (
-            SELECT DISTINCT 
-            t.txid,
-            t.block_hash,
-            t.index as tx_index,
-            b.height as block_height,
-            b.time as block_time
-            FROM (
-                -- Receiving transactions
-                SELECT o.block_hash, o.txid
-                FROM tx_outputs o
-                JOIN blocks b ON o.block_hash = b.hash
-                WHERE o.scriptPubKey = ${scriptPubKey}
-                AND b.orphan = false
+WITH address_transactions AS (
+    SELECT DISTINCT 
+        t.txid,
+        t.block_hash,
+        t.index as tx_index,
+        b.height as block_height,
+        b.time as block_time
+    FROM (
+        -- Receiving transactions
+        SELECT o.block_hash, o.txid
+        FROM tx_outputs o
+        JOIN blocks b ON o.block_hash = b.hash
+        WHERE o.scriptPubKey = ${scriptPubKey}
+        AND b.orphan = false
 
-                UNION
+        UNION
 
-                -- Spending transactions
-                SELECT i.block_hash, i.txid
-                FROM tx_outputs o
-                JOIN tx_inputs i ON o.txid = i.hash_prevout AND o.index = i.index_prevout
-                JOIN blocks b ON i.block_hash = b.hash
-                WHERE o.scriptPubKey = ${scriptPubKey}
-                AND b.orphan = false
-            ) AS addr_txs
-            JOIN transactions t ON addr_txs.block_hash = t.block_hash AND addr_txs.txid = t.txid
-            JOIN blocks b ON t.block_hash = b.hash
-            WHERE TRUE ${cursorCondition}
-            ORDER BY b.height DESC, t.index DESC
-            LIMIT ${limit + 1}
-        ),
-        transaction_data AS (
-            SELECT
-                t.txid,
-                t.tx_hash,
-                t.version AS tx_version,
-                t.index AS tx_index,
-                t.size AS tx_size,
-                t.vsize AS tx_vsize,
-                t.weight AS tx_weight,
-                t.locktime AS tx_locktime,
-                t.fee AS tx_fee,
-                b.time AS block_time,
-                b.height AS block_height,
-                b.hash AS block_hash,
-                (SELECT COALESCE(MAX(height), -1) FROM blocks)::integer AS max_height
-            FROM address_transactions at
-            JOIN transactions t ON at.txid = t.txid
-            JOIN blocks b ON t.block_hash = b.hash
-        ),
-        tx_inputs_data AS (
-            SELECT
-                txid,
-                index AS input_index,
-                hash_prevout AS input_hash_prevout,
-                index_prevout AS input_index_prevout,
-                sequence AS input_sequence,
-                coinbase AS input_coinbase,
-                txinwitness AS input_txinwitness
-            FROM tx_inputs
-            WHERE txid IN (SELECT txid FROM address_transactions)
-        ),
-        tx_outputs_data AS (
-            SELECT
-                txid,
-                index AS output_index,
-                value AS output_value,
-                scriptpubkey AS output_scriptpubkey,
-                spender_txid AS output_spender_txid,
-                spender_index AS output_spender_index
-            FROM tx_outputs
-            WHERE txid IN (SELECT txid FROM address_transactions)
-        )
-        SELECT
-            transaction_data.*,
-            tx_inputs_data.input_index,
-            tx_inputs_data.input_hash_prevout,
-            tx_inputs_data.input_index_prevout,
-            tx_inputs_data.input_sequence,
-            tx_inputs_data.input_coinbase,
-            tx_inputs_data.input_txinwitness,
-            tx_outputs_data.output_index,
-            tx_outputs_data.output_value,
-            tx_outputs_data.output_scriptpubkey,
-            tx_outputs_data.output_spender_txid,
-            tx_outputs_data.output_spender_index
-        FROM transaction_data
-        LEFT JOIN tx_inputs_data ON transaction_data.txid = tx_inputs_data.txid
-        LEFT JOIN tx_outputs_data ON transaction_data.txid = tx_outputs_data.txid
-        ORDER BY transaction_data.block_height DESC, transaction_data.tx_index DESC,
-                tx_inputs_data.input_index, tx_outputs_data.output_index
+        -- Spending transactions
+        SELECT i.block_hash, i.txid
+        FROM tx_outputs o
+        JOIN tx_inputs i ON o.txid = i.hash_prevout AND o.index = i.index_prevout
+        JOIN blocks b ON i.block_hash = b.hash
+        WHERE o.scriptPubKey = ${scriptPubKey}
+        AND b.orphan = false
+    ) AS addr_txs
+    JOIN transactions t ON addr_txs.block_hash = t.block_hash AND addr_txs.txid = t.txid
+    JOIN blocks b ON t.block_hash = b.hash
+    WHERE TRUE ${cursorCondition}
+    ORDER BY b.height DESC, t.index DESC
+    LIMIT ${limit + 1}
+),
+transaction_data AS (
+    SELECT
+        t.txid,
+        t.tx_hash,
+        t.version AS tx_version,
+        t.index AS tx_index,
+        t.size AS tx_size,
+        t.vsize AS tx_vsize,
+        t.weight AS tx_weight,
+        t.locktime AS tx_locktime,
+        t.fee AS tx_fee,
+        b.time AS block_time,
+        b.height AS block_height,
+        b.hash AS block_hash,
+        (SELECT COALESCE(MAX(height), -1) FROM blocks)::integer AS max_height
+    FROM address_transactions at
+    JOIN transactions t ON at.txid = t.txid
+    JOIN blocks b ON t.block_hash = b.hash
+),
+tx_inputs_data AS (
+    SELECT DISTINCT ON (txid, input_index)
+        txid,
+        index AS input_index,
+        hash_prevout AS input_hash_prevout,
+        index_prevout AS input_index_prevout,
+        sequence AS input_sequence,
+        coinbase AS input_coinbase,
+        txinwitness AS input_txinwitness
+    FROM (
+        SELECT *,
+            ROW_NUMBER() OVER (PARTITION BY txid ORDER BY index) as rn
+        FROM tx_inputs
+        WHERE txid IN (SELECT txid FROM address_transactions)
+    ) ranked_inputs
+    WHERE rn <=  ${outputsLimit}
+),
+tx_outputs_data AS (
+    SELECT DISTINCT ON (txid, output_index)
+        txid,
+        index AS output_index,
+        value AS output_value,
+        scriptpubkey AS output_scriptpubkey,
+        spender_txid AS output_spender_txid,
+        spender_index AS output_spender_index
+    FROM (
+        SELECT *,
+            ROW_NUMBER() OVER (PARTITION BY txid ORDER BY index) as rn
+        FROM tx_outputs
+        WHERE txid IN (SELECT txid FROM address_transactions)
+    ) ranked_outputs
+    WHERE rn <= ${outputsLimit}
+)
+SELECT
+    transaction_data.*,
+    tx_inputs_data.input_index,
+    tx_inputs_data.input_hash_prevout,
+    tx_inputs_data.input_index_prevout,
+    tx_inputs_data.input_sequence,
+    tx_inputs_data.input_coinbase,
+    tx_inputs_data.input_txinwitness,
+    tx_outputs_data.output_index,
+    tx_outputs_data.output_value,
+    tx_outputs_data.output_scriptpubkey,
+    tx_outputs_data.output_spender_txid,
+    tx_outputs_data.output_spender_index
+FROM transaction_data
+LEFT JOIN tx_inputs_data ON transaction_data.txid = tx_inputs_data.txid
+LEFT JOIN tx_outputs_data ON transaction_data.txid = tx_outputs_data.txid
+ORDER BY transaction_data.block_height DESC, transaction_data.tx_index DESC,
+        tx_inputs_data.input_index, tx_outputs_data.output_index
         `);
 
         if (queryResult.rows.length === 0) {

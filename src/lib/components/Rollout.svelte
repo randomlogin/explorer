@@ -3,23 +3,41 @@
     import { numberFormatter, calculateTimeRemaining, formatBTC } from '$lib/utils/formatters';
     
     export let currentHeight: number;
-    /* export let rollouts: Rollout[] = []; */
-    let rollouts = []
-    let loading = false;
+
+    interface Rollout {
+        name: string;
+        winning_bid: string;
+        block_height: number;
+        expire_height: number | null;
+        claim_height: number | null;
+    }
+
+    let rollouts: Rollout[] = [];
+    let loading = true;
     let error: string | null = null;
     
     async function fetchRollouts() {
         try {
             const response = await fetch('/api/actions/rollout');
             if (!response.ok) throw new Error('Failed to fetch rollouts');
-            rollouts = await response.json();
+            const data = await response.json();
+            console.log(data)
+            rollouts = data.items.map((item: any) => ({
+                name: item.name,
+                winning_bid: item.winning_bid,
+                block_height: item.block_height,
+                expire_height: item.expire_height,
+                claim_height: item.claim_height
+            }));
         } catch (e) {
             error = e instanceof Error ? e.message : 'Failed to load rollouts';
         } finally {
             loading = false;
         }
-        console.log(rollouts)
-        console.log(calculateTimeRemaining(rollouts[0].releaseHeight, 1233))
+    }
+
+    function getReleaseHeight(rollout: Rollout): number {
+        return rollout.expire_height || rollout.claim_height || rollout.block_height + 1008; // ~1 week default
     }
 
     onMount(() => {
@@ -42,19 +60,28 @@
                 {/each}
             </div>
         {:else if error}
-            <div class="error">{error}</div>
+            <div class="error-card">
+                <span class="error-icon">⚠️</span>
+                <span class="error-text">{error}</span>
+            </div>
+        {:else if rollouts.length === 0}
+            <div class="empty-card">
+                <span class="empty-icon">🎯</span>
+                <span class="empty-text">No upcoming rollouts</span>
+            </div>
         {:else}
             <div class="rollouts-list">
                 {#each rollouts as rollout}
+                    {@const releaseHeight = getReleaseHeight(rollout)}
                     <div class="rollout-card">
-                        <a href="/spaces/{rollout.name}" class="space-name">
+                        <a href="/space/{rollout.name}" class="space-name">
                             {rollout.name}
                         </a>
                         <div class="bid-amount">
-                          Bid  {formatBTC(rollout.bid)}
+                            Winning bid: {formatBTC(rollout.winning_bid)} 
                         </div>
-                        <div class="time-remaining">
-                          In  {calculateTimeRemaining(rollout.releaseHeight, currentHeight)}
+                        <div class="time-remaining" title="Based on estimated block time">
+                            Available in: {calculateTimeRemaining(releaseHeight, currentHeight)}
                         </div>
                     </div>
                 {/each}
@@ -62,6 +89,7 @@
         {/if}
     </div>
 </div>
+
 <style>
     .rollouts-wrapper {
         width: 100%;
@@ -78,30 +106,38 @@
     .rollouts-container {
         width: 100%;
         overflow-x: auto;
-        padding-bottom: var(--space-2); /* Space for scrollbar */
+        padding-bottom: var(--space-2);
+        scrollbar-width: thin;
+        scrollbar-color: var(--border-color) var(--bg-secondary);
     }
 
     .rollouts-list {
         display: flex;
         gap: var(--space-4);
         padding: var(--space-2);
-        min-width: min-content; /* Prevent cards from shrinking */
+        min-width: min-content;
     }
 
     .rollout-card {
-        background: var(--bg-secondary);
+        background: var(--bg-surface);
         border: var(--border-width-1) solid var(--border-color);
-        border-radius: var(--border-radius-lg);
+        border-radius: var(--radius-lg);
         padding: var(--space-4);
         min-width: 240px;
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .rollout-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
     }
 
     .space-name {
         font-weight: 500;
-        color: var(--text-primary);
+        color: var(--color-primary);
         text-decoration: none;
         font-size: var(--text-lg);
     }
@@ -111,13 +147,43 @@
     }
 
     .bid-amount {
-        color: var(--text-muted);
+        color: var(--text-base);
         font-size: var(--text-sm);
+        font-weight: 500;
     }
 
     .time-remaining {
         color: var(--text-muted);
         font-size: var(--text-sm);
+        cursor: help;
+    }
+
+    /* Empty state */
+    .empty-card,
+    .error-card {
+        width: 100%;
+        padding: var(--space-8);
+        text-align: center;
+        background: var(--bg-surface);
+        border-radius: var(--radius-lg);
+        color: var(--text-muted);
+    }
+
+    .empty-icon,
+    .error-icon {
+        display: block;
+        font-size: var(--text-3xl);
+        margin-bottom: var(--space-2);
+    }
+
+    .empty-text,
+    .error-text {
+        font-size: var(--text-lg);
+    }
+
+    .error-card {
+        background: rgb(254 226 226);
+        color: rgb(185 28 28);
     }
 
     /* Skeleton styles */
@@ -130,20 +196,19 @@
         height: 20px;
         width: 160px;
         background: var(--border-color);
-        border-radius: var(--border-radius-sm);
+        border-radius: var(--radius-sm);
     }
 
     .skeleton-text-short {
         height: 16px;
         width: 120px;
         background: var(--border-color);
-        border-radius: var(--border-radius-sm);
+        border-radius: var(--radius-sm);
     }
 
     @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.5; }
-        100% { opacity: 1; }
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 0.4; }
     }
 
     /* Custom scrollbar */
@@ -152,7 +217,7 @@
     }
 
     .rollouts-container::-webkit-scrollbar-track {
-        background: var(--bg-secondary);
+        background: var(--bg-surface);
         border-radius: 3px;
     }
 

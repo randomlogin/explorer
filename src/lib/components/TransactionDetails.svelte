@@ -1,11 +1,16 @@
 <script lang="ts">
     import TransactionLink from '$lib/components/TransactionLink.svelte';
+    import TransactionSpaces from '$lib/components/TransactionSpaces.svelte';
     import AddressLink from '$lib/components/AddressLink.svelte';
+    import { formatBTC } from '$lib/utils/formatters';
     export let transaction;
     export let showAllInputsOutputs = false;
     export let maxInputsOutputs = showAllInputsOutputs ? Infinity : 5;
-    import { formatBTC } from '$lib/utils/formatters';
+
 </script>
+{#if transaction.vmetaouts?.length > 0}
+    <TransactionSpaces vmetaouts={transaction.vmetaouts} />
+{/if}
 <div class="transaction-io">
     <div class="io-section inputs">
         <h2 class="section-title">Inputs</h2>
@@ -72,24 +77,6 @@
                                 <span class="value">{formatBTC(output.value)}</span>
                             </div>
                         </div>
-                        {#if output.space_action}
-                            <div class="space-action">
-                                <div class="space-action-details">
-                                    <span>Spaces action: </span>
-                                    {output.space_action.type} <a href="/space/{output.space_action.name}" class="space-action-name">{output.space_action.name}</a>
-                                </div>
-                                {#if output.space_action.value || output.space_action.address}
-                                    <div class="space-action-additional">
-                                        {#if output.space_action.value}
-                                            <span>Value: {formatBTC(output.space_action.value)}</span>
-                                        {/if}
-                                        {#if output.space_action.address}
-                                            <span>To: <AddressLink address={output.space_action.address} /></span>
-                                        {/if}
-                                    </div>
-                                {/if}
-                            </div>
-                        {/if}
                     </div>
                     {#if index < transaction.outputs.slice(0, maxInputsOutputs).length - 1}
                         <div class="separator"></div>

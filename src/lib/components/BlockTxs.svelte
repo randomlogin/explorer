@@ -3,6 +3,7 @@
     import Pagination from './Pagination.svelte';
     import TransactionDetails from '$lib/components/TransactionDetails.svelte';
     import TransactionLink from '$lib/components/TransactionLink.svelte';
+    import TransactionSpaces from '$lib/components/TransactionSpaces.svelte';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(LocalizedFormat);
 
@@ -27,11 +28,7 @@
 
 <div class="filter-container mb-4">
     <label class="flex items-center space-x-2 text-sm">
-        <input 
-            type="checkbox" 
-            bind:checked={showOnlySpaceActions} 
-            class="form-checkbox h-4 w-4 text-orange-600" 
-        />
+        <input type="checkbox" bind:checked={showOnlySpaceActions} class="form-checkbox h-4 w-4 text-orange-600" />
         <span>Show only transactions with Space Actions</span>
     </label>
 </div>
@@ -43,8 +40,11 @@
                 <span class="transaction-number">Tx #{transaction.index}</span>
                 <TransactionLink txid={transaction.txid} />
                 {#if showTransactionTime}
-
                     <span class="transaction-time">
+                        <a href={`/block/${transaction.block.height}`} class="block-link">
+                                <span class="detail-value">Block {transaction.block.height}</span>
+                        </a>
+
                         {dayjs.unix(transaction.block.time).format('MMM D, YYYY HH:mm ')}
                     </span>
                 {/if}
@@ -55,11 +55,7 @@
 </div>
 
 {#if pagination.totalPages > 1}
-    <Pagination
-        currentPage={pagination.currentPage}
-        totalPages={pagination.totalPages}
-        on:pageChange={async (e) => await onPageChange(e.detail)}
-    />
+    <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} on:pageChange={async (e) => await onPageChange(e.detail)} />
 {/if}
 <style>
 @import '$lib/styles/variables.css';
@@ -96,5 +92,6 @@
     color: var(--text-muted);
     font-size: 0.9em;
     white-space: nowrap;
+    float:right;
 }
 </style>

@@ -14,7 +14,7 @@
   </div>
 {/if}
 
-<div class="layout-header shadow-sm mb-10">
+<div class="layout-header shadow-sm mb-10 ">
   <div class="layout-header-content max-w-[1280px] w-full mx-auto flex p-2 px-2 md:px-10 items-center gap-2 md:gap-5">
     <Logo />
     <SearchBar />

@@ -3,6 +3,7 @@
     import SortSelector from "$lib/components/SortSelector.svelte";
     import RecentActions from "$lib/components/RecentActions.svelte";
     import Rollout from '$lib/components/Rollout.svelte';
+    import Stats from '$lib/components/Stats.svelte';
     import { goto } from '$app/navigation';
     import { navigating } from '$app/stores';
     import '$lib/styles/mainpage.css';
@@ -23,6 +24,7 @@
     }
 </script>
 
+<Stats />
 <div class="layout-container">
     <div class="recent-actions">
         <RecentActions />
@@ -44,9 +46,6 @@
             {#if $navigating}
                 <div class="w-full text-center">Loading...</div>
             {:else}
-                {#each data.spaces as space}
-                    <SpaceCard {space} {currentBlockHeight} />
-                {/each}
             {/if}
         </div>
     </div>

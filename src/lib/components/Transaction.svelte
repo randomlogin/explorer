@@ -23,7 +23,7 @@
             </div>
         </a>
         <div class="detail-item">
-            <span class="detail-value">{dayjs.unix(data.block.time).format('MMM DD, HH:MM')}</span>
+            <span class="detail-value">{dayjs.unix(data.block.time).format('MMM DD HH:MM')}</span>
             <span class="detail-label">Time</span>
         </div>
         <div class="detail-item">
@@ -53,7 +53,7 @@
         </div>
         {/if}
         <div class="detail-item">
-            <span class="detail-value">PLACEHOLDER</span>
+            <span class="detail-value">{data.vmetaouts.length}</span>
             <span class="detail-label">Spaces Actions</span>
         </div>
     </div>

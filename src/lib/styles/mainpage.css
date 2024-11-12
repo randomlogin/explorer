@@ -33,15 +33,6 @@
     min-width: 0;
 }
 
-.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: var(--space-8);
-    padding: 0;  /* Removed horizontal padding */
-    width: 100%;
-}
-
 .grid-container {
     display: grid;
     gap: var(--space-4);

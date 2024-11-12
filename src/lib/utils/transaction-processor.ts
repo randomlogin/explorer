@@ -1,4 +1,4 @@
-import type { Transaction, TransactionInput, TransactionOutput } from '$lib/types/transaction';
+import type { Transaction, TransactionInput, TransactionOutput, TransactionVmetaout } from '$lib/types/transaction';
 import { parseAddress } from '$lib/utils/address-parsers';
 
 export function createTransaction(row: any): Transaction {
@@ -13,7 +13,8 @@ export function createTransaction(row: any): Transaction {
         locktime: row.tx_locktime,
         fee: row.tx_fee,
         inputs: [],
-        outputs: []
+        outputs: [],
+        vmetaouts: []
     };
 
     // Add block and confirmations only if block data exists
@@ -30,6 +31,25 @@ export function createTransaction(row: any): Transaction {
     }
 
     return transaction;
+}
+
+function createVMetaOutput(row: any): TransactionVmetaout | null {
+    if (!row.vmetaout_name) return null;
+    console.log(row)
+    
+    return {
+        value: row.vmetaout_value,
+        name: row.vmetaout_name,
+        action: row.vmetaout_action,
+        burn_increment: row.vmetaout_burn_increment,
+        total_burned: row.vmetaout_total_burned,
+        claim_height: row.vmetaout_claim_height,
+        expire_height: row.vmetaout_expire_height,
+        script_error: row.vmetaout_script_error,
+        scriptPubKey: row.vmetaout_scriptpubkey ? row.vmetaout_scriptpubkey.toString('hex') : null,
+        reason: row.vmetaout_reason,
+        signature: row.vmetaout_signature ? row.vmetaout_signature.toString('hex') : null
+    };
 }
 
 export function createTransactionInput(row: any): TransactionInput {
@@ -60,16 +80,19 @@ export function createTransactionOutput(row: any, parseAddresses: boolean): Tran
     };
 }
 
+
 export function processTransactions(queryResult: any, parseAddresses = true): Transaction[] {
     const txs: Transaction[] = [];
     const transactionMap = new Map<string, Transaction>();
     const inputMap = new Map<string, boolean>();
     const outputMap = new Map<string, boolean>();
+    const vmetaoutMap = new Map<string, boolean>();
 
     for (const row of queryResult.rows) {
+        // console.log(row)
         const txid = row.txid.toString('hex');
         let transaction = transactionMap.get(txid);
-        
+
         if (!transaction) {
             transaction = createTransaction(row);
             transactionMap.set(txid, transaction);
@@ -78,6 +101,7 @@ export function processTransactions(queryResult: any, parseAddresses = true): Tr
 
         const inputKey = `${txid}_${row.input_index}`;
         const outputKey = `${txid}_${row.output_index}`;
+        const vmetaoutKey = `${txid}_${row.vmetaout_name}`;  // Using name as unique identifier
 
         if (row.input_index !== null && !inputMap.has(inputKey)) {
             const input = createTransactionInput(row);
@@ -89,6 +113,14 @@ export function processTransactions(queryResult: any, parseAddresses = true): Tr
             const output = createTransactionOutput(row, parseAddresses);
             transaction.outputs.push(output);
             outputMap.set(outputKey, true);
+        }
+
+        if (row.vmetaout_name && !vmetaoutMap.has(vmetaoutKey)) {
+            const vmetaout = createVMetaOutput(row);
+            if (vmetaout) {
+                transaction.vmetaouts.push(vmetaout);
+                vmetaoutMap.set(vmetaoutKey, true);
+            }
         }
     }
 

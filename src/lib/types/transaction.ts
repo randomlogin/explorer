@@ -16,6 +16,21 @@ export interface Transaction {
     confirmations: number;
     inputs: TransactionInput[];
     outputs: TransactionOutput[];
+    vmetaouts: TransactionVmetaout[];
+}
+
+export interface TransactionVmetaout {
+    value: number | null;
+    name: string | null;
+    action: string | null;
+    burn_increment: number | null;
+    total_burned: number | null;
+    claim_height: number | null;
+    expire_height: number | null;
+    script_error: string | null;
+    reason?: string;
+    scriptPubKey: string;
+    signature?: string;
 }
 
 export interface TransactionInput {
