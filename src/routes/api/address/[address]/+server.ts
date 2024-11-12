@@ -110,21 +110,26 @@ transaction_data AS (
     JOIN blocks b ON t.block_hash = b.hash
 ),
 tx_inputs_data AS (
-    SELECT DISTINCT ON (txid, input_index)
-        txid,
-        index AS input_index,
-        hash_prevout AS input_hash_prevout,
-        index_prevout AS input_index_prevout,
-        sequence AS input_sequence,
-        coinbase AS input_coinbase,
-        txinwitness AS input_txinwitness
+    SELECT DISTINCT ON (ranked_inputs.txid, input_index)
+        ranked_inputs.txid,
+        ranked_inputs.index AS input_index,
+        ranked_inputs.hash_prevout AS input_hash_prevout,
+        ranked_inputs.index_prevout AS input_index_prevout,
+        ranked_inputs.sequence AS input_sequence,
+        ranked_inputs.coinbase AS input_coinbase,
+        ranked_inputs.txinwitness AS input_txinwitness,
+        prev_out.scriptpubkey AS input_prev_scriptpubkey,
+        prev_out.value AS input_prev_value
     FROM (
         SELECT *,
             ROW_NUMBER() OVER (PARTITION BY txid ORDER BY index) as rn
         FROM tx_inputs
         WHERE txid IN (SELECT txid FROM address_transactions)
     ) ranked_inputs
-    WHERE rn <=  ${outputsLimit}
+    LEFT JOIN tx_outputs prev_out
+        ON ranked_inputs.hash_prevout = prev_out.txid
+        AND ranked_inputs.index_prevout = prev_out.index
+    WHERE rn <= ${outputsLimit}
 ),
 tx_outputs_data AS (
     SELECT DISTINCT ON (txid, output_index)
@@ -150,6 +155,7 @@ SELECT
     tx_inputs_data.input_sequence,
     tx_inputs_data.input_coinbase,
     tx_inputs_data.input_txinwitness,
+    tx_inputs_data.input_prev_value,
     tx_outputs_data.output_index,
     tx_outputs_data.output_value,
     tx_outputs_data.output_scriptpubkey,

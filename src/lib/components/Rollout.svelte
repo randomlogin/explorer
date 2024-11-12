@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { numberFormatter, calculateTimeRemaining, formatBTC } from '$lib/utils/formatters';
+    import { calculateTimeRemaining, formatBTC } from '$lib/utils/formatters';
     
     export let currentHeight: number;
 
@@ -21,7 +21,6 @@
             const response = await fetch('/api/actions/rollout');
             if (!response.ok) throw new Error('Failed to fetch rollouts');
             const data = await response.json();
-            console.log(data)
             rollouts = data.items.map((item: any) => ({
                 name: item.name,
                 winning_bid: item.winning_bid,
@@ -34,10 +33,6 @@
         } finally {
             loading = false;
         }
-    }
-
-    function getReleaseHeight(rollout: Rollout): number {
-        return rollout.expire_height || rollout.claim_height || rollout.block_height + 1008; // ~1 week default
     }
 
     onMount(() => {
@@ -72,16 +67,16 @@
         {:else}
             <div class="rollouts-list">
                 {#each rollouts as rollout}
-                    {@const releaseHeight = getReleaseHeight(rollout)}
+                    {@const releaseHeight = rollout.block_height}
                     <div class="rollout-card">
                         <a href="/space/{rollout.name}" class="space-name">
                             {rollout.name}
                         </a>
                         <div class="bid-amount">
-                            Winning bid: {formatBTC(rollout.winning_bid)} 
+                            Bid: {formatBTC(rollout.winning_bid)} 
                         </div>
                         <div class="time-remaining" title="Based on estimated block time">
-                            Available in: {calculateTimeRemaining(releaseHeight, currentHeight)}
+                            Available in: {calculateTimeRemaining(releaseHeight+144, currentHeight)}
                         </div>
                     </div>
                 {/each}

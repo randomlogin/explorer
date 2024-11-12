@@ -1,14 +1,33 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';
-    /* import type { RecentSpaceAction } from '$lib/types/recentSpaceActions'; */
     import TransactionLink from '$lib/components/TransactionLink.svelte';
-    import AddressLink from '$lib/components/AddressLink.svelte';
     import { formatBTC } from '$lib/utils/formatters';
 
-    let actions: RecentSpaceAction[] = [];
+    interface RecentAction {
+        action: 'RESERVE' | 'BID' | 'TRANSFER' | 'ROLLOUT' | 'REVOKE';
+        name: string;
+        txid: string;
+        height: number;
+        time: number;
+        total_burned?: string;
+        reason?: string;
+    }
+
+    let actions: RecentAction[] = [];
     let loading = true;
     let error: string | null = null;
+
+    function getActionColor(action: string): string {
+        switch (action) {
+            case 'RESERVE': return 'text-blue-500';
+            case 'BID': return 'text-green-500';
+            case 'TRANSFER': return 'text-purple-500';
+            case 'ROLLOUT': return 'text-yellow-500';
+            case 'REVOKE': return 'text-red-500';
+            default: return 'text-gray-500';
+        }
+    }
 
     async function fetchRecentActions() {
         try {
@@ -21,233 +40,234 @@
             loading = false;
         }
     }
+
     onMount(() => {
         fetchRecentActions();
     });
 </script>
 
-<div class="recent-actions-wrapper">
-    <div class="recent-actions-container">
-        <h2 class="recent-actions-title">Recent Space Actions</h2>
+<section class="recent-actions">
+    <h2 class="section-title">Recent Spaces Actions</h2>
 
-        <div class="actions-container">
-            {#if loading}
-                <div class="actions-list">
-                    {#each Array(5) as _}
-                        <div class="action-card skeleton-card">
-                            <div class="space-action-details">
-                                <div class="action-header">
-                                    <div class="skeleton-text-short"></div>
-                                </div>
-                                <div class="skeleton-text-medium"></div>
+    {#if loading}
+        <div class="actions-grid">
+            {#each Array(4) as _}
+                <div class="action-card skeleton-card">
+                    <div class="skeleton-text-medium" />
+                    <div class="action-meta">
+                        <div class="meta-item">
+                            <div class="skeleton-text-short" />
                             </div>
-                            <div class="action-meta">
-                                <div class="meta-item">
-                                    <div class="skeleton-text-tiny"></div>
-                                    <div class="skeleton-text-short"></div>
+                            <div class="meta-item">
+                                <div class="skeleton-text-short" />
                                 </div>
                                 <div class="meta-item">
-                                    <div class="skeleton-text-tiny"></div>
-                                    <div class="skeleton-text-short"></div>
-                                </div>
-                                <div class="meta-item">
-                                    <div class="skeleton-text-tiny"></div>
-                                    <div class="skeleton-text-short"></div>
-                                </div>
-                            </div>
-                        </div>
-                    {/each}
-                </div>
-            {:else if error}
-                <div class="error">{error}</div>
-            {:else}
-                <div class="actions-list">
-                    <div class="actions-list">
-                        {#each actions as action}
-                            <div class="action-card">
-                                <div class="space-action-details">
-                                    <span>{action.action} <a href="/space/{action.name}" class="space-action-name"> {action.name} </a> </span>
-                                    {#if action.action == 'BID' && action.total_burned}
-                                        <span class="bid-value">{formatBTC(action.total_burned)}</span>
-                                    {/if}
-                                </div>
-                                <div class="action-meta">
-                                    <div class="action-meta">
-                                        <div class="meta-item">
-                                            <span class="meta-label">Block</span>
-                                            <a href="/block/{action.height}" class="meta-value block-link">
-                                                #{action.height}
-                                            </a>
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="meta-label">Tx</span>
-                                            <TransactionLink txid={action.txid} truncate={true} maxLength={8} />
-                                        </div>
-                                        <div class="meta-item">
-                                            <span class="meta-label">Time</span>
-                                            <span class="meta-value">
-                                                {dayjs.unix(action.time).format('DD MMM HH:mm')}
-                                            </span>
-                                        </div>
+                                    <div class="skeleton-text-short" />
                                     </div>
                                 </div>
                             </div>
-                        {/each}
+            {/each}
+                        </div>
+    {:else if error}
+        <div class="error-card">
+            <span class="error-icon">⚠️</span>
+            <span class="error-text">{error}</span>
+        </div>
+    {:else}
+        <div class="actions-grid">
+            {#each actions.slice(0, 4) as action}
+                <div class="action-card">
+                    <div class="action-header">
+                        <div class="action-main">
+                            <span class={getActionColor(action.action)}>{action.action}</span>
+                            <a href="/space/{action.name}" class="space-name">{action.name}</a>
+                        </div>
+                        {#if action.action === 'BID' && action.total_burned}
+                            <div class="bid-value">
+                                {formatBTC(action.total_burned)}
+                            </div>
+                        {/if}
+                    </div>
+                    {#if action.reason}
+                        <div class="revoke-reason">
+                            Reason: {action.reason}
+                        </div>
+                    {/if}
+
+                    <div class="action-meta">
+                        <div class="meta-item">
+                            <span class="meta-label">Block</span>
+                            <a href="/block/{action.height}" class="meta-value">
+                                #{action.height}
+                            </a>
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Tx</span>
+                            <TransactionLink txid={action.txid} truncate={true} maxLength={6} />
+                        </div>
+                        <div class="meta-item">
+                            <span class="meta-label">Time</span>
+                            <span class="meta-value">
+                                {dayjs.unix(action.time).format('DD MMM HH:mm')}
+                            </span>
+                        </div>
                     </div>
                 </div>
-            {/if}
+            {/each}
         </div>
-    </div>
-</div>
+    {/if}
+</section>
+
 <style>
-.recent-actions-container {
-  padding: var(--space-4);
-  background: var(--bg-primary);
-  border-radius: var(--border-radius-lg);
-}
+    .recent-actions {
+        width: 100%;
+        padding: var(--space-4);
+    }
 
-.recent-actions-title {
-  font-size: var(--text-2xl);
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: var(--space-4);
-}
+    .section-title {
+        font-size: var(--text-2xl);
+        font-weight: 600;
+        margin-bottom: var(--space-4);
+    }
 
-.actions-list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-4);
-}
+    .actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: var(--space-4);
+    }
 
-.action-card {
-  background: var(--bg-secondary);
-  border: var(--border-width-1) solid var(--border-color);
-  border-radius: var(--border-radius-xl);
-  padding: var(--space-4);
-}
+    .action-card {
+        background: var(--bg-surface);
+        border: var(--border-width-1) solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: var(--space-4);
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
 
-.space-action-name {
-  font-weight: 500;
-  color: inherit;
-  text-decoration: none;
-}
+    .action-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
 
-.space-action-name:hover {
-  text-decoration: underline;
-}
+    .action-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-3);
+    }
 
-.action-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-}
+    .action-main {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2); /* Reduced base gap */
+        font-weight: 500;
+    }
 
+    .action-separator {
+        color: var(--text-muted);
+        margin: 0 var(--space-2); /* Added horizontal spacing */
+    }
 
-.block-link {
-  color: var(--text-muted);
-  text-decoration: none;
-}
+    .space-name {
+        color: var(--color-primary);
+        text-decoration: none;
+        font-size: var(--text-base);
+    }
 
-.block-link:hover {
-  color: var(--color-primary);
-}
+    .space-name:hover {
+        text-decoration: underline;
+    }
 
+    .bid-value {
+        font-weight: 500;
+        color: var(--text-primary);
+    }
 
-.error {
-  color: var(--color-error);
-}
+    .revoke-reason {
+        font-size: var(--text-sm);
+        color: var(--color-error);
+        margin-bottom: var(--space-3);
+    }
 
-.recent-actions-container {
-  width: 100%;
-  padding: var(--space-4);
-  background: var(--bg-primary);
-  border-radius: var(--border-radius-lg);
-}
+    .action-meta {
+        display: flex;
+        gap: var(--space-4);
+    }
 
-@media (max-width: 768px) {
-  .recent-actions-container {
-    max-width: 100%;
-  }
-}
+    .meta-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+    }
 
+    .meta-label {
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+    }
 
-.action-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);  /* Increased gap between items */
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  margin-top: var(--space-3);
-  flex-wrap: wrap;
-}
+    .meta-value {
+        font-size: var(--text-sm);
+        color: var(--text-primary);
+        text-decoration: none;
+    }
 
-.meta-item {
-  display: flex;
-  flex-direction: column;  /* Stack label above value */
-  gap: var(--space-1);
-}
+    .meta-value:hover {
+        color: var(--color-primary);
+    }
 
-.meta-label {
-  color: var(--text-muted);
-  font-size: var(--text-xs);
-}
+    /* Skeleton styles */
+    .skeleton-card {
+        opacity: 0.7;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
 
-.meta-value {
-  color: var(--text-primary);
-}
+    .skeleton-text-medium {
+        height: 24px;
+        width: 60%;
+        background: var(--border-color);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--space-4);
+    }
 
-.block-link {
-  text-decoration: none;
-  color: var(--text-muted);
-}
+    .skeleton-text-short {
+        height: 16px;
+        width: 80px;
+        background: var(--border-color);
+        border-radius: var(--radius-sm);
+    }
 
-.block-link:hover {
-  color: var(--color-primary);
-}
+    @keyframes pulse {
+        0%, 100% { opacity: 0.7; }
+        50% { opacity: 0.4; }
+    }
 
-.space-action-details {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-0_5); /* Reduced from space-1 */
-  padding: 0; /* Removed padding */
-  margin-bottom: var(--space-2); /* Reduced from space-3 */
-}
+    .error-card {
+        padding: var(--space-4);
+        background: rgb(254 226 226);
+        border-radius: var(--radius-lg);
+        color: rgb(185 28 28);
+        text-align: center;
+    }
 
-.action-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm); /* Made text smaller */
-  color: var(--text-muted); /* Made the "Spaces action:" text more subtle */
-}
+    .error-icon {
+        margin-right: var(--space-2);
+    }
 
-.space-action-name {
-  font-weight: 500;
-  text-decoration: none;
-  font-size: var(--text-base); /* Kept name size prominent */
-  color: var(--text-primary);
-}
+    @media (min-width: 1280px) {
+        .actions-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
 
-.space-action-name:hover {
-  text-decoration: underline;
-}
+    @media (max-width: 1279px) and (min-width: 768px) {
+        .actions-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
 
-.bid-value {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-.action-meta {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  margin-top: var(--space-2); /* Reduced from space-3 */
-  flex-wrap: wrap;
-}
+    @media (max-width: 767px) {
+        .actions-grid {
+            grid-template-columns: 1fr;
+        }
+    }
 </style>
