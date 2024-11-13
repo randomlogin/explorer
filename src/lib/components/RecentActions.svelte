@@ -50,70 +50,74 @@
     <h2 class="section-title">Recent Spaces Actions</h2>
 
     {#if loading}
-        <div class="actions-grid">
-            {#each Array(4) as _}
-                <div class="action-card skeleton-card">
-                    <div class="skeleton-text-medium" />
-                    <div class="action-meta">
-                        <div class="meta-item">
-                            <div class="skeleton-text-short" />
+        <div class="actions-container">
+            <div class="actions-grid">
+                {#each Array(4) as _}
+                    <div class="action-card skeleton-card">
+                        <div class="skeleton-text-medium" />
+                        <div class="action-meta">
+                            <div class="meta-item">
+                                <div class="skeleton-text-short" />
                             </div>
                             <div class="meta-item">
                                 <div class="skeleton-text-short" />
-                                </div>
-                                <div class="meta-item">
-                                    <div class="skeleton-text-short" />
-                                    </div>
-                                </div>
                             </div>
-            {/each}
+                            <div class="meta-item">
+                                <div class="skeleton-text-short" />
+                            </div>
                         </div>
+                    </div>
+                {/each}
+            </div>
+        </div>
     {:else if error}
         <div class="error-card">
             <span class="error-icon">⚠️</span>
             <span class="error-text">{error}</span>
         </div>
     {:else}
-        <div class="actions-grid">
-            {#each actions.slice(0, 4) as action}
-                <div class="action-card">
-                    <div class="action-header">
-                        <div class="action-main">
-                            <span class={getActionColor(action.action)}>{action.action}</span>
-                            <a href="/space/{action.name}" class="space-name">{action.name}</a>
+        <div class="actions-container">
+            <div class="actions-grid">
+                {#each actions as action}
+                    <div class="action-card">
+                        <div class="action-header">
+                            <div class="action-main">
+                                <span class={getActionColor(action.action)}>{action.action}</span>
+                                <a href="/space/{action.name}" class="space-name">{action.name}</a>
+                            </div>
+                            {#if action.action === 'BID' && action.total_burned}
+                                <div class="bid-value">
+                                    {formatBTC(action.total_burned)}
+                                </div>
+                            {/if}
                         </div>
-                        {#if action.action === 'BID' && action.total_burned}
-                            <div class="bid-value">
-                                {formatBTC(action.total_burned)}
+                        {#if action.reason}
+                            <div class="revoke-reason">
+                                Reason: {action.reason}
                             </div>
                         {/if}
-                    </div>
-                    {#if action.reason}
-                        <div class="revoke-reason">
-                            Reason: {action.reason}
-                        </div>
-                    {/if}
 
-                    <div class="action-meta">
-                        <div class="meta-item">
-                            <span class="meta-label">Block</span>
-                            <a href="/block/{action.height}" class="meta-value">
-                                #{action.height}
-                            </a>
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Tx</span>
-                            <TransactionLink txid={action.txid} truncate={true} maxLength={6} />
-                        </div>
-                        <div class="meta-item">
-                            <span class="meta-label">Time</span>
-                            <span class="meta-value">
-                                {dayjs.unix(action.time).format('DD MMM HH:mm')}
-                            </span>
+                        <div class="action-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Block</span>
+                                <a href="/block/{action.height}" class="meta-value">
+                                    #{action.height}
+                                </a>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Tx</span>
+                                <TransactionLink txid={action.txid} truncate={true} maxLength={6} />
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Time</span>
+                                <span class="meta-value">
+                                    {dayjs.unix(action.time).format('DD MMM HH:mm')}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                </div>
-            {/each}
+                {/each}
+            </div>
         </div>
     {/if}
 </section>
@@ -121,7 +125,7 @@
 <style>
     .recent-actions {
         width: 100%;
-        padding: var(--space-4);
+        padding: var(--space-2);
     }
 
     .section-title {
@@ -130,17 +134,24 @@
         margin-bottom: var(--space-4);
     }
 
+    .actions-container {
+        display: flex;
+        justify-content: start;
+        width: 100%;
+    }
+
     .actions-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fill, 280px);
         gap: var(--space-4);
+        max-width: 100%;
     }
 
     .action-card {
         background: var(--bg-surface);
         border: var(--border-width-1) solid var(--border-color);
         border-radius: var(--radius-lg);
-        padding: var(--space-4);
+        padding: var(--space-2);
         transition: transform 0.2s, box-shadow 0.2s;
     }
 
@@ -159,13 +170,8 @@
     .action-main {
         display: flex;
         align-items: center;
-        gap: var(--space-2); /* Reduced base gap */
+        gap: var(--space-2);
         font-weight: 500;
-    }
-
-    .action-separator {
-        color: var(--text-muted);
-        margin: 0 var(--space-2); /* Added horizontal spacing */
     }
 
     .space-name {
@@ -242,7 +248,7 @@
     }
 
     .error-card {
-        padding: var(--space-4);
+        padding: var(--space-2);
         background: rgb(254 226 226);
         border-radius: var(--radius-lg);
         color: rgb(185 28 28);
@@ -253,21 +259,18 @@
         margin-right: var(--space-2);
     }
 
-    @media (min-width: 1280px) {
-        .actions-grid {
-            grid-template-columns: repeat(4, 1fr);
-        }
-    }
-
-    @media (max-width: 1279px) and (min-width: 768px) {
-        .actions-grid {
-            grid-template-columns: repeat(2, 1fr);
-        }
-    }
-
-    @media (max-width: 767px) {
+    @media (max-width: 640px) {
         .actions-grid {
             grid-template-columns: 1fr;
+            width: 100%;
+        }
+        
+        .action-card {
+            width: 100%;
+        }
+
+        .action-meta {
+            gap: var(--space-2);
         }
     }
 </style>

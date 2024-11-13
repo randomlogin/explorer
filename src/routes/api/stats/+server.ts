@@ -26,13 +26,13 @@ SELECT
     lb.height as latest_block_height,
     lb.time as latest_block_time,
     (SELECT COUNT(DISTINCT name) FROM vmetaouts WHERE name IS NOT NULL) as unique_names_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE script_error IS NULL) as valid_vmetaouts_count,
+    (SELECT COUNT(*) FROM vmetaouts) as valid_vmetaouts_count,
     (SELECT SUM(name_total_burned) FROM name_burns) as total_burned_sum,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'RESERVE' AND script_error IS NULL) as reserve_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'BID' AND script_error IS NULL) as bid_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'TRANSFER' AND script_error IS NULL) as transfer_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'ROLLOUT' AND script_error IS NULL) as rollout_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'REVOKE' AND script_error IS NULL) as revoke_count
+    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'RESERVE') as reserve_count,
+    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'BID') as bid_count,
+    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'TRANSFER') as transfer_count,
+    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'ROLLOUT') as rollout_count,
+    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'REVOKE') as revoke_count
 FROM latest_block lb;
     `);
 

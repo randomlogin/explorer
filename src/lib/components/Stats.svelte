@@ -49,9 +49,11 @@ import relativeTime from 'dayjs/plugin/relativeTime';
     </div>
 {:else}
     <div class="container">
+        <!--
         <div class="header">
             <h1 class="title">Spaces statistics</h1> 
         </div>
+        -->
         <div class="details">
             <div class="detail-item">
                 <a href={`/block/${stats.latest_block_height}`} class="block-link">

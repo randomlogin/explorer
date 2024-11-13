@@ -1,4 +1,3 @@
-// routes/api/spaces/[name]/+server.ts
 import db from '$lib/db';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';

@@ -16,7 +16,6 @@
 
 .recent-actions {
     grid-area: recent-actions;
-    min-height: 600px;
     min-width: 0; /* Allow content to shrink */
     width: 100%;
 }
