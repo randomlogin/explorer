@@ -62,6 +62,7 @@ export const GET: RequestHandler = async function ({ params, url }) {
         max_block
     WHERE
         v.name = ${spaceName}
+        AND block.orphan is false
     ORDER BY 
         b.height DESC
     LIMIT ${ITEMS_PER_PAGE}
