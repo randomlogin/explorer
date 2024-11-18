@@ -88,7 +88,7 @@
 <style>
     .rollouts-wrapper {
         width: 100%;
-        padding: var(--space-4);
+        padding: var(--space-2);
     }
 
     .rollouts-title {
