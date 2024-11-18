@@ -47,6 +47,7 @@
     });
 </script>
 
+
 <section class="recent-actions">
     <h2 class="section-title">Recent Spaces Actions</h2>
 
@@ -81,11 +82,11 @@
     {:else}
         <div class="actions-container">
             <div class="actions-grid">
-                {#each actions as action}
+                {#each actions.slice(0,9) as action}
                     <div class="action-card">
                         <div class="action-header">
                             <div class="action-main">
-                                <span class={getActionColor(action.action)}>{action.action}</span>
+                                <span class="action-badge {getActionColor(action.action)}">{action.action}</span>
                                 <a href="/space/{action.name}" class="space-name">{action.name}</a>
                             </div>
                             {#if action.action === 'BID' && action.total_burned}
@@ -94,6 +95,7 @@
                                 </div>
                             {/if}
                         </div>
+
                         {#if action.reason}
                             <div class="revoke-reason">
                                 Reason: {action.reason}
@@ -103,7 +105,7 @@
                         <div class="action-meta">
                             <div class="meta-item">
                                 <span class="meta-label">Block</span>
-                                <a href="/block/{action.height}" class="meta-value">
+                                <a href="/block/{action.height}" class="meta-value block-link">
                                     #{action.height}
                                 </a>
                             </div>
@@ -134,72 +136,94 @@
     .section-title {
         font-size: var(--text-2xl);
         font-weight: 600;
-        margin-bottom: var(--space-4);
+        margin-bottom: var(--space-6);
     }
 
     .actions-container {
-        display: flex;
-        justify-content: start;
         width: 100%;
     }
 
     .actions-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, 280px);
-        gap: var(--space-4);
-        max-width: 100%;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: var(--space-6);
     }
 
     .action-card {
-        background: var(--bg-surface);
-        border: var(--border-width-1) solid var(--border-color);
-        border-radius: var(--radius-lg);
-        padding: var(--space-2);
-        transition: transform 0.2s, box-shadow 0.2s;
+        display: flex;
+        flex-direction: column;
+        height: 160px;
+        padding: var(--space-6);
+        background: var(--bg-primary-light);
+        border: var(--border-width-1) solid var(--color-primary);
+        border-bottom-width: var(--border-width-8);
+        border-radius: var(--border-radius-3xl);
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .action-card:hover {
         transform: translateY(-2px);
-        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        box-shadow: var(--shadow-md);
     }
 
-    .action-header {
+
+        .action-header {
+        flex: 0 0 auto;
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: var(--space-3);
+        margin-bottom: var(--space-4);
     }
 
     .action-main {
         display: flex;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--space-4); /* Increased from var(--space-3) */
+    }
+
+    .action-badge {
+        font-size: var(--font-size-sm);
         font-weight: 500;
+        padding: var(--space-1) var(--space-3); /* Increased horizontal padding */
+        border-radius: var(--border-radius-lg);
+        min-width: 80px; /* Added to ensure consistent width */
+        text-align: center; /* Center the text */
     }
 
     .space-name {
-        color: var(--color-primary);
+        color: var(--text-primary);
         text-decoration: none;
-        font-size: var(--text-base);
+        font-size: var(--font-size-lg);
+        font-weight: 600;
+        flex: 1; /* Allow it to take remaining space */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .space-name:hover {
-        text-decoration: underline;
+        color: var(--color-primary);
     }
 
     .bid-value {
-        font-weight: 500;
-        color: var(--text-primary);
+        font-weight: 600;
+        font-size: var(--font-size-lg);
+        color: var(--color-primary);
     }
 
     .revoke-reason {
-        font-size: var(--text-sm);
+        font-size: var(--font-size-sm);
         color: var(--color-error);
-        margin-bottom: var(--space-3);
+        margin-bottom: var(--space-4);
     }
 
     .action-meta {
+        margin-top: auto;
+        padding-top: var(--space-4);
+        border-top: var(--border-width-1) solid var(--border-color);
         display: flex;
+        justify-content: space-between;
         gap: var(--space-4);
     }
 
@@ -210,18 +234,23 @@
     }
 
     .meta-label {
-        font-size: var(--text-xs);
+        font-size: var(--font-size-xs);
         color: var(--text-muted);
     }
 
     .meta-value {
-        font-size: var(--text-sm);
+        font-size: var(--font-size-sm);
+        font-weight: 500;
         color: var(--text-primary);
+    }
+
+    .block-link {
+        color: var(--color-primary);
         text-decoration: none;
     }
 
-    .meta-value:hover {
-        color: var(--color-primary);
+    .block-link:hover {
+        text-decoration: underline;
     }
 
     /* Skeleton styles */
@@ -251,9 +280,9 @@
     }
 
     .error-card {
-        padding: var(--space-2);
+        padding: var(--space-4);
         background: rgb(254 226 226);
-        border-radius: var(--radius-lg);
+        border-radius: var(--border-radius-lg);
         color: rgb(185 28 28);
         text-align: center;
     }
@@ -265,11 +294,11 @@
     @media (max-width: 640px) {
         .actions-grid {
             grid-template-columns: 1fr;
-            width: 100%;
         }
-        
+
         .action-card {
-            width: 100%;
+            padding: var(--space-4);
+            height: 140px;
         }
 
         .action-meta {
