@@ -3,6 +3,7 @@
     import dayjs from 'dayjs';
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
     import { formatBTC } from '$lib/utils/formatters';
+    import EmptyState from '$lib/components/layout/EmptyState.svelte';
 
     interface RecentAction {
         action: 'RESERVE' | 'BID' | 'TRANSFER' | 'ROLLOUT' | 'REVOKE';
@@ -75,6 +76,8 @@
             <span class="error-icon">⚠️</span>
             <span class="error-text">{error}</span>
         </div>
+    {:else if actions.length == 0}
+        <EmptyState message="No recent actions found" />
     {:else}
         <div class="actions-container">
             <div class="actions-grid">

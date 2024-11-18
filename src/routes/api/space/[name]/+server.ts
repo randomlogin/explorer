@@ -6,7 +6,7 @@ import { sql } from 'drizzle-orm';
 const ITEMS_PER_PAGE = 10;
 
 export const GET: RequestHandler = async function ({ params, url }) {
-    let spaceName = params.name;
+    let spaceName = params.name.toLowerCase();
     const page = Number(url.searchParams.get('page')) || 1;
     const offset = (page - 1) * ITEMS_PER_PAGE;
     

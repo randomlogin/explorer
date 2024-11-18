@@ -72,7 +72,7 @@
 
   async function handlePageChange(event: CustomEvent<number>) {
     const page = event.detail;
-    const response = await fetch(`/api/spaces/${spaceName}?page=${page}`);
+    const response = await fetch(`/api/space/${spaceName}?page=${page}`);
     if (response.ok) {
       const newData = await response.json();
       vmetaouts = newData.items;

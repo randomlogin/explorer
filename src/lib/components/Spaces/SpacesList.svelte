@@ -2,6 +2,7 @@
     import { onMount } from 'svelte';
     import SpaceCard from '$lib/components/Spaces/SpaceCard.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
+    import EmptyState from '$lib/components/layout/EmptyState.svelte';
     import { page } from '$app/stores';
     
     type SortField = 'height' | 'total_burned' | 'bid_count';
@@ -120,6 +121,8 @@
         <div class="loading">Loading...</div>
     {:else if error}
         <div class="error">{error}</div>
+    {:else if spaces.length === 0}
+        <EmptyState message="No auctions found" />
     {:else}
         <div class="spaces-grid">
             {#each spaces as space}
@@ -130,13 +133,13 @@
         </div>
 
         {#if fetchUrl && totalPages > 1}
-        <div class="pagination-wrapper">
-            <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                on:pageChange={handlePageChange}
-            />
-        </div>
+            <div class="pagination-wrapper">
+                <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    on:pageChange={handlePageChange}
+                    />
+            </div>
         {/if}
     {/if}
 </div>
@@ -219,4 +222,5 @@
             padding: var(--space-2);
         }
     }
+
 </style>

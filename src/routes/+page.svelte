@@ -2,6 +2,7 @@
     import SpaceCard from "$lib/components/Spaces/SpaceCard.svelte";
     import RecentActions from "$lib/components/RecentActions.svelte";
     import Rollout from '$lib/components/Rollout.svelte';
+    import EmptyState from '$lib/components/layout/EmptyState.svelte';
     import Stats from '$lib/components/Stats.svelte';
     import { navigating } from '$app/stores';
     import '$lib/styles/mainpage.css';
@@ -26,9 +27,7 @@
     <div class="content-section auctions-section">
         <div class="auctions-header">
             <a href="/auctions/current" class="section-title-link">
-                <h1 class="section-title">
-                    Spaces in auction
-                </h1>
+                <h1 class="section-title"> Spaces in auction </h1>
             </a>
         </div>
         <div class="auctions-grid">
@@ -37,6 +36,8 @@
                     <div class="loading-spinner"></div>
                     <span>Loading spaces...</span>
                 </div>
+            {:else if data.spaces.items.length === 0}
+                <EmptyState message="No auctions found" />
             {:else}
                 {#each data.spaces.items.slice(0,9) as space (space.name)}
                     <div class="card-wrapper">
@@ -183,10 +184,27 @@
         .section-title {
             font-size: var(--font-size-2xl);
         }
-        
-        .title-arrow {
-            width: 20px;
-            height: 20px;
-        }
+
     }
+
+    .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: var(--space-16);
+        color: var(--text-muted);
+        gap: var(--space-4);
+        text-align: center;
+    }
+
+    .empty-state svg {
+        stroke: var(--text-muted);
+        opacity: 0.5;
+    }
+
+    .empty-state p {
+        font-size: var(--font-size-lg);
+    }
+
 </style>
