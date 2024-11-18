@@ -1,6 +1,6 @@
 <script lang="ts">
-    import TransactionLink from '$lib/components/TransactionLink.svelte';
-    import TransactionSpaces from '$lib/components/TransactionSpaces.svelte';
+    import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
+    import TransactionSpaces from '$lib/components/Transaction/TransactionSpaces.svelte';
     import AddressLink from '$lib/components/AddressLink.svelte';
     import { formatBTC } from '$lib/utils/formatters';
     export let transaction;

@@ -8,12 +8,10 @@
   
   $: timeline = computeTimeline(vmetaout, currentBlockHeight);
   /* $: console.log(timeline) */
-  /* $: console.log(vmetaout) */
 
   function computeTimeline(vmetaout: Vmetaout, currentHeight: number): SpaceTimelineEvent[] {
     const blockTimeInSeconds = 600; // 10 minutes per block
     const status = vmetaout?.action;
-    /* console.log('status', status) */
     const claimHeight = vmetaout?.claim_height;
     const expireHeight = vmetaout?.expire_height;
 
@@ -21,48 +19,56 @@
       {
         name: "Open",
         description: "Submit an open transaction to propose the space for auction",
-        done: !['REVOKE', 'OPEN'].includes(status),
-        current: status === 'OPEN'
+        done: !['REVOKE'].includes(status),
+        current: status === 'REVOKE'
       },
       {
         name: "Pre-auction",
         description: "Top 10 highest-bid spaces advance to auctions daily",
-        done: status === 'BID' || ['TRANSFER', 'ROLLOUT'].includes(status),
-        current: status === 'RESERVE'
+        done: status === 'BID' && claimHeight !== undefined || ['TRANSFER', 'ROLLOUT'].includes(status),
+        current: status === 'RESERVE' || (status === 'BID' && !claimHeight)
       },
       {
-        name: "In Auction",
-        description: claimHeight ?
-          `Auction ends at block #${claimHeight}` :
-          "Awaiting auction start",
-        done: status === 'TRANSFER',
-        /* current: true, */
-        current: status === 'ROLLOUT' || status === 'BID',
-        estimatedTime: (status === 'BID' && claimHeight) ?
-          (claimHeight - currentHeight) * blockTimeInSeconds :
-          undefined
+        name: "Auction",
+        description: claimHeight 
+          ? currentBlockHeight > claimHeight 
+            ? `Auction ended at <a href="/block/${claimHeight}" class="text-link">block #${claimHeight}</a>`
+            : `Auction ends at block #${claimHeight}`
+          : "Auction has ended",
+        done: status === 'TRANSFER' || status === 'BID' || status === 'ROLLOUT' && (currentBlockHeight > claimHeight && claimHeight !== undefined),
+        current: (status === 'BID' || status === 'ROLLOUT') && claimHeight !== undefined && (currentBlockHeight <  claimHeight ),
+        estimatedTime: (status === 'BID' || status === 'ROLLOUT') && claimHeight !== undefined && (currentBlockHeight <  claimHeight )
+          ? ((claimHeight - currentHeight) > 0 
+              ? (claimHeight - currentHeight) * blockTimeInSeconds 
+              : undefined) 
+          : undefined
       },
       {
         name: "Awaiting claim",
-        description: "Winner must claim within the claim period",
-        done: status == 'TRANSFER',
-        current: status === 'BID' && claimHeight && claimHeight <= currentHeight,
-        /* current: status === 'BID' && claimHeight && claimHeight <= currentHeight, */
-        elapsedTime: (status === 'BID' && claimHeight && claimHeight <= currentHeight) ?
-          (currentHeight - claimHeight) * blockTimeInSeconds :
-          undefined
+        description: "Winner can claim the space, but the space can still be outbid",
+        done: status === 'TRANSFER',
+        current: (status === 'BID' || status === 'ROLLOUT') && claimHeight !== undefined && claimHeight <= currentHeight,
+        elapsedTime: (status === 'BID' && claimHeight !== undefined && claimHeight <= currentHeight)
+          ? (currentHeight - claimHeight) * blockTimeInSeconds
+          : undefined
       },
       {
         name: "Registered",
-        description: expireHeight ?  `Registration expires at block #${expireHeight}` : "Space is registered",
+        description: expireHeight 
+          ? currentBlockHeight > expireHeight
+            ? `Registration expired at <a href="/block/${expireHeight}" class="text-link">block #${expireHeight}</a>`
+            : `Registration expires at block #${expireHeight}`
+          : "Space is registered",
         done: status === 'TRANSFER',
         current: status === 'TRANSFER',
-        estimatedTime: (expireHeight && ['TRANSFER', 'ROLLOUT'].includes(status)) ?
-          (expireHeight - currentHeight) * blockTimeInSeconds : undefined
+        estimatedTime: (expireHeight !== undefined && ['TRANSFER', 'ROLLOUT'].includes(status))
+          ? (expireHeight - currentHeight) * blockTimeInSeconds 
+          : undefined
       }
     ];
   }
 </script>
+
 <nav class="timeline-nav">
   <ol role="list" class="timeline-list">
     {#each timeline as event, idx}
@@ -102,17 +108,14 @@
           </span>
 
           <div class="timeline-text">
-            <span 
-              class="timeline-title" 
-              class:title-current={event.current}
-            >
+            <span class="timeline-title" class:title-current={event.current}>
               {event.name}
-              {#if event.estimatedTime}
+              {#if event.estimatedTime !== undefined && event.estimatedTime > 0}
                 <span class="timeline-time">
-                  (expires in {formatDuration(event.estimatedTime)})
+                  (ends in {formatDuration(event.estimatedTime)})
                 </span>
               {/if}
-              {#if event.elapsedTime}
+              {#if event.elapsedTime !== undefined}
                 <span class="timeline-time">
                   ({formatDuration(event.elapsedTime)} ago)
                 </span>
@@ -120,7 +123,7 @@
             </span>
             {#if event.description}
               <span class="timeline-description">
-                {event.description}
+                {@html event.description}
               </span>
             {/if}
           </div>
@@ -167,11 +170,11 @@
     background-color: var(--color-gray-600);
   }
 
-    .timeline-content {
+  .timeline-content {
     position: relative;
     display: flex;
     gap: var(--space-4);
-    min-height: 2rem; /* Match the circle height */
+    min-height: 2rem;
   }
 
   .timeline-indicator {
@@ -209,7 +212,7 @@
     font-size: var(--text-sm);
     font-weight: 500;
     transition: var(--transition-colors);
-    padding-top: 0.375rem; /* Align with circle top */
+    padding-top: 0.375rem;
   }
 
   .timeline-description {
@@ -217,6 +220,15 @@
     font-size: var(--text-sm);
     color: var(--text-muted);
     margin-top: var(--space-2);
+  }
+
+  .text-link {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .text-link:hover {
+    text-decoration: underline;
   }
 
   .dot-done {
@@ -249,6 +261,16 @@
 
   .title-current {
     color: var(--color-primary);
+  }
+
+  .block-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: var(--transition-colors);
+  }
+
+  .block-link:hover {
+    text-decoration: underline;
   }
 
 

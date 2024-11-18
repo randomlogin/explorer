@@ -2,7 +2,6 @@ import db from '$lib/db';
 import { error, json } from '@sveltejs/kit';
 import { type RequestHandler } from '@sveltejs/kit';
 import { processTransactions } from '$lib/utils/transaction-processor';
-import { addMockSpaceActions } from '$lib/utils/mockSpaceActions';
 import { getBlockTransactions } from '$lib/utils/query';
 
 export const GET: RequestHandler = async function ({ url, params }) {
@@ -31,6 +30,11 @@ export const GET: RequestHandler = async function ({ url, params }) {
             spaces_offset: 0
         }
     });
+
+    if (!queryResult.rows || queryResult.rows.length === 0) {
+        return error(404, 'Block not found');
+    }
+
 
     const txs = processTransactions(queryResult, true);
 

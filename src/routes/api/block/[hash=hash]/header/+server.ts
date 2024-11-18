@@ -9,7 +9,8 @@ export const GET: RequestHandler = async function ({ params }) {
         SELECT 
             blocks.*, 
             COALESCE(max_block.max_height, 0) as max_height,
-            COALESCE(tx_count.total_transactions, 0) as total_transactions
+            COALESCE(tx_count.total_transactions, 0) as total_transactions,
+            COALESCE(vmetaout_count.total_vmetaouts, 0) as total_vmetaouts
         FROM blocks
         CROSS JOIN ( SELECT COALESCE(MAX(height), 0) as max_height FROM blocks) as max_block
         LEFT JOIN (
@@ -17,6 +18,11 @@ export const GET: RequestHandler = async function ({ params }) {
             FROM transactions
             WHERE block_hash = ${bufHash} 
         ) as tx_count ON true
+        LEFT JOIN (
+            SELECT COUNT(*) as total_vmetaouts
+            FROM vmetaouts 
+            WHERE block_hash = ${bufHash} and action is not null
+        ) as vmetaout_count ON true
         WHERE blocks.hash = ${bufHash};`)
 
     if (!queryResult.rows || queryResult.rows.length === 0) {
@@ -40,6 +46,7 @@ export const GET: RequestHandler = async function ({ params }) {
         orphan: queryResult.rows[0].orphan,
         confirmations: queryResult.rows[0].max_height - queryResult.rows[0].height,
         tx_count: queryResult.rows[0].total_transactions,
+        vmetaout_count: queryResult.rows[0].total_vmetaouts,
     };
 
     return json(blockHeader);

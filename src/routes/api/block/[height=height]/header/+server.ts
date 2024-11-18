@@ -9,7 +9,8 @@ console.log('asking for header')
         SELECT 
             blocks.*, 
             COALESCE(max_block.max_height, 0) as max_height,
-            COALESCE(tx_count.total_transactions, 0) as total_transactions
+            COALESCE(tx_count.total_transactions, 0) as total_transactions,
+            COALESCE(vmetaout_count.total_vmetaouts, 0) as total_vmetaouts
         FROM blocks
         CROSS JOIN ( SELECT COALESCE(MAX(height), 0) as max_height FROM blocks) as max_block
         LEFT JOIN (
@@ -17,6 +18,12 @@ console.log('asking for header')
             FROM transactions
             WHERE transactions.block_hash = (SELECT hash FROM blocks WHERE blocks.height = ${params.height})
         ) as tx_count ON true
+        LEFT JOIN (
+            SELECT COUNT(*) as total_vmetaouts
+            FROM vmetaouts 
+            WHERE block_hash = (select hash from blocks where blocks.height = ${params.height}) and action is not null
+        ) as vmetaout_count ON true
+
         WHERE blocks.height = ${params.height};`)
 
     if (!queryResult.rows || queryResult.rows.length === 0) {
@@ -40,6 +47,7 @@ console.log('asking for header')
         orphan: queryResult.rows[0].orphan,
         confirmations: queryResult.rows[0].max_height - queryResult.rows[0].height,
         tx_count: queryResult.rows[0].total_transactions,
+        vmetaout_count: queryResult.rows[0].total_vmetaouts,
     };
 
     return json(blockHeader);

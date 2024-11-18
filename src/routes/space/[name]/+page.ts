@@ -1,7 +1,7 @@
 import { error, type Actions, type ServerLoad } from '@sveltejs/kit';
 export const load = async ({ fetch, params }) => {
     const page = 1; // Initial page
-    const response = await fetch(`/api/spaces/${params.name}?page=${page}`);
+    const response = await fetch(`/api/space/${params.name}?page=${page}`);
     if (response.ok) {
         const data = await response.json();
         return {

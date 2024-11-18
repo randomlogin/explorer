@@ -59,7 +59,7 @@
             <span class="detail-label">Transactions</span>
         </div>
         <div class="detail-item">
-            <span class="detail-value">PLACEHOLDER</span>
+            <span class="detail-value">{blockHeader.vmetaout_count}</span>
             <span class="detail-label">Spaces actions</span>
         </div>
     </div>

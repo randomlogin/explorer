@@ -3,8 +3,8 @@
   import dayjs from "dayjs";
   import LocalizedFormat from "dayjs/plugin/localizedFormat";
   import { page } from '$app/stores';
-  import TransactionLink from '$lib/components/TransactionLink.svelte';
-  import SpaceTimeline from '$lib/components/SpaceTimeline.svelte';
+  import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
+  import SpaceTimeline from '$lib/components/Spaces/SpaceTimeline.svelte';
   import Pagination from '$lib/components/Pagination.svelte';
   dayjs.extend(LocalizedFormat);
 
@@ -16,7 +16,6 @@
   $: {
     if (data) {
       vmetaouts = data.vmetaouts;
-      console.log(vmetaouts)
       pagination = data.pagination;
     }
   }
@@ -31,16 +30,31 @@
   $: spaceName = latestVmetaout?.name;
   $: currentBlockHeight = data.currentHeight;
   $: expiryHeight = latestVmetaout?.expire_height;
-  $: status = getSpaceStatus(latestVmetaout?.action);
+  
+  $: status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
 
-  function getSpaceStatus(action: string | undefined) {
-    switch (action) {
-      case 'RESERVE': return 'Reserved';
-      case 'BID': return 'In Auction';
-      case 'TRANSFER': return 'Transferred';
-      case 'ROLLOUT': return 'Rolled Out';
-      case 'REVOKE': return 'Revoked';
-      default: return 'Unknown';
+  function computeSpaceStatus(vmetaout: any, currentHeight: number) {
+    const status = vmetaout?.action;
+    const claimHeight = vmetaout?.claim_height;
+
+    if (status === 'REVOKE') return 'Open';
+    if (status === 'RESERVE' || (status === 'BID' && !claimHeight)) return 'Pre-auction';
+    if ((status === 'BID' || status === 'ROLLOUT') && claimHeight) {
+      if (currentHeight < claimHeight) return 'In Auction';
+      return 'Awaiting Claim';
+    }
+    if (status === 'TRANSFER') return 'Registered';
+    return 'Unknown';
+  }
+
+  function getStatusColor(status: string) {
+    switch (status) {
+      case 'Open': return 'text-blue-500';
+      case 'Pre-auction': return 'text-yellow-500';
+      case 'In Auction': return 'text-green-500';
+      case 'Awaiting Claim': return 'text-orange-500';
+      case 'Registered': return 'text-purple-500';
+      default: return 'text-gray-500';
     }
   }
 
@@ -78,7 +92,10 @@
 {:else}
   <div class="space-header">
     <h1 class="space-title">{spaceName}</h1>
-    <div class="status-badge {getActionColor(latestVmetaout?.action)}">{status}</div>
+    <div class="status-badge {getStatusColor(status)}">
+      <span class="status-indicator"></span>
+      <span class="status-text">{status}</span>
+    </div>
   </div>
 
   <div class="space-content">
@@ -102,7 +119,7 @@
           <div class="stat-item">
             <dt class="stat-label">Expires At</dt>
             <dd class="stat-value">
-              {expiryHeight}
+              <a href="/block/{expiryHeight}" class="block-link">Block {expiryHeight}</a>
               {#if currentBlockHeight}
                 <div class="stat-subtitle">
                   in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}
@@ -118,7 +135,11 @@
       <div class="claim-height-section">
         <div class="claim-height-item">
           <span class="claim-height-label">Claim height:</span>
-          <span class="claim-height-value">{latestVmetaout.claim_height}</span>
+          <span class="claim-height-value">
+            <a href="/block/{latestVmetaout.claim_height}" class="block-link">
+              Block {latestVmetaout.claim_height}
+            </a>
+          </span>
         </div>
       </div>
     {/if}
@@ -236,11 +257,25 @@
   }
 
   .status-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
     padding: var(--space-2) var(--space-4);
     border-radius: var(--border-radius-3xl);
     font-size: var(--text-sm);
     font-weight: 500;
     background-color: var(--bg-secondary);
+  }
+
+  .status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+  }
+
+  .status-text {
+    color: currentColor;
   }
 
   .stats-section {
@@ -345,7 +380,7 @@
   }
 
   .table-row:hover {
-    background: var(--bg-primary);
+    background: var(--bg-hover);
   }
 
   .table-cell {
@@ -385,6 +420,10 @@
 
   .block-link:hover {
     text-decoration: underline;
+  }
+
+  .time-detail {
+    color: var(--text-muted);
   }
 
   .error-row {

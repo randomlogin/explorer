@@ -56,7 +56,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
         -->
         <div class="details">
             <div class="detail-item">
-                <a href={`/block/${stats.latest_block_height}`} class="block-link">
+                <a href={`/block/${stats.latest_block_height}`}>
                     <span class="detail-value">#{stats.latest_block_height}</span>
                     <span class="detail-time">{dayjs.unix(stats.latest_block_time).format('DD MMM YYYY HH:mm')}</span>
                     <span class="detail-time">({dayjs.unix(stats.latest_block_time).fromNow()})</span>

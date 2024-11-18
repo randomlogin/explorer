@@ -9,6 +9,7 @@ export const GET: RequestHandler = async function ({ request, url }) {
     // const direction = url.searchParams.get('direction');
     //
     // let orderBy: any;
+    const limit = 10;
 
     const queryResult = await db.execute(sql`
         SELECT 
@@ -19,7 +20,7 @@ export const GET: RequestHandler = async function ({ request, url }) {
         JOIN blocks b ON v.block_hash = b.hash
         WHERE NOT b.orphan and v.name is not null
         ORDER BY b.height DESC
-        LIMIT 12;
+        LIMIT ${limit};
     `);
 
     const processedResult = queryResult.rows.map(row => ({

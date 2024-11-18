@@ -1,11 +1,8 @@
 import db from '$lib/db';
-import { json } from '@sveltejs/kit';
+import { error, json } from '@sveltejs/kit';
 import { type RequestHandler } from '@sveltejs/kit';
 import { processTransactions } from '$lib/utils/transaction-processor';
 import { getBlockTransactions } from '$lib/utils/query';
-
-import { addMockSpaceActions } from '$lib/utils/mockSpaceActions';
-
 
 export const GET: RequestHandler = async function ({ url, params }) {
     const startTime = performance.now();
@@ -29,6 +26,9 @@ export const GET: RequestHandler = async function ({ url, params }) {
         }
     });
 
+    if (!queryResult.rows || queryResult.rows.length === 0) {
+        return error(404, 'Block not found');
+    }
 
     const txs = processTransactions(queryResult);
 
@@ -36,7 +36,5 @@ export const GET: RequestHandler = async function ({ url, params }) {
     const totalResponseTime = endTime - startTime;
 
     console.log(`GET request for block height ${params.height} with limit ${limit} - Total Response Time: ${totalResponseTime.toFixed(2)} ms`);
-    // const enrichedTransactions = addMockSpaceActions(txs);
     return json(txs)
-    // return json(enrichedTransactions);
 }

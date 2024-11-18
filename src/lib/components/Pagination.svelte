@@ -4,6 +4,9 @@
 
     export let currentPage: number;
     export let totalPages: number;
+
+   $: console.log("In pagination", currentPage, "pageNumbers:", getPageNumbers(currentPage, totalPages));
+  
     
     const dispatch = createEventDispatcher<{
         pageChange: number;
@@ -51,17 +54,8 @@
     $: pageNumbers = getPageNumbers(currentPage, totalPages);
 </script>
 
-<nav 
-    class="pagination"
-    aria-label="Pagination"
-    transition:slide
->
-    <button 
-        class="pagination-button"
-        on:click={() => changePage(currentPage - 1)}
-        disabled={currentPage === 1}
-        aria-label="Previous page"
-    >
+<nav class="pagination" aria-label="Pagination" transition:slide >
+    <button class="pagination-button" on:click={() => changePage(currentPage - 1)} disabled={currentPage === 1} aria-label="Previous page">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M15 18l-6-6 6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -85,17 +79,13 @@
         {/each}
     </div>
 
-    <button 
-        class="pagination-button"
-        on:click={() => changePage(currentPage + 1)}
-        disabled={currentPage === totalPages}
-        aria-label="Next page"
-    >
+    <button class="pagination-button" on:click={() => changePage(currentPage + 1)} disabled={currentPage === totalPages} aria-label="Next page">
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path d="M9 18l6-6-6-6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
     </button>
 </nav>
+
 <style>
 @import '$lib/styles/variables.css';
 

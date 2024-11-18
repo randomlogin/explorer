@@ -11,7 +11,7 @@ export function calculateTimeRemaining(targetHeight: number, currentHeight: numb
     const BLOCK_TIME_MINUTES = 10;
 
     if (targetHeight <= currentHeight) {
-        return 0;
+        return "Recently";
     }
 
     const remainingBlocks = targetHeight - currentHeight;

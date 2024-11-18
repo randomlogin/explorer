@@ -1,7 +1,7 @@
 <script lang="ts">
     import dayjs from 'dayjs';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
-    import TransactionDetails from '$lib/components/TransactionDetails.svelte';
+    import TransactionDetails from '$lib/components/Transaction/TransactionDetails.svelte';
     import CopyButton from '$lib/components/CopyButton.svelte';
     /* import { numberFormatter } from '$lib/utils/formatters'; */
     dayjs.extend(LocalizedFormat);
@@ -16,7 +16,7 @@
         <CopyButton value={data.txid} />
     </div>
     <div class="details">
-        <a href={`/block/${data.block.height}`} class="block-link">
+        <a href={`/block/${data.block.height}`}>
             <div class="detail-item">
                 <span class="detail-value">{data.block.height}</span>
                 <span class="detail-label">Block</span>

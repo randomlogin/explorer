@@ -1,7 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';
-    import TransactionLink from '$lib/components/TransactionLink.svelte';
+    import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
     import { formatBTC } from '$lib/utils/formatters';
 
     interface RecentAction {
@@ -31,7 +31,7 @@
 
     async function fetchRecentActions() {
         try {
-            const response = await fetch('/api/spaces/recent');
+            const response = await fetch('/api/auctions/recent');
             if (!response.ok) throw new Error('Failed to fetch recent actions');
             actions = await response.json();
         } catch (e) {

@@ -47,7 +47,7 @@
                     </div>
                     {#if vmetaout.action === 'BID'}
                         <div class="bid-value">
-                            <span class="value-amount">{formatBTC(vmetaout.total_burned)} BTC</span>
+                            <span class="value-amount">{formatBTC(vmetaout.total_burned)}</span>
                         </div>
                     {/if}
                 </div>

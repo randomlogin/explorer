@@ -1,9 +1,8 @@
 <script lang="ts">
     import dayjs from 'dayjs';
-    import Pagination from './Pagination.svelte';
-    import TransactionDetails from '$lib/components/TransactionDetails.svelte';
-    import TransactionLink from '$lib/components/TransactionLink.svelte';
-    import TransactionSpaces from '$lib/components/TransactionSpaces.svelte';
+    import Pagination from '$lib/components/Pagination.svelte';
+    import TransactionDetails from '$lib/components/Transaction/TransactionDetails.svelte';
+    import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(LocalizedFormat);
 
@@ -17,13 +16,11 @@
     export let transactions: Transaction[];
     export let pagination: PaginationInfo;
     export let onPageChange: (page: number) => Promise<void>;
-    export let showTransactionTime: bool = false;
+    export let showTransactionTime: boolean = false;
     
     let showOnlySpaceActions = false;
     
-    $: filteredTransactions = showOnlySpaceActions 
-        ? transactions.filter(tx => tx.outputs.some(output => output.space_action))
-        : transactions;
+    $: filteredTransactions = showOnlySpaceActions ? transactions.filter(tx => tx.vmetaouts.some(vmetaout => vmetaout)) : transactions;
 </script>
 
 <div class="filter-container mb-4">
@@ -41,9 +38,7 @@
                 <TransactionLink txid={transaction.txid} />
                 {#if showTransactionTime}
                     <span class="transaction-time">
-                        <a href={`/block/${transaction.block.height}`} class="block-link">
-                                <span class="detail-value">Block {transaction.block.height}</span>
-                        </a>
+                        <a href={`/block/${transaction.block.height}`}> <span class="detail-value">Block {transaction.block.height}</span> </a>
 
                         {dayjs.unix(transaction.block.time).format('MMM D, YYYY HH:mm ')}
                     </span>

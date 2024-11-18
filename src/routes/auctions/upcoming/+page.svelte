@@ -10,7 +10,7 @@
   export let data;
 
   const numberFormatter = new Intl.NumberFormat();
-  let currentBlockHeight = data.blockStats.blockHeight;
+  /* let currentBlockHeight = data.blockStats.blockHeight; */
 
   let sortOptions = [
     { name: "Highest price", key: "price", direction: "desc" },

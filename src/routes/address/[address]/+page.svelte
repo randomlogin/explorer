@@ -1,6 +1,6 @@
 <script lang="ts">
     import AddressHeader from '$lib/components/AddressHeader.svelte';
-    import BlockTxs from '$lib/components/BlockTxs.svelte';
+    import BlockTxs from '$lib/components/Block/BlockTxs.svelte';
     export let data;
 
     let currentPage = 1;

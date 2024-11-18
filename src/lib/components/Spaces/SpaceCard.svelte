@@ -1,0 +1,173 @@
+<script lang="ts">
+  import dayjs from "dayjs";
+  import LocalizedFormat from "dayjs/plugin/localizedFormat";
+  import { formatBTC } from "$lib/utils/formatters";
+  dayjs.extend(LocalizedFormat);
+
+  export let space;
+  export let currentBlockHeight: number;
+</script>
+<div class="space-card">
+  <a href={`/space/${space.name}`} class="space-card-link">
+    <div class="space-card-container">
+      <div class="space-card-header">
+        <span title={space.name} class="space-name">{space.name}</span>
+      </div>
+
+      <div class="space-card-body">
+        {#if currentBlockHeight <= space.claim_height}
+          <div class="status-container">
+            <span class="status-label">Claimable at block {space.claim_height}</span>
+          </div>
+        {:else if (space.action == 'BID' || space.action == 'ROLLOUT')}
+          <div class="status-container">
+            <span class="status-badge">Can be claimed</span>
+            <span class="status-note">(still open for bidding)</span>
+          </div>
+        {:else}
+          <div class="status-container">
+            <span class="status-placeholder" />
+          </div>
+        {/if}
+      </div>
+
+      <div class="space-card-footer">
+        <div class="bid-info">
+          <div class="bid-row">
+            <span class="bid-label">Bids:</span>
+            <span class="bid-value">{space.bid_count}</span>
+          </div>
+          <div class="bid-row">
+            <span class="bid-label">Highest bid:</span>
+            <span class="bid-value">{formatBTC(space.total_burned)}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </a>
+</div>
+
+<style>
+  .space-card {
+    height: 100%;
+    width: 100%;
+    display: block;
+  }
+
+  .space-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    height: 100%;
+  }
+
+  .space-card-container {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: var(--space-6);
+    border-radius: var(--border-radius-3xl);
+    border: var(--border-width-1) solid var(--color-primary);
+    border-bottom-width: var(--border-width-8);
+    background: var(--bg-primary-light);
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .space-card-container:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+  .space-card-header {
+    flex: 0 0 auto;
+    margin-bottom: var(--space-4);
+  }
+
+  .space-name {
+    font-weight: 600;
+    font-size: var(--font-size-lg);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .space-card-body {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .space-card-footer {
+    flex: 0 0 auto;
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: var(--border-width-1) solid var(--border-color);
+  }
+
+  .status-container {
+    min-height: 3.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    justify-content: center;
+  }
+
+  .status-placeholder {
+    height: 1.5rem;
+  }
+
+  .status-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    background-color: var(--color-warning);
+    color: var(--color-white);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--border-radius-lg);
+    font-weight: 500;
+  }
+
+  .status-note {
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+  }
+
+  .bid-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .bid-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-size-sm);
+  }
+
+  .bid-label {
+    color: var(--text-muted);
+  }
+
+  .bid-value {
+    font-weight: 500;
+  }
+
+  @media (max-width: 640px) {
+    .space-card-container {
+      padding: var(--space-4);
+      height: 180px;
+    }
+    
+    .space-card-footer {
+      padding-bottom: var(--space-1); /* Slightly less padding on mobile */
+      margin-bottom: var(--space-1); /* Slightly less margin on mobile */
+    }
+  }
+</style>

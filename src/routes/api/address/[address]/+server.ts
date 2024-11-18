@@ -4,7 +4,6 @@ import db from '$lib/db';
 import { sql } from 'drizzle-orm';
 import { addressToScriptPubKey } from '$lib/utils/address-parsers';
 import { processTransactions } from '$lib/utils/transaction-processor';
-import { addMockSpaceActionsToTransaction } from '$lib/utils/mockSpaceActions';
 
 export async function GET({ params, url }) {
     const startTime = performance.now();
@@ -192,7 +191,6 @@ ORDER BY transaction_data.block_height DESC, transaction_data.tx_index DESC,
         }
 
         const transactions = processTransactions(queryResult, true);
-        const enrichedTransactions = transactions.map(addMockSpaceActionsToTransaction);
         const endTime = performance.now();
         const totalResponseTime = endTime - startTime;
         console.log(`in address Total Response Time: ${totalResponseTime.toFixed(2)} ms`);
@@ -206,7 +204,7 @@ ORDER BY transaction_data.block_height DESC, transaction_data.tx_index DESC,
                 totalSpent: stats.total_spent,
                 balance: stats.balance
             },
-            transactions: enrichedTransactions,
+            transactions: transactions,
             hasMore,
             nextCursor
         });

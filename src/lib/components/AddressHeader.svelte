@@ -41,10 +41,12 @@
             <span class="detail-value">{stats.spentCount.toLocaleString()}</span>
             <span class="detail-label">Spent</span>
         </div>
+        <!--
         <div class="detail-item">
             <span class="detail-value">PLACEHOLDER</span>
             <span class="detail-label">Spaces Actions</span>
         </div>
+        -->
     </div>
 </div>
 <style>

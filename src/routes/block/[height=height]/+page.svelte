@@ -3,22 +3,32 @@
     import { goto } from '$app/navigation';
     import { browser } from '$app/environment';
     import { blockStore, totalPages } from '$lib/stores/blockStore';
-    import BlockHeader from '$lib/components/BlockHeader.svelte';
-    import BlockTxs from '$lib/components/BlockTxs.svelte';
+    import BlockHeader from '$lib/components/Block/BlockHeader.svelte';
+    import BlockTxs from '$lib/components/Block/BlockTxs.svelte';
 
     // Get height from URL params
     $: height = $page.params.height;
     $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
 
-    $: if (browser && height) {
-        const currentBlockHeight = $blockStore.currentHeight;
-        const currentStorePage = $blockStore.pagination.currentPage;
-        
-        // Only fetch if height changed OR if it's the same height but different page
-        if (currentBlockHeight !== height || (currentBlockHeight === height && currentStorePage !== currentPage)) {
-            blockStore.fetchBlockData(height, currentPage);
+    let previousHeight: string | null = null;
+    let previousPage: number | null = null;
+
+    $: if (browser && height && (height !== previousHeight || currentPage !== previousPage)) {
+        loadBlockData();
+    }
+    
+    async function loadBlockData() {
+        try {
+            await blockStore.fetchBlockData(height, currentPage);
+            // Update previous values after successful fetch
+            previousHeight = height;
+            previousPage = currentPage;
+        } catch (error) {
+            console.error('Failed to load block data:', error);
         }
     }
+
+
 
     async function handlePageChange(newPage: number) {
         const url = new URL(window.location.href);

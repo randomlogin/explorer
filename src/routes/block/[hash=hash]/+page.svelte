@@ -3,8 +3,8 @@
     import { goto } from '$app/navigation';
     import { browser } from '$app/environment';
     import { blockStore, totalPages } from '$lib/stores/blockStore';
-    import BlockHeader from '$lib/components/BlockHeader.svelte';
-    import BlockTxs from '$lib/components/BlockTxs.svelte';
+    import BlockHeader from '$lib/components/Block/BlockHeader.svelte';
+    import BlockTxs from '$lib/components/Block/BlockTxs.svelte';
     import { onDestroy } from 'svelte';
 
     // Get hash from URL params

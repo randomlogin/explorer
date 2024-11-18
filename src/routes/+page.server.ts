@@ -10,7 +10,7 @@ export const load: ServerLoad = async ({ fetch, url }) => {
         searchParams.set('sort', 'ending');
 
     const [spaces, stats] = await Promise.all([
-        fetch(`/api/spaces/auctioned`).then(x => x.body ?  x.json() : null),
+        fetch(`/api/auctions/current`).then(x => x.body ?  x.json() : null),
         fetch('/api/stats').then(x => x.body ? x.json() : null)
     ]);
     return { spaces, stats };

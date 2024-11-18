@@ -15,3 +15,13 @@ export const footerLinks = [
     image: "/footer/telegram.svg"
   },
 ];
+
+
+
+export const menuLinks = [
+    { href: "/auctions/current", label: "Current Auctions" },
+    /* { href: "/auctions/upcoming", label: "Upcoming" }, */
+    { href: "/auctions/past", label: "Past Auctions" },
+    { href: "https://spacesprotocol.org", label: "Help", external: true }
+  ];
+

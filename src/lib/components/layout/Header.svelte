@@ -34,9 +34,11 @@
     
     <MobileMenu bind:isOpen={mobileMenuOpen} />
     
+    <!--
     <div class="hidden md:block">
       <ThemeToggle />
     </div>
+    -->
   </div>
 </div>
 

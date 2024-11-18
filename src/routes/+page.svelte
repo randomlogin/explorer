@@ -1,29 +1,13 @@
 <script lang="ts">
-    import SpaceCard from "$lib/components/SpaceCard.svelte";
-    import SortSelector from "$lib/components/SortSelector.svelte";
+    import SpaceCard from "$lib/components/Spaces/SpaceCard.svelte";
     import RecentActions from "$lib/components/RecentActions.svelte";
     import Rollout from '$lib/components/Rollout.svelte';
     import Stats from '$lib/components/Stats.svelte';
-    import { goto } from '$app/navigation';
     import { navigating } from '$app/stores';
     import '$lib/styles/mainpage.css';
     
     export let data;
     let currentBlockHeight = data.stats.latest_block_height;
-    
-    let sortOptions = [
-        { name: "Ending soonest", key: "ending", direction: "asc" }, 
-        { name: "Highest price", key: "price", direction: "desc" }, 
-        { name: "Lowest price", key: "price", direction: "asc" }, 
-    ];
-
-    function onSortChange(sortBy: any) {
-        const { key, direction } = sortBy.detail;
-        let query = new URLSearchParams();
-        query.set('sort', key);
-        query.set('direction', direction);
-        goto(`?${query.toString()}`);
-    }
 </script>
 
 <div class="page-container">
@@ -41,10 +25,11 @@
     
     <div class="content-section auctions-section">
         <div class="auctions-header">
-            <h1 class="section-title">Spaces in auction</h1>
-            <div class="sort-selector">
-                <SortSelector on:change={onSortChange} options={sortOptions} />
-            </div>
+            <a href="/auctions/current" class="section-title-link">
+                <h1 class="section-title">
+                    Spaces in auction
+                </h1>
+            </a>
         </div>
         <div class="auctions-grid">
             {#if $navigating}
@@ -53,8 +38,10 @@
                     <span>Loading spaces...</span>
                 </div>
             {:else}
-                {#each data.spaces.items as space (space.name)}
-                    <SpaceCard {space} {currentBlockHeight} />
+                {#each data.spaces.items.slice(0,9) as space (space.name)}
+                    <div class="card-wrapper">
+                        <SpaceCard {space} {currentBlockHeight} />
+                    </div>
                 {/each}
             {/if}
         </div>
@@ -66,7 +53,7 @@
         width: 100%;
         max-width: var(--max-content-width, 1280px);
         margin: 0 auto;
-        padding: var(--space-2);
+        padding: var(--space-4);
         display: flex;
         flex-direction: column;
         gap: var(--space-8);
@@ -83,7 +70,7 @@
     .rollout-section, .actions-section {
         background: var(--bg-elevated);
         border-radius: var(--border-radius-lg);
-        padding: var(--space-2);
+        padding: var(--space-4);
         box-shadow: var(--shadow-sm);
     }
 
@@ -91,32 +78,64 @@
         position: relative;
         border-top: var(--border-width-1) solid var(--border-color);
         padding-top: var(--space-8);
+        padding: var(--space-4);
     }
 
     .auctions-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: var(--space-6);
+        margin-bottom: var(--space-8);
         gap: var(--space-4);
     }
 
-    .section-title {
-        font-size: var(--font-size-3xl);
-        font-weight: 600;
+    .section-title-link {
+        text-decoration: underline;
         color: var(--text-primary);
+        transition: color 0.2s ease;
     }
 
-    .sort-selector {
-        width: 160px;
-        flex-shrink: 0;
+    .section-title-link:hover {
+        color: var(--color-primary);
+    }
+
+    /* .section-title { */
+    /*     font-size: var(--font-size-3xl); */
+    /*     font-weight: 600; */
+    /*     display: flex; */
+    /*     align-items: center; */
+    /*     gap: var(--space-2); */
+    /* } */
+
+    .section-title {
+        font-size: var(--text-2xl);
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: var(--space-4);
+    }
+
+
+
+    .title-arrow {
+        width: 24px;
+        height: 24px;
+        transition: transform 0.2s ease;
+    }
+
+    .section-title-link:hover .title-arrow {
+        transform: translateX(4px);
     }
 
     .auctions-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: var(--space-6);
         align-items: start;
+    }
+
+    .card-wrapper {
+        min-height: 220px;
+        width: 100%;
     }
 
     .loading-state {
@@ -153,19 +172,21 @@
         .auctions-header {
             flex-direction: column;
             align-items: flex-start;
-        }
-
-        .sort-selector {
-            width: 100%;
+            margin-bottom: var(--space-6);
         }
 
         .auctions-grid {
             gap: var(--space-4);
-            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         }
 
         .section-title {
             font-size: var(--font-size-2xl);
+        }
+        
+        .title-arrow {
+            width: 20px;
+            height: 20px;
         }
     }
 </style>
