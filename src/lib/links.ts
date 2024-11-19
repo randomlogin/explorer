@@ -20,7 +20,7 @@ export const footerLinks = [
 
 export const menuLinks = [
     { href: "/auctions/current", label: "Current Auctions" },
-    /* { href: "/auctions/upcoming", label: "Upcoming" }, */
+    { href: "/auctions/rollout", label: "Upcoming Auctions" },
     { href: "/auctions/past", label: "Past Auctions" },
     { href: "https://spacesprotocol.org", label: "Help", external: true }
   ];

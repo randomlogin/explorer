@@ -1,8 +1,11 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import { calculateTimeRemaining, formatBTC } from '$lib/utils/formatters';
+    import Pagination from '$lib/components/Pagination.svelte';
     
     export let currentHeight: number;
+    export let withPagination = false;
+    export let itemsPerPage = 12;
 
     interface Rollout {
         name: string;
@@ -12,15 +15,28 @@
         claim_height: number | null;
     }
 
+    interface PaginationData {
+        total: number;
+        totalPages: number;
+    }
+
     let rollouts: Rollout[] = [];
     let loading = true;
     let error: string | null = null;
+    let currentPage = 1;
+    let paginationData: PaginationData | null = null;
     
-    async function fetchRollouts() {
+    async function fetchRollouts(page = 1) {
+        loading = true;
+        error = null;
+        
         try {
-            const response = await fetch('/api/actions/rollout');
+            const url = withPagination ? `/api/actions/rollout?page=${page}&limit=${itemsPerPage}` : `/api/actions/rollout?limit=${itemsPerPage}`;
+                
+            const response = await fetch(url);
             if (!response.ok) throw new Error('Failed to fetch rollouts');
             const data = await response.json();
+            
             rollouts = data.items.map((item: any) => ({
                 name: item.name,
                 winning_bid: item.winning_bid,
@@ -28,11 +44,25 @@
                 expire_height: item.expire_height,
                 claim_height: item.claim_height
             }));
+
+            if (withPagination && data.pagination) {
+                paginationData = {
+                    total: data.pagination.total,
+                    totalPages: data.pagination.totalPages
+                };
+            }
         } catch (e) {
             error = e instanceof Error ? e.message : 'Failed to load rollouts';
         } finally {
             loading = false;
         }
+    }
+
+    async function handlePageChange(event: CustomEvent<number>) {
+        const newPage = event.detail;
+        currentPage = newPage;
+        await fetchRollouts(newPage);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     onMount(() => {
@@ -41,12 +71,13 @@
 </script>
 
 <div class="rollouts-wrapper">
-    <h2 class="rollouts-title">Upcoming Rollouts</h2>
-    
+    <a href="/auctions/rollout" class="section-title-link">
+        <h2 class="rollouts-title">Upcoming Rollouts</h2>
+    </a>
     <div class="rollouts-container">
         {#if loading}
-            <div class="rollouts-list">
-                {#each Array(4) as _}
+            <div class="rollouts-grid">
+                {#each Array(withPagination ? itemsPerPage : 4) as _}
                     <div class="rollout-card skeleton-card">
                         <div class="skeleton-text-medium"></div>
                         <div class="skeleton-text-short"></div>
@@ -65,7 +96,7 @@
                 <span class="empty-text">No upcoming rollouts</span>
             </div>
         {:else}
-            <div class="rollouts-list">
+            <div class="rollouts-grid">
                 {#each rollouts as rollout}
                     {@const releaseHeight = rollout.block_height}
                     <div class="rollout-card">
@@ -81,6 +112,16 @@
                     </div>
                 {/each}
             </div>
+
+            {#if withPagination && paginationData && paginationData.totalPages > 1}
+                <div class="pagination-container">
+                    <Pagination 
+                        currentPage={currentPage} 
+                        totalPages={paginationData.totalPages} 
+                        on:pageChange={handlePageChange} 
+                    />
+                </div>
+            {/if}
         {/if}
     </div>
 </div>
@@ -100,17 +141,13 @@
 
     .rollouts-container {
         width: 100%;
-        overflow-x: auto;
-        padding-bottom: var(--space-2);
-        scrollbar-width: thin;
-        scrollbar-color: var(--border-color) var(--bg-secondary);
     }
 
-    .rollouts-list {
-        display: flex;
+    .rollouts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
         gap: var(--space-4);
         padding: var(--space-2);
-        min-width: min-content;
     }
 
     .rollout-card {
@@ -118,7 +155,6 @@
         border: var(--border-width-1) solid var(--border-color);
         border-radius: var(--radius-lg);
         padding: var(--space-4);
-        min-width: 240px;
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
@@ -153,7 +189,13 @@
         cursor: help;
     }
 
-    /* Empty state */
+    .pagination-container {
+        margin-top: var(--space-6);
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Empty and Error states remain the same */
     .empty-card,
     .error-card {
         width: 100%;
@@ -181,7 +223,7 @@
         color: rgb(185 28 28);
     }
 
-    /* Skeleton styles */
+    /* Skeleton styles remain the same */
     .skeleton-card {
         opacity: 0.7;
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -206,22 +248,9 @@
         50% { opacity: 0.4; }
     }
 
-    /* Custom scrollbar */
-    .rollouts-container::-webkit-scrollbar {
-        height: 6px;
-    }
-
-    .rollouts-container::-webkit-scrollbar-track {
-        background: var(--bg-surface);
-        border-radius: 3px;
-    }
-
-    .rollouts-container::-webkit-scrollbar-thumb {
-        background: var(--border-color);
-        border-radius: 3px;
-    }
-
-    .rollouts-container::-webkit-scrollbar-thumb:hover {
-        background: var(--border-hover);
+    @media (max-width: 640px) {
+        .rollouts-grid {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
