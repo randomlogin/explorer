@@ -5,6 +5,8 @@
   dayjs.extend(LocalizedFormat);
 
   export let space;
+  /* $: console.log(space) */
+  export let active;
   export let currentBlockHeight: number;
 </script>
 <div class="space-card">
@@ -15,21 +17,25 @@
       </div>
 
       <div class="space-card-body">
-        {#if currentBlockHeight <= space.claim_height}
-          <div class="status-container">
-            <span class="status-label">Claimable at block {space.claim_height}</span>
-          </div>
-        {:else if (space.action == 'BID' || space.action == 'ROLLOUT')}
-          <div class="status-container">
-            <span class="status-badge">Can be claimed</span>
-            <span class="status-note">(still open for bidding)</span>
-          </div>
+        {#if active }
+          {#if currentBlockHeight <= space.claim_height}
+            <div class="status-container">
+              <span class="status-label">Claimable at block {space.claim_height}</span>
+            </div>
+          {:else }
+            <div class="status-container">
+              <span class="status-badge">Can be claimed</span>
+              <span class="status-note">(still open for bidding)</span>
+            </div>
+          {/if}
         {:else}
-          <div class="status-container">
-            <span class="status-placeholder" />
-          </div>
+            <div class="status-container">
+              <span class="status-badge">Last action at block {space.height}</span>
+            </div>
         {/if}
       </div>
+      <!--
+      -->
 
       <div class="space-card-footer">
         <div class="bid-info">
@@ -112,10 +118,6 @@
     flex-direction: column;
     gap: var(--space-1);
     justify-content: center;
-  }
-
-  .status-placeholder {
-    height: 1.5rem;
   }
 
   .status-label {

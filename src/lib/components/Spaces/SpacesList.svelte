@@ -17,6 +17,7 @@
     export let data: any[] | undefined = undefined;
     export let fetchUrl: string | undefined = undefined;
     export let currentBlockHeight: number;
+    export let active: boolean;
 
     let loading = false;
     let error: string | null = null;
@@ -47,7 +48,7 @@
 
             const response = await fetch(url);
             if (!response.ok) throw new Error('Failed to fetch spaces');
-            
+
             const result = await response.json();
             spaces = result.items;
             totalPages = result.pagination.total_pages;
@@ -127,18 +128,14 @@
         <div class="spaces-grid">
             {#each spaces as space}
                 <div class="card-wrapper">
-                    <SpaceCard {space} {currentBlockHeight} />
+                    <SpaceCard {space} {currentBlockHeight} active={active}/>
                 </div>
             {/each}
         </div>
 
         {#if fetchUrl && totalPages > 1}
             <div class="pagination-wrapper">
-                <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    on:pageChange={handlePageChange}
-                    />
+                <Pagination currentPage={currentPage} totalPages={totalPages} on:pageChange={handlePageChange} />
             </div>
         {/if}
     {/if}

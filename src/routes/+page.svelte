@@ -16,13 +16,6 @@
         <Stats />
     </div>
     
-    <div class="content-section rollout-section">
-        <Rollout currentHeight={currentBlockHeight} />
-    </div>
-    
-    <div class="content-section actions-section">
-        <RecentActions />
-    </div>
     
     <div class="content-section auctions-section">
         <div class="auctions-header">
@@ -41,11 +34,19 @@
             {:else}
                 {#each data.spaces.items.slice(0,9) as space (space.name)}
                     <div class="card-wrapper">
-                        <SpaceCard {space} {currentBlockHeight} />
+                        <SpaceCard {space} {currentBlockHeight} active=true/>
                     </div>
                 {/each}
             {/if}
         </div>
+    </div>
+
+    <div class="content-section actions-section">
+        <RecentActions />
+    </div>
+
+    <div class="content-section rollout-section">
+        <Rollout currentHeight={currentBlockHeight} />
     </div>
 </div>
 
@@ -100,31 +101,11 @@
         color: var(--color-primary);
     }
 
-    /* .section-title { */
-    /*     font-size: var(--font-size-3xl); */
-    /*     font-weight: 600; */
-    /*     display: flex; */
-    /*     align-items: center; */
-    /*     gap: var(--space-2); */
-    /* } */
-
     .section-title {
         font-size: var(--text-2xl);
         font-weight: 600;
         color: var(--text-primary);
         margin-bottom: var(--space-4);
-    }
-
-
-
-    .title-arrow {
-        width: 24px;
-        height: 24px;
-        transition: transform 0.2s ease;
-    }
-
-    .section-title-link:hover .title-arrow {
-        transform: translateX(4px);
     }
 
     .auctions-grid {
@@ -185,26 +166,6 @@
             font-size: var(--font-size-2xl);
         }
 
-    }
-
-    .empty-state {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: var(--space-16);
-        color: var(--text-muted);
-        gap: var(--space-4);
-        text-align: center;
-    }
-
-    .empty-state svg {
-        stroke: var(--text-muted);
-        opacity: 0.5;
-    }
-
-    .empty-state p {
-        font-size: var(--font-size-lg);
     }
 
 </style>

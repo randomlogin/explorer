@@ -7,4 +7,4 @@
     
 </script>
 
-<SpacesList fetchUrl="/api/auctions/current" currentBlockHeight={currentBlockHeight} />
+<SpacesList fetchUrl="/api/auctions/current" currentBlockHeight={currentBlockHeight} active=true />

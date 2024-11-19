@@ -7,7 +7,8 @@
   export let currentBlockHeight: number;
   
   $: timeline = computeTimeline(vmetaout, currentBlockHeight);
-  /* $: console.log(timeline) */
+  $: console.log('timeline',vmetaout)
+  $: console.log('timeline',timeline)
 
   function computeTimeline(vmetaout: Vmetaout, currentHeight: number): SpaceTimelineEvent[] {
     const blockTimeInSeconds = 600; // 10 minutes per block
@@ -25,7 +26,7 @@
       {
         name: "Pre-auction",
         description: "Top 10 highest-bid spaces advance to auctions daily",
-        done: status === 'BID' && claimHeight !== undefined || ['TRANSFER', 'ROLLOUT'].includes(status),
+        done: status === 'BID' && claimHeight || ['TRANSFER', 'ROLLOUT'].includes(status),
         current: status === 'RESERVE' || (status === 'BID' && !claimHeight)
       },
       {
@@ -35,9 +36,9 @@
             ? `Auction ended at <a href="/block/${claimHeight}" class="text-link">block #${claimHeight}</a>`
             : `Auction ends at block #${claimHeight}`
           : "Auction has ended",
-        done: status === 'TRANSFER' || status === 'BID' || status === 'ROLLOUT' && (currentBlockHeight > claimHeight && claimHeight !== undefined),
-        current: (status === 'BID' || status === 'ROLLOUT') && claimHeight !== undefined && (currentBlockHeight <  claimHeight ),
-        estimatedTime: (status === 'BID' || status === 'ROLLOUT') && claimHeight !== undefined && (currentBlockHeight <  claimHeight )
+        done: (status === 'TRANSFER' || status === 'BID' || status === 'ROLLOUT') && (claimHeight && currentBlockHeight > claimHeight),
+        current: (status === 'BID' || status === 'ROLLOUT') && claimHeight && (currentBlockHeight <  claimHeight ),
+        estimatedTime: (status === 'BID' || status === 'ROLLOUT') && claimHeight && (currentBlockHeight <  claimHeight )
           ? ((claimHeight - currentHeight) > 0 
               ? (claimHeight - currentHeight) * blockTimeInSeconds 
               : undefined) 
@@ -47,8 +48,8 @@
         name: "Awaiting claim",
         description: "Winner can claim the space, but the space can still be outbid",
         done: status === 'TRANSFER',
-        current: (status === 'BID' || status === 'ROLLOUT') && claimHeight !== undefined && claimHeight <= currentHeight,
-        elapsedTime: (status === 'BID' && claimHeight !== undefined && claimHeight <= currentHeight)
+        current: (status === 'BID' || status === 'ROLLOUT') && claimHeight && claimHeight <= currentHeight,
+        elapsedTime: (status === 'BID' && claimHeight  && claimHeight <= currentHeight)
           ? (currentHeight - claimHeight) * blockTimeInSeconds
           : undefined
       },
@@ -61,7 +62,7 @@
           : "Space is registered",
         done: status === 'TRANSFER',
         current: status === 'TRANSFER',
-        estimatedTime: (expireHeight !== undefined && ['TRANSFER', 'ROLLOUT'].includes(status))
+        estimatedTime: (expireHeight && ['TRANSFER', 'ROLLOUT'].includes(status))
           ? (expireHeight - currentHeight) * blockTimeInSeconds 
           : undefined
       }
@@ -123,7 +124,7 @@
             </span>
             {#if event.description}
               <span class="timeline-description">
-                {@html event.description}
+                {event.description}
               </span>
             {/if}
           </div>
@@ -222,15 +223,6 @@
     margin-top: var(--space-2);
   }
 
-  .text-link {
-    color: var(--color-primary);
-    text-decoration: none;
-  }
-
-  .text-link:hover {
-    text-decoration: underline;
-  }
-
   .dot-done {
     background-color: var(--color-primary);
     color: var(--bg-primary);
@@ -262,16 +254,5 @@
   .title-current {
     color: var(--color-primary);
   }
-
-  .block-link {
-    color: var(--color-primary);
-    text-decoration: none;
-    transition: var(--transition-colors);
-  }
-
-  .block-link:hover {
-    text-decoration: underline;
-  }
-
 
 </style>

@@ -1,14 +1,7 @@
-import { error, type Actions, type ServerLoad } from '@sveltejs/kit';
-export const load = async ({ fetch, params }) => {
-    const page = 1; // Initial page
-    const response = await fetch(`/api/space/${params.name}?page=${page}`);
-    if (response.ok) {
-        const data = await response.json();
-        return {
-            vmetaouts: data.items,
-            pagination: data.pagination,
-            currentHeight: data.items[0]?.current_height
-        };
-    }
-    throw error(404, 'Space not found');
+import type { PageLoad } from './$types';
+
+export const load: PageLoad = async ({ fetch, params }) => {
+    const response = await fetch(`/api/space/${params.name}`);
+    const data = await response.json();
+    return data;
 };

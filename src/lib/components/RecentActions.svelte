@@ -96,12 +96,6 @@
                             {/if}
                         </div>
 
-                        {#if action.reason}
-                            <div class="revoke-reason">
-                                Reason: {action.reason}
-                            </div>
-                        {/if}
-
                         <div class="action-meta">
                             <div class="meta-item">
                                 <span class="meta-label">Block</span>

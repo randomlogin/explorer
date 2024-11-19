@@ -1,226 +1,251 @@
 <script lang="ts">
-  import { formatDuration, formatBTC } from "$lib/utils/formatters";
-  import dayjs from "dayjs";
-  import LocalizedFormat from "dayjs/plugin/localizedFormat";
-  import { page } from '$app/stores';
-  import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
-  import SpaceTimeline from '$lib/components/Spaces/SpaceTimeline.svelte';
-  import Pagination from '$lib/components/Pagination.svelte';
-  dayjs.extend(LocalizedFormat);
+    import { formatDuration, formatBTC } from "$lib/utils/formatters";
+    import dayjs from "dayjs";
+    import LocalizedFormat from "dayjs/plugin/localizedFormat";
+    import { page } from '$app/stores';
+    import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
+    import SpaceTimeline from '$lib/components/Spaces/SpaceTimeline.svelte';
+    import Pagination from '$lib/components/Pagination.svelte';
+    import type { SpaceData, Vmetaout } from '$lib/types/space';
+    
+    dayjs.extend(LocalizedFormat);
 
-  export let data;
-  let vmetaouts;
-  let pagination;
-  let currentPage = 1;
+    export let data: SpaceData;
+    
+    let vmetaouts: Vmetaout[] = [];
+    let latestVmetaout: Vmetaout | null = null;
+    let pagination;
+    let currentPage = 1;
+    let spaceName: string;
+    let currentBlockHeight: number;
+    let expiryHeight: number | undefined;
+    let status: string;
+    let numberOfBids: number;
+    let highestBid: number;
 
-  $: {
-    if (data) {
-      vmetaouts = data.vmetaouts;
-      pagination = data.pagination;
+    $: {
+        if (data) {
+        /* console.log(data) */
+            vmetaouts = data.items;
+            latestVmetaout = data.latest;
+            pagination = data.pagination;
+            spaceName = latestVmetaout?.name;
+            currentBlockHeight = data.currentHeight;
+            expiryHeight = latestVmetaout?.expire_height;
+            numberOfBids = data.stats.bidCount;
+            status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
+
+            // Calculate highest bid from current page
+            highestBid = vmetaouts
+                .filter(event => event.action === 'BID')
+                .reduce((max, event) => {
+                    const totalBurned = event.total_burned ?? 0;
+                    return Math.max(max, Number(totalBurned));
+                }, 0);
+        }
     }
-  }
 
-  $: bidActions = vmetaouts?.filter(event => event.action === 'BID') ?? [];
-  $: highestBid = bidActions.reduce((max, event) => {
-    const totalBurned = event.total_burned ?? 0;
-    return Math.max(max, Number(totalBurned));
-  }, 0);
-  $: numberOfBids = bidActions.length;
-  $: latestVmetaout = vmetaouts?.filter(event => event.action !== 'REJECT')[0];
-  $: spaceName = latestVmetaout?.name;
-  $: currentBlockHeight = data.currentHeight;
-  $: expiryHeight = latestVmetaout?.expire_height;
-  
-  $: status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
+    function computeSpaceStatus(vmetaout: Vmetaout | null, currentHeight: number): string {
+        if (!vmetaout) return 'Open';
+        
+        const status = vmetaout.action;
+        const claimHeight = vmetaout.claim_height;
 
-  function computeSpaceStatus(vmetaout: any, currentHeight: number) {
-    const status = vmetaout?.action;
-    const claimHeight = vmetaout?.claim_height;
-
-    if (status === 'REVOKE') return 'Open';
-    if (status === 'RESERVE' || (status === 'BID' && !claimHeight)) return 'Pre-auction';
-    if ((status === 'BID' || status === 'ROLLOUT') && claimHeight) {
-      if (currentHeight < claimHeight) return 'In Auction';
-      return 'Awaiting Claim';
+        if (status === 'REVOKE') return 'Open';
+        if (status === 'RESERVE' || (status === 'BID' && !claimHeight)) return 'Pre-auction';
+        if ((status === 'BID' || status === 'ROLLOUT') && claimHeight) {
+            if (currentHeight < claimHeight) return 'In Auction';
+            return 'Awaiting Claim';
+        }
+        if (status === 'TRANSFER') return 'Registered';
+        if (status === 'REJECT') return 'Not opened';
+        return 'Unknown';
     }
-    if (status === 'TRANSFER') return 'Registered';
-    return 'Unknown';
-  }
 
-  function getStatusColor(status: string) {
-    switch (status) {
-      case 'Open': return 'text-blue-500';
-      case 'Pre-auction': return 'text-yellow-500';
-      case 'In Auction': return 'text-green-500';
-      case 'Awaiting Claim': return 'text-orange-500';
-      case 'Registered': return 'text-purple-500';
-      default: return 'text-gray-500';
+    function getStatusColor(status: string): string {
+        switch (status) {
+            case 'Open': return 'text-blue-500';
+            case 'Pre-auction': return 'text-yellow-500';
+            case 'In Auction': return 'text-green-500';
+            case 'Awaiting Claim': return 'text-orange-500';
+            case 'Registered': return 'text-purple-500';
+            default: return 'text-gray-500';
+        }
     }
-  }
 
-  function getActionColor(action: string | undefined) {
-    switch (action) {
-      case 'RESERVE': return 'text-blue-500';
-      case 'BID': return 'text-green-500';
-      case 'TRANSFER': return 'text-purple-500';
-      case 'ROLLOUT': return 'text-yellow-500';
-      case 'REVOKE': return 'text-red-500';
-      case 'REJECT': return 'text-red-500';
-      default: return 'text-gray-500';
+    function getActionColor(action: string | undefined): string {
+        switch (action) {
+            case 'RESERVE': return 'text-blue-500';
+            case 'BID': return 'text-green-500';
+            case 'TRANSFER': return 'text-purple-500';
+            case 'ROLLOUT': return 'text-yellow-500';
+            case 'REVOKE': return 'text-red-500';
+            case 'REJECT': return 'text-red-500';
+            default: return 'text-gray-500';
+        }
     }
-  }
 
-  async function handlePageChange(event: CustomEvent<number>) {
-    const page = event.detail;
-    const response = await fetch(`/api/space/${spaceName}?page=${page}`);
-    if (response.ok) {
-      const newData = await response.json();
-      vmetaouts = newData.items;
-      pagination = newData.pagination;
-      currentPage = page;
-      document.querySelector('.history-section')?.scrollIntoView({ behavior: 'smooth' });
+    async function handlePageChange(event: CustomEvent<number>) {
+        const page = event.detail;
+        const response = await fetch(`/api/space/${spaceName}?page=${page}`);
+        if (response.ok) {
+            const newData = await response.json();
+            data = newData; // This will trigger the reactive statements
+            currentPage = page;
+            document.querySelector('.history-section')?.scrollIntoView({ behavior: 'smooth' });
+        }
     }
-  }
 </script>
 
-{#if !vmetaouts?.length}
-  <h1 class="page-title">{$page.params.name}</h1>
-  <div class="page-subtitle">
-    <p>This name is available.</p>
-    <p>You can open an auction for it, <a class="page-link" href="https://spacesprotocol.org/" target="_blank">learn more here.</a></p>
-  </div>
+{#if !data.stats.total}
+    <h1 class="page-title">{$page.params.name}</h1>
+    <div class="page-subtitle">
+        <p>This name is available.</p>
+        <p>You can open an auction for it, <a class="page-link" href="https://spacesprotocol.org/" target="_blank">learn more here.</a></p>
+    </div>
 {:else}
-  <div class="space-header">
-    <h1 class="space-title">{spaceName}</h1>
-    <div class="status-badge {getStatusColor(status)}">
-      <span class="status-indicator"></span>
-      <span class="status-text">{status}</span>
-    </div>
-  </div>
-
-  <div class="space-content">
-    <div class="stats-section">
-      <dl class="stats-group">
-        {#if numberOfBids > 0}
-          <div class="stat-item">
-            <dt class="stat-label">Highest bid</dt>
-            <dd class="stat-value">{formatBTC(highestBid)}</dd>
-          </div>
-          <div class="stat-item">
-            <dt class="stat-label">Number of bids</dt>
-            <dd class="stat-value">{numberOfBids}</dd>
-          </div>
-        {/if}
-        <div class="stat-item">
-          <dt class="stat-label">Total actions</dt>
-          <dd class="stat-value">{pagination?.total || 0}</dd>
+    <div class="space-header">
+        <h1 class="space-title">{spaceName}</h1>
+        <div class="status-badge {getStatusColor(status)}">
+            <span class="status-indicator"></span>
+            <span class="status-text">{status}</span>
         </div>
-        {#if expiryHeight}
-          <div class="stat-item">
-            <dt class="stat-label">Expires At</dt>
-            <dd class="stat-value">
-              <a href="/block/{expiryHeight}" class="block-link">Block {expiryHeight}</a>
-              {#if currentBlockHeight}
-                <div class="stat-subtitle">
-                  in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}
-                </div>
-              {/if}
-            </dd>
-          </div>
-        {/if}
-      </dl>
     </div>
 
-    {#if latestVmetaout?.claim_height}
-      <div class="claim-height-section">
-        <div class="claim-height-item">
-          <span class="claim-height-label">Claim height:</span>
-          <span class="claim-height-value">
-            <a href="/block/{latestVmetaout.claim_height}" class="block-link">
-              Block {latestVmetaout.claim_height}
-            </a>
-          </span>
-        </div>
-      </div>
-    {/if}
-
-    <div class="main-content-layout">
-      <div class="timeline-section">
-        <SpaceTimeline vmetaout={latestVmetaout} currentBlockHeight={currentBlockHeight} />
-      </div>
-
-      <div class="history-section">
-        <h2 class="section-title">Transaction History</h2>
-
-        <div class="history-container">
-          <table class="history-table">
-            <thead>
-              <tr>
-                <th class="table-header">Action</th>
-                <th class="table-header">Transaction</th>
+    <div class="space-content">
+        <div class="stats-section">
+            <dl class="stats-group">
                 {#if numberOfBids > 0}
-                  <th class="table-header text-right">Bid Amount</th>
-                {/if}
-              </tr>
-            </thead>
-            <tbody>
-              {#each vmetaouts as vmetaout}
-                <tr class="table-row">
-                  <td class="table-cell">
-                    <div class="action-cell">
-                      <div class={getActionColor(vmetaout.action)}>{vmetaout.action}</div>
-                      {#if vmetaout.reason}
-                        <div class="revoke-reason">Reason: {vmetaout.reason}</div>
-                      {/if}
+                    <div class="stat-item">
+                        <dt class="stat-label">Highest bid</dt>
+                        <dd class="stat-value">{formatBTC(highestBid)}</dd>
                     </div>
-                  </td>
-                  <td class="table-cell">
-                    <div class="transaction-cell">
-                      Transaction <TransactionLink txid={vmetaout.txid} truncate={true} maxLength={35} />
-                      <div class="tx-details">
-                        <a href={`/block/${vmetaout.block_height}`} class="block-link">
-                          Block {vmetaout.block_height}
-                        </a>
-                        <div class="time-detail">
-                          {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
-                        </div>
-                      </div>
+                    <div class="stat-item">
+                        <dt class="stat-label">Number of bids</dt>
+                        <dd class="stat-value">{numberOfBids}</dd>
                     </div>
-                  </td>
-                  {#if numberOfBids > 0}
-                    <td class="table-cell text-right">
-                      {#if vmetaout.action === 'BID'}
-                        {formatBTC(vmetaout.total_burned)} 
-                      {/if}
-                    </td>
-                  {/if}
-                </tr>
-                {#if vmetaout.script_error}
-                  <tr class="error-row">
-                    <td colspan="4" class="error-cell">
-                      Error: {vmetaout.script_error}
-                    </td>
-                  </tr>
                 {/if}
-              {/each}
-            </tbody>
-          </table>
-
-          {#if pagination && pagination.totalPages > 1}
-            <div class="pagination-container">
-              <Pagination 
-                currentPage={currentPage}
-                totalPages={pagination.totalPages}
-                on:pageChange={handlePageChange}
-              />
-            </div>
-          {/if}
+                <div class="stat-item">
+                    <dt class="stat-label">Total actions</dt>
+                    <dd class="stat-value">{data.stats.total}</dd>
+                </div>
+                {#if expiryHeight}
+                    <div class="stat-item">
+                        <dt class="stat-label">Expires At</dt>
+                        <dd class="stat-value">
+                            <a href="/block/{expiryHeight}" class="block-link">Block {expiryHeight}</a>
+                            {#if currentBlockHeight}
+                                <div class="stat-subtitle">
+                                    in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}
+                                </div>
+                            {/if}
+                        </dd>
+                    </div>
+                {/if}
+            </dl>
         </div>
-      </div>
-    </div>
-  </div>
-{/if}
 
+        {#if latestVmetaout?.claim_height}
+            <div class="claim-height-section">
+                <div class="claim-height-item">
+                    <span class="claim-height-label">Claim height:</span>
+                    <span class="claim-height-value">
+                        {#if latestVmetaout.claim_height <= currentBlockHeight }
+                            <a href="/block/{latestVmetaout.claim_height}" class="block-link"> Block {latestVmetaout.claim_height} </a>
+                        {:else }
+                            Block {latestVmetaout.claim_height}
+                        {/if}
+                    </span>
+                </div>
+            </div>
+        {/if}
+
+        <div class="main-content-layout">
+            <div class="timeline-section">
+                <SpaceTimeline 
+                    vmetaout={latestVmetaout} 
+                    currentBlockHeight={currentBlockHeight} 
+                />
+            </div>
+
+            <div class="history-section">
+                <h2 class="section-title">Transaction History</h2>
+                <div class="history-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th class="table-header">Action</th>
+                                <th class="table-header">Transaction</th>
+                                {#if numberOfBids > 0}
+                                    <th class="table-header text-right">Bid Amount</th>
+                                {/if}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {#each vmetaouts as vmetaout}
+                                <tr class="table-row">
+                                    <td class="table-cell">
+                                        <div class="action-cell">
+                                            <div class={getActionColor(vmetaout.action)}>
+                                                {vmetaout.action}
+                                            </div>
+                                            {#if vmetaout.reason}
+                                                <div class="revoke-reason">
+                                                    Reason: {vmetaout.reason}
+                                                </div>
+                                            {/if}
+                                        </div>
+                                    </td>
+                                    <td class="table-cell">
+                                        <div class="transaction-cell">
+                                            Transaction <TransactionLink 
+                                                txid={vmetaout.txid} 
+                                                truncate={true} 
+                                                maxLength={35} 
+                                            />
+                                            <div class="tx-details">
+                                                <a href={`/block/${vmetaout.block_height}`} class="block-link">
+                                                    Block {vmetaout.block_height}
+                                                </a>
+                                                <div class="time-detail">
+                                                    {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    {#if numberOfBids > 0}
+                                        <td class="table-cell text-right">
+                                            {#if vmetaout.action === 'BID'}
+                                                {formatBTC(vmetaout.total_burned)} 
+                                            {/if}
+                                        </td>
+                                    {/if}
+                                </tr>
+                                {#if vmetaout.script_error}
+                                    <tr class="error-row">
+                                        <td colspan="4" class="error-cell">
+                                            Error: {vmetaout.script_error}
+                                        </td>
+                                    </tr>
+                                {/if}
+                            {/each}
+                        </tbody>
+                    </table>
+
+                    {#if pagination && pagination.totalPages > 1}
+                        <div class="pagination-container">
+                            <Pagination 
+                                currentPage={currentPage} 
+                                totalPages={pagination.totalPages} 
+                                on:pageChange={handlePageChange} 
+                            />
+                        </div>
+                    {/if}
+                </div>
+            </div>
+        </div>
+    </div>
+{/if}
 <style>
   .page-title {
     font-size: var(--text-3xl);
