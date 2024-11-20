@@ -35,7 +35,6 @@ export function createTransaction(row: any): Transaction {
 
 function createVMetaOutput(row: any): TransactionVmetaout | null {
     if (!row.vmetaout_name) return null;
-    console.log(row)
     
     return {
         value: row.vmetaout_value,
@@ -89,7 +88,6 @@ export function processTransactions(queryResult: any, parseAddresses = true): Tr
     const vmetaoutMap = new Map<string, boolean>();
 
     for (const row of queryResult.rows) {
-        // console.log(row)
         const txid = row.txid.toString('hex');
         let transaction = transactionMap.get(txid);
 

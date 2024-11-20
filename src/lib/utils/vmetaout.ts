@@ -13,11 +13,9 @@ export function getSpaceStatus(vmetaout) {
 
 }
 
-
 export  function computeTimeline(vmetaout: Vmetaout, currentHeight: number): SpaceTimelineEvent[] {
     const blockTimeInSeconds = 600; // 10 minutes per block
     const status = vmetaout?.action;
-    /* console.log('status', status) */
     const claimHeight = vmetaout?.claim_height;
     const expireHeight = vmetaout?.expire_height;
 

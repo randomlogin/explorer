@@ -7,8 +7,6 @@
   export let currentBlockHeight: number;
   
   $: timeline = computeTimeline(vmetaout, currentBlockHeight);
-  $: console.log('timeline',vmetaout)
-  $: console.log('timeline',timeline)
 
   function computeTimeline(vmetaout: Vmetaout, currentHeight: number): SpaceTimelineEvent[] {
     const blockTimeInSeconds = 600; // 10 minutes per block

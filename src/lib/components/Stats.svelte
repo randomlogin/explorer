@@ -122,20 +122,6 @@ import relativeTime from 'dayjs/plugin/relativeTime';
     margin-bottom: var(--space-6);
 }
 
-.title {
-    font-size: var(--text-2xl);
-    font-weight: var(--font-bold);
-    color: var(--text-default);
-}
-
-.block-height {
-    display: flex;
-    gap: var(--space-2);
-    align-items: center;
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-}
-
 .details {
     display: grid;
     grid-template-columns: repeat(1, 1fr);

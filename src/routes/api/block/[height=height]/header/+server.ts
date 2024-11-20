@@ -4,7 +4,6 @@ import { type RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 
 export const GET: RequestHandler = async function ({ params }) {
-console.log('asking for header')
     const queryResult = await db.execute(sql `
         SELECT 
             blocks.*, 

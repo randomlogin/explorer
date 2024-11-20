@@ -18,10 +18,7 @@ const bytea = customType({
     // return value as Buffer;
   },
   toDriver(value: Buffer): Buffer {
-		console.log("in to driver", value)
 		return Buffer.from(value, 'hex')
-
-    // return value as Buffer;
   },
 });
 

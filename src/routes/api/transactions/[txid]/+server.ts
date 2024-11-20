@@ -108,16 +108,12 @@ export const GET: RequestHandler = async function ({ params }) {
     ORDER BY tx_inputs_data.input_index, tx_outputs_data.output_index
     `);
 
-
-
     if (queryResult.rows.length === 0) {
         return error(404, 'Transaction not found');
     }
 
     const [transaction] = processTransactions(queryResult, true);
 
-    // transaction.confirmations = transaction.max_height - transaction.block.height;
-    // console.log(json(transaction))
     const endTime = performance.now();
     const totalResponseTime = endTime - startTime;
     console.log(`in transaction by txid ${params.txid} Total Response Time: ${totalResponseTime.toFixed(2)} ms`);

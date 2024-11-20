@@ -25,7 +25,6 @@
 
     $: {
         if (data) {
-        /* console.log(data) */
             vmetaouts = data.items;
             latestVmetaout = data.latest;
             pagination = data.pagination;

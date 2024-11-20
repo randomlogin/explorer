@@ -5,12 +5,8 @@
     export let currentPage: number;
     export let totalPages: number;
 
-   $: console.log("In pagination", currentPage, "pageNumbers:", getPageNumbers(currentPage, totalPages));
-  
     
-    const dispatch = createEventDispatcher<{
-        pageChange: number;
-    }>();
+    const dispatch = createEventDispatcher<{ pageChange: number; }>();
 
     function changePage(page: number) {
         if (page !== currentPage && page >= 1 && page <= totalPages) {

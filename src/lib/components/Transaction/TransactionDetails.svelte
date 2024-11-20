@@ -124,16 +124,6 @@
     width: 100%;
 }
 
-/* .item, .output-item { */
-/*     display: flex; */
-/*     width: 100%; */
-/* } */
-
-/* .coinbase-input { */
-/*     color: var(--text-muted); */
-/*     width: 100%; */
-/* } */
-
 .input-details, .output-details {
     display: flex;
     width: 100%;
@@ -174,45 +164,6 @@
         grid-template-columns: 1fr;
     }
 }
-/* Replace `text-gray-500` in the template */
-
-/* Space action styles need dark theme support */
-.space-action {
-    font-size: 0.875rem;
-    line-height: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    background-color: var(--space-action-bg);
-    color: var(--space-action-text);
-    padding: 0.5rem;
-    border-radius: 0.375rem;
-    margin-top: 0.5rem;
-}
-
-.space-action-name {
-    font-weight: 500;
-    color: var(--space-action-text);
-    text-decoration: none;
-}
-
-.space-action-details {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-    margin-top: 0.25rem;
-}
-
-
-.space-action-additional {
-    margin-top: 0.25rem;
-}
-
-.space-action-name:hover {
-    text-decoration: underline;
-    text-underline-offset: 2px;
-}
-
 
 .input-left,
 .output-left {

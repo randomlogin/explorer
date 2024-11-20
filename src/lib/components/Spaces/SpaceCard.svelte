@@ -5,7 +5,6 @@
   dayjs.extend(LocalizedFormat);
 
   export let space;
-  /* $: console.log(space) */
   export let active;
   export let currentBlockHeight: number;
 </script>
