@@ -5,45 +5,34 @@
     
     export let currentHeight: number;
     export let withPagination = false;
-    export let itemsPerPage = 12;
+    export let itemsPerPage = 10;
+    export let layout: 'horizontal' | 'vertical' = 'horizontal'; // 'horizontal' for 2x5, 'vertical' for 5x2
 
-    interface Rollout {
-        name: string;
-        winning_bid: string;
-        block_height: number;
-        expire_height: number | null;
-        claim_height: number | null;
-    }
-
-    interface PaginationData {
-        total: number;
-        totalPages: number;
-    }
-
-    let rollouts: Rollout[] = [];
+    let rollouts = [];
     let loading = true;
     let error: string | null = null;
     let currentPage = 1;
-    let paginationData: PaginationData | null = null;
+    let paginationData: { total: number; totalPages: number; } | null = null;
+    
+    function calculateReleaseHeight(target: number, currentHeight: number): number {
+        const blocksLeft = (144 - (currentHeight % 144)) + target*144;
+        return currentHeight + blocksLeft;
+    }
     
     async function fetchRollouts(page = 1) {
         loading = true;
         error = null;
         
         try {
-            const url = withPagination ? `/api/actions/rollout?page=${page}&limit=${itemsPerPage}` : `/api/actions/rollout?limit=${itemsPerPage}`;
+            const url = withPagination 
+                ? `/api/actions/rollout?page=${page}&limit=${itemsPerPage}` 
+                : `/api/actions/rollout?limit=${itemsPerPage}`;
                 
             const response = await fetch(url);
             if (!response.ok) throw new Error('Failed to fetch rollouts');
             const data = await response.json();
             
-            rollouts = data.items.map((item: any) => ({
-                name: item.name,
-                winning_bid: item.winning_bid,
-                block_height: item.block_height,
-                expire_height: item.expire_height,
-                claim_height: item.claim_height
-            }));
+            rollouts = data.items;
 
             if (withPagination && data.pagination) {
                 paginationData = {
@@ -76,8 +65,8 @@
     </a>
     <div class="rollouts-container">
         {#if loading}
-            <div class="rollouts-grid">
-                {#each Array(withPagination ? itemsPerPage : 4) as _}
+            <div class="rollouts-grid" class:vertical={layout === 'vertical'}>
+                {#each Array(itemsPerPage) as _}
                     <div class="rollout-card skeleton-card">
                         <div class="skeleton-text-medium"></div>
                         <div class="skeleton-text-short"></div>
@@ -96,18 +85,23 @@
                 <span class="empty-text">No upcoming rollouts</span>
             </div>
         {:else}
-            <div class="rollouts-grid">
+            <div class="rollouts-grid" class:vertical={layout === 'vertical'}>
                 {#each rollouts as rollout}
-                    {@const releaseHeight = rollout.block_height}
+                    {@const releaseHeight = calculateReleaseHeight(rollout.target, currentHeight)}
                     <div class="rollout-card">
                         <a href="/space/{rollout.name}" class="space-name">
                             {rollout.name}
                         </a>
                         <div class="bid-amount">
-                            Bid: {formatBTC(rollout.winning_bid)} 
+                            Bid: {formatBTC(rollout.bid)} 
+                        </div>
+                        <div class="details">
+                            <div class="release-info" title="Release block height">
+                                Expected block: {releaseHeight}
+                            </div>
                         </div>
                         <div class="time-remaining" title="Based on estimated block time">
-                            Available in: {calculateTimeRemaining(releaseHeight+144, currentHeight)}
+                            Available in: {calculateTimeRemaining(releaseHeight, currentHeight)}
                         </div>
                     </div>
                 {/each}
@@ -132,11 +126,22 @@
         padding: var(--space-2);
     }
 
+    .section-title-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+        margin-bottom: var(--space-4);
+    }
+
+    .section-title-link:hover .rollouts-title {
+        color: var(--color-primary);
+    }
+
     .rollouts-title {
         font-size: var(--text-2xl);
         font-weight: 600;
         color: var(--text-primary);
-        margin-bottom: var(--space-4);
+        transition: color 0.2s;
     }
 
     .rollouts-container {
@@ -145,9 +150,15 @@
 
     .rollouts-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        grid-template-columns: repeat(5, 1fr); /* 2x5 layout by default */
+        grid-template-rows: repeat(2, 1fr);
         gap: var(--space-4);
         padding: var(--space-2);
+    }
+
+    .rollouts-grid.vertical {
+        grid-template-columns: repeat(2, 1fr); /* 5x2 layout */
+        grid-template-rows: repeat(5, 1fr);
     }
 
     .rollout-card {
@@ -157,7 +168,7 @@
         padding: var(--space-4);
         display: flex;
         flex-direction: column;
-        gap: var(--space-2);
+        gap: var(--space-3);
         transition: transform 0.2s, box-shadow 0.2s;
     }
 
@@ -171,6 +182,10 @@
         color: var(--color-primary);
         text-decoration: none;
         font-size: var(--text-lg);
+        line-height: 1.2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .space-name:hover {
@@ -181,12 +196,32 @@
         color: var(--text-base);
         font-size: var(--text-sm);
         font-weight: 500;
+        padding: var(--space-1) 0;
+    }
+
+    .details {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-2);
+        margin: var(--space-1) 0;
+    }
+
+    .release-info {
+        padding: var(--space-1) var(--space-2);
+        background: var(--bg-secondary);
+        border-radius: var(--radius-sm);
+        font-family: var(--font-mono);
+        font-size: var(--text-xs);
+        color: var(--text-muted);
+        white-space: nowrap;
     }
 
     .time-remaining {
         color: var(--text-muted);
         font-size: var(--text-sm);
         cursor: help;
+        margin-top: auto;
+        padding-top: var(--space-1);
     }
 
     .pagination-container {
@@ -195,7 +230,6 @@
         justify-content: center;
     }
 
-    /* Empty and Error states remain the same */
     .empty-card,
     .error-card {
         width: 100%;
@@ -223,7 +257,6 @@
         color: rgb(185 28 28);
     }
 
-    /* Skeleton styles remain the same */
     .skeleton-card {
         opacity: 0.7;
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -241,6 +274,7 @@
         width: 120px;
         background: var(--border-color);
         border-radius: var(--radius-sm);
+        margin-top: var(--space-2);
     }
 
     @keyframes pulse {
@@ -248,9 +282,27 @@
         50% { opacity: 0.4; }
     }
 
+    @media (max-width: 1024px) {
+        .rollouts-grid,
+        .rollouts-grid.vertical {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: auto;
+        }
+    }
+
     @media (max-width: 640px) {
-        .rollouts-grid {
+        .rollouts-grid,
+        .rollouts-grid.vertical {
             grid-template-columns: 1fr;
+        }
+
+        .details {
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+
+        .release-info {
+            width: fit-content;
         }
     }
 </style>

@@ -46,7 +46,7 @@
     </div>
 
     <div class="content-section rollout-section">
-        <Rollout currentHeight={currentBlockHeight} itemsPerPage={12} />
+        <Rollout currentHeight={currentBlockHeight} itemsPerPage={10} />
     </div>
 </div>
 
