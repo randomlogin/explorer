@@ -18,7 +18,7 @@ export const GET: RequestHandler = async function ({ url }) {
     const queryResult = await db.execute(sql`
         SELECT *
         FROM rollouts r
-        ORDER BY target ASC
+        ORDER BY target ASC, bid desc
         LIMIT ${limit}
         OFFSET ${offset}
     `);
