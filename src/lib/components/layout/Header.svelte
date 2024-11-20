@@ -10,7 +10,7 @@
 
 {#if PUBLIC_BTC_NETWORK === "testnet4"}
   <div class="justify-center bg-red-500 text-white text-center">
-    Spaces is currently on Testnet4
+    This is testnet4 explorer, all transactions have no value on this chain.
   </div>
 {/if}
 
