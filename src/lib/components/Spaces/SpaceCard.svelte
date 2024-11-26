@@ -1,7 +1,7 @@
 <script lang="ts">
   import dayjs from "dayjs";
   import LocalizedFormat from "dayjs/plugin/localizedFormat";
-  import { formatBTC } from "$lib/utils/formatters";
+  import { formatBTC, calculateTimeRemaining } from "$lib/utils/formatters";
   dayjs.extend(LocalizedFormat);
 
   export let space;
@@ -20,6 +20,7 @@
           {#if currentBlockHeight <= space.claim_height}
             <div class="status-container">
               <span class="status-label">Claimable at block {space.claim_height}</span>
+              <span class="status-note">({calculateTimeRemaining(space.claim_height, currentBlockHeight)})</span>
             </div>
           {:else }
             <div class="status-container">

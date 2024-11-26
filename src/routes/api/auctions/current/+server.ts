@@ -20,8 +20,9 @@ export const GET: RequestHandler = async function ({ request, url }) {
     limit = Math.min(limit, MAX_LIMIT);
     const offset = (page - 1) * limit;
 
-    const sortBy = (url.searchParams.get('sortBy') || 'bid_count');
-    const sortDirection = (url.searchParams.get('direction') || 'desc');
+    const sortBy = (url.searchParams.get('sortBy') || 'height');
+    // const sortBy = (url.searchParams.get('sortBy') || 'bid_count');
+    const sortDirection = (url.searchParams.get('direction') || 'asc');
     return json(await getAuctions({ 
         db, 
         ended: false,  // or false for current auctions

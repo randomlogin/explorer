@@ -15,7 +15,10 @@
     let paginationData: { total: number; totalPages: number; } | null = null;
     
     function calculateReleaseHeight(target: number, currentHeight: number): number {
-        const blocksLeft = (144 - (currentHeight % 144)) + target*144;
+        let blocksLeft = (144 - (currentHeight % 144) + 1) % 144 + target*144;
+        if (blocksLeft == 0) {
+            blocksLeft = 144
+        }
         return currentHeight + blocksLeft;
     }
     
