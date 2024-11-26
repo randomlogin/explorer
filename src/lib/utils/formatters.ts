@@ -21,7 +21,7 @@ export function calculateTimeRemaining(targetHeight: number, currentHeight: numb
     const hours = Math.floor((totalMinutesRemaining % (24 * 60)) / 60);
     const minutes = totalMinutesRemaining % 60;
 
-    return `in ${days}d ${hours}h ${minutes}m`;
+    return `${days}d ${hours}h ${minutes}m`;
 }
 
 export function formatDuration(seconds: number): string {

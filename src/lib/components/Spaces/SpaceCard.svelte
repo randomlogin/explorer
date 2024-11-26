@@ -20,7 +20,7 @@
           {#if currentBlockHeight <= space.claim_height}
             <div class="status-container">
               <span class="status-label">Claimable at block {space.claim_height}</span>
-              <span class="status-note">({calculateTimeRemaining(space.claim_height, currentBlockHeight)})</span>
+              <span class="status-note">(in {calculateTimeRemaining(space.claim_height, currentBlockHeight)})</span>
             </div>
           {:else }
             <div class="status-container">
