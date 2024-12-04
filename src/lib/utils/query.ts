@@ -131,129 +131,27 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination }: 
     return queryResult
 }
 
-export async function getAuctions_old({ 
-    db, 
-    ended = false, 
-    limit = 20, 
+export async function getAuctions({
+    db,
+    limit = 20,
     offset = 0,
     sortBy = 'height',
     sortDirection = 'desc'
-}: AuctionQueryParams): Promise<PaginationResult> {
-    // Construct the ORDER BY clause based on sortBy
+}) {
     const orderByClause = {
-        height: sql`height ${sql.raw(sortDirection)}, name ASC`,
+        height: sql`claim_height ${sql.raw(sortDirection)}, name ASC`,
         name: sql`name ${sql.raw(sortDirection)}`,
-        total_burned: sql`total_burned ${sql.raw(sortDirection)}, height DESC`,
-        value: sql`total_burned ${sql.raw(sortDirection)}, height DESC`,
-        bid_count: sql`bid_count ${sql.raw(sortDirection)}, height DESC`
-    }[sortBy];
-
-    const queryResult = await db.execute(sql`
-                                         WITH latest_rollouts AS (
-    SELECT DISTINCT ON (vmetaouts.name)
-        vmetaouts.*,
-        blocks.height as rollout_height
-    FROM vmetaouts
-    JOIN blocks ON vmetaouts.block_hash = blocks.hash
-    WHERE vmetaouts.action = 'ROLLOUT'
-    ORDER BY vmetaouts.name, blocks.height DESC
-),
-non_ended_with_bids AS (
-    SELECT
-        lr.*,
-        COALESCE(latest_bid.total_burned, lr.total_burned) as max_total_burned,
-        COUNT(*) OVER() as total_count
-    FROM latest_rollouts lr
-    LEFT JOIN LATERAL (
-        SELECT vmetaouts.total_burned
-        FROM vmetaouts
-        JOIN blocks ON vmetaouts.block_hash = blocks.hash
-        WHERE vmetaouts.name = lr.name
-        AND vmetaouts.action = 'BID'
-        AND blocks.height >= lr.rollout_height
-        ORDER BY blocks.height DESC
-        LIMIT 1
-    ) latest_bid ON true
-    WHERE NOT EXISTS (
-        SELECT 1
-        FROM vmetaouts
-        JOIN blocks ON vmetaouts.block_hash = blocks.hash
-        WHERE vmetaouts.name = lr.name
-        AND (vmetaouts.action = 'TRANSFER' or vmetaouts.action = 'REVOKE')
-        AND blocks.height > lr.rollout_height
-    )
-    ORDER BY ${
-        sortBy === 'total_burned' ? sql`COALESCE(latest_bid.total_burned, lr.total_burned) ${sql.raw(sortDirection)}, lr.rollout_height DESC` :
-        sortBy === 'height' ? sql`lr.rollout_height ${sql.raw(sortDirection)}, lr.name ASC` :
-        sql`lr.rollout_height DESC, lr.name ASC`
-    }
-    LIMIT ${limit}
-    OFFSET ${offset}
-),
-latest_actions AS (
-    SELECT DISTINCT ON (vmetaouts.name)
-        vmetaouts.*,
-        blocks.height,
-        blocks.time,
-        non_ended_with_bids.total_count,
-        COUNT(*) OVER (PARTITION BY vmetaouts.name) as bid_count
-    FROM vmetaouts
-    JOIN blocks ON vmetaouts.block_hash = blocks.hash
-    JOIN non_ended_with_bids ON vmetaouts.name = non_ended_with_bids.name
-    WHERE (vmetaouts.action = 'BID' or vmetaouts.action = 'ROLLOUT')
-    AND blocks.height >= non_ended_with_bids.rollout_height
-    ORDER BY vmetaouts.name, blocks.height DESC
-)
-SELECT * FROM latest_actions
-ORDER BY ${orderByClause}
-`);
-
-    // Rest of the processing remains the same
-    const totalCount = queryResult.rows[0]?.total_count || 0;
-    const page = Math.floor(offset / limit) + 1;
-    const totalPages = Math.ceil(totalCount / limit);
-
-    const processedResult = queryResult.rows.map(row => ({
-        ...row,
-        block_hash: row.block_hash.toString('hex'),
-        txid: row.txid.toString('hex'),
-    }));
-
-    return {
-        items: processedResult,
-        pagination: {
-            page,
-            limit,
-            total_items: totalCount,
-            total_pages: totalPages,
-            has_next: page < totalPages,
-            has_prev: page > 1
-        }
-    };
-}
-
-export async function getAuctions({ 
-    db, 
-    ended = false, 
-    limit = 20, 
-    offset = 0,
-    sortBy = 'height',
-    sortDirection = 'desc'
-}: AuctionQueryParams): Promise<PaginationResult> {
-    // Construct the ORDER BY clause based on sortBy
-    const orderByClause = {
-        height: sql`height ${sql.raw(sortDirection)}, name ASC`,
-        name: sql`name ${sql.raw(sortDirection)}`,
-        total_burned: sql`total_burned ${sql.raw(sortDirection)}, height DESC`,
-        value: sql`total_burned ${sql.raw(sortDirection)}, height DESC`,
-        bid_count: sql`bid_count ${sql.raw(sortDirection)}, height DESC`
+        total_burned: sql`total_burned ${sql.raw(sortDirection)}, claim_height DESC`,
+        value: sql`total_burned ${sql.raw(sortDirection)}, claim_height DESC`,
+        bid_count: sql`bid_count ${sql.raw(sortDirection)}, claim_height DESC`
     }[sortBy];
 
     const queryResult = await db.execute(sql`
 WITH latest_rollouts AS (
     SELECT DISTINCT ON (vmetaouts.name)
         vmetaouts.*,
-        blocks.height as rollout_height FROM vmetaouts
+        blocks.height as rollout_height
+    FROM vmetaouts
     JOIN blocks ON vmetaouts.block_hash = blocks.hash
     WHERE vmetaouts.action = 'ROLLOUT'
     ORDER BY vmetaouts.name, blocks.height DESC
@@ -284,9 +182,9 @@ non_ended_with_stats AS (
         AND blocks.height > lr.rollout_height
     )
     ORDER BY ${
-        sortBy === 'total_burned' ? sql`max_total_burned ${sql.raw(sortDirection)}, rollout_height DESC` :
-        sortBy === 'bid_count' ? sql`bid_count ${sql.raw(sortDirection)}, rollout_height DESC` :
-        sql`rollout_height ${sql.raw(sortDirection)}, name ASC`
+        sortBy === 'total_burned' ? sql`max_total_burned ${sql.raw(sortDirection)}, claim_height DESC` :
+        sortBy === 'bid_count' ? sql`bid_count ${sql.raw(sortDirection)}, claim_height DESC` :
+        sql`claim_height ${sql.raw(sortDirection)}, name ASC`
     }
     LIMIT ${limit}
     OFFSET ${offset}
@@ -297,7 +195,8 @@ latest_actions AS (
         blocks.height,
         blocks.time,
         non_ended_with_stats.total_count,
-        non_ended_with_stats.bid_count
+        non_ended_with_stats.bid_count,
+        non_ended_with_stats.rollout_height
     FROM vmetaouts
     JOIN blocks ON vmetaouts.block_hash = blocks.hash
     JOIN non_ended_with_stats ON vmetaouts.name = non_ended_with_stats.name
@@ -307,9 +206,8 @@ latest_actions AS (
 )
 SELECT * FROM latest_actions
 ORDER BY ${orderByClause}
-`);
+    `);
 
-    // Rest of the processing remains the same
     const totalCount = queryResult.rows[0]?.total_count || 0;
     const page = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(totalCount / limit);
@@ -335,13 +233,11 @@ ORDER BY ${orderByClause}
 
 export async function getEndedAuctions({ 
     db, 
-    ended = false, 
     limit = 20, 
     offset = 0,
     sortBy = 'height',
     sortDirection = 'desc'
 }: AuctionQueryParams): Promise<PaginationResult> {
-    // Construct the ORDER BY clause based on sortBy
     const orderByClause = {
         height: sql`height ${sql.raw(sortDirection)}, name ASC`,
         name: sql`name ${sql.raw(sortDirection)}`,
@@ -410,7 +306,6 @@ SELECT * FROM latest_actions
 ORDER BY ${orderByClause}
 `);
 
-    // Rest of the processing remains the same
     const totalCount = queryResult.rows[0]?.total_count || 0;
     const page = Math.floor(offset / limit) + 1;
     const totalPages = Math.ceil(totalCount / limit);
