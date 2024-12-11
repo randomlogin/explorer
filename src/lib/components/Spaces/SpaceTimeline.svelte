@@ -5,7 +5,7 @@
 
   export let vmetaout: Vmetaout;
   export let currentBlockHeight: number;
-  
+
   $: timeline = computeTimeline(vmetaout, currentBlockHeight);
 
   function computeTimeline(vmetaout: Vmetaout, currentHeight: number): SpaceTimelineEvent[] {
@@ -14,71 +14,95 @@
     const claimHeight = vmetaout?.claim_height;
     const expireHeight = vmetaout?.expire_height;
 
-
-    return [
-      {
-        name: "Open",
-        description: "Submit an open transaction to propose the space for auction",
-        done: !['REVOKE'].includes(status),
-        current: status === 'REVOKE'
-      },
-      {
-        name: "Pre-auction",
-        description: "Top 10 highest-bid spaces advance to auctions daily",
-        done: status === 'BID' && claimHeight || ['TRANSFER', 'ROLLOUT'].includes(status),
-        current: status === 'RESERVE' || (status === 'BID' && !claimHeight)
-      },
-      {
-        name: "Auction",
-        description: claimHeight 
-          ? currentBlockHeight > claimHeight 
-            ? {
-                beforeLink: "Auction ended at block",
-                link: {
-                    href: `/block/${claimHeight}`,
-                    text: `#${claimHeight}`
-                }
-              }
-            : `Auction last block: #${claimHeight-1}`
-          : "Auction has ended",
-        done: (status === 'TRANSFER') || ((status === 'BID' || status === 'ROLLOUT') && (claimHeight &&
-        currentBlockHeight > claimHeight)),
-        current: (status === 'BID' || status === 'ROLLOUT') && claimHeight && (currentBlockHeight <  claimHeight ),
-        estimatedTime: (status === 'BID' || status === 'ROLLOUT') && claimHeight && (currentBlockHeight <  claimHeight )
-          ? ((claimHeight - currentHeight) > 0 
-              ? (claimHeight - currentHeight) * blockTimeInSeconds 
-              : undefined) 
-          : undefined
-      },
-      {
-        name: "Awaiting claim",
-        description: "Winner can claim the space, but the space can still be outbid",
-        done: status === 'TRANSFER',
-        current: (status === 'BID' || status === 'ROLLOUT') && claimHeight && claimHeight <= currentHeight,
-        elapsedTime: (status === 'BID' && claimHeight  && claimHeight <= currentHeight)
-          ? (currentHeight - claimHeight) * blockTimeInSeconds
-          : undefined
-      },
-      {
-        name: "Registered",
-        description: expireHeight 
-          ? currentBlockHeight > expireHeight
-            ?  {
-                beforeLink: "Registration expired at",
-                link: {
-                    href: `/block/${expireHeight}`,
-                    text: `#${expireHeight}`
-                }
-              }
-            : `Registration expires at block #${expireHeight}`
-          : "Space is registered",
-        done: status === 'TRANSFER',
-        current: status === 'TRANSFER',
-        estimatedTime: (expireHeight && ['TRANSFER', 'ROLLOUT'].includes(status))
-          ? (expireHeight - currentHeight) * blockTimeInSeconds 
-          : undefined
-      }
-    ];
+return [
+ {
+   name: "Open",
+   description: "Submit an open transaction to propose the space for auction",
+   done: !['REVOKE'].includes(status),
+   current: status === 'REVOKE'
+ },
+ {
+   name: "Pre-auction", 
+   description: "Top 10 highest-bid spaces advance to auctions daily",
+   done: status === 'BID' && claimHeight || ['TRANSFER', 'ROLLOUT'].includes(status),
+   current: status === 'RESERVE' || (status === 'BID' && !claimHeight)
+ },
+ {
+   name: "Auction",
+   description: (() => {
+     if (!claimHeight) {
+       return "Auction has not started";
+     }
+     if (currentBlockHeight > claimHeight) {
+       return {
+         beforeLink: "Auction ended at block",
+         link: {
+           href: `/block/${claimHeight}`,
+           text: `#${claimHeight}`
+         }
+       };
+     }
+     return `Auction last block: #${claimHeight-1}`;
+   })(),
+   done: (() => {
+     if (status === 'TRANSFER') {
+       return true;
+     }
+     if ((status === 'BID' || status === 'ROLLOUT') && claimHeight && currentBlockHeight > claimHeight) {
+       return true;
+     }
+     return false;
+   })(),
+   current: (status === 'BID' || status === 'ROLLOUT') && claimHeight && (currentBlockHeight < claimHeight),
+   estimatedTime: (() => {
+     if ((status === 'BID' || status === 'ROLLOUT') && claimHeight && (currentBlockHeight < claimHeight)) {
+       if ((claimHeight - currentHeight) > 0) {
+         return (claimHeight - currentHeight) * blockTimeInSeconds;
+       }
+       return undefined;
+     }
+     return undefined;
+   })()
+ },
+ {
+   name: "Awaiting claim",
+   description: "Winner can claim the space, but the space can still be outbid",
+   done: status === 'TRANSFER',
+   current: (status === 'BID' || status === 'ROLLOUT') && claimHeight && claimHeight <= currentHeight,
+   elapsedTime: (() => {
+     if (status === 'BID' && claimHeight && claimHeight <= currentHeight) {
+       return (currentHeight - claimHeight) * blockTimeInSeconds;
+     }
+     return undefined;
+   })()
+ },
+ {
+   name: "Registered",
+   description: (() => {
+     if (!expireHeight) {
+       return "Space is registered";
+     }
+     if (currentBlockHeight > expireHeight) {
+       return {
+         beforeLink: "Registration expired at",
+         link: {
+           href: `/block/${expireHeight}`,
+           text: `#${expireHeight}`
+         }
+       };
+     }
+     return `Registration expires at block #${expireHeight}`;
+   })(),
+   done: status === 'TRANSFER',
+   current: status === 'TRANSFER',
+   estimatedTime: (() => {
+     if (expireHeight && ['TRANSFER', 'ROLLOUT'].includes(status)) {
+       return (expireHeight - currentHeight) * blockTimeInSeconds;
+     }
+     return undefined;
+   })()
+ }
+];
   }
 </script>
 
@@ -91,7 +115,7 @@
             class="timeline-connector"
             class:connector-done={event.done}
             class:connector-pending={!event.done}
-          />
+            />
         {/if}
 
         <div class="timeline-content">
@@ -101,7 +125,7 @@
               class:dot-done={event.done} 
               class:dot-current={event.current} 
               class:dot-pending={!event.done && !event.current}
-            >
+              >
               {#if event.done}
                 <svg class="checkmark" viewBox="0 0 20 20">
                   <path 
@@ -109,45 +133,45 @@
                     fill-rule="evenodd" 
                     d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" 
                     clip-rule="evenodd"
-                  />
+                    />
                 </svg>
               {:else}
                 <span 
                   class="dot-inner" 
                   class:dot-inner-current={event.current}
-                />
+                  />
               {/if}
-            </span>
-          </span>
-
-          <div class="timeline-text">
-            <span class="timeline-title" class:title-current={event.current}>
-              {event.name}
-              {#if event.estimatedTime !== undefined && event.estimatedTime > 0}
-                <span class="timeline-time">
-                  (ends in {formatDuration(event.estimatedTime)})
                 </span>
-              {/if}
-              {#if event.elapsedTime !== undefined}
-                <span class="timeline-time">
-                  ({formatDuration(event.elapsedTime)} ago)
-                </span>
-              {/if}
             </span>
 
-            {#if event.description}
-              <span class="timeline-description">
-                {#if typeof event.description === 'string'}
-                  {event.description}
-                {:else}
-                  {event.description.beforeLink}
-                  <a href={event.description.link.href} class="block-link">
-                    {event.description.link.text}
-                  </a>
+            <div class="timeline-text">
+              <span class="timeline-title" class:title-current={event.current}>
+                {event.name}
+                {#if event.estimatedTime !== undefined && event.estimatedTime > 0}
+                  <span class="timeline-time">
+                    (ends in {formatDuration(event.estimatedTime)})
+                  </span>
+                {/if}
+                {#if event.elapsedTime !== undefined}
+                  <span class="timeline-time">
+                    ({formatDuration(event.elapsedTime)} ago)
+                  </span>
                 {/if}
               </span>
-{/if}
-          </div>
+
+              {#if event.description}
+                <span class="timeline-description">
+                  {#if typeof event.description === 'string'}
+                    {event.description}
+                  {:else}
+                    {event.description.beforeLink}
+                    <a href={event.description.link.href} class="block-link">
+                      {event.description.link.text}
+                    </a>
+                  {/if}
+                </span>
+              {/if}
+            </div>
         </div>
       </li>
     {/each}
