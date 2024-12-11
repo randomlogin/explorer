@@ -33,6 +33,8 @@ return [
      if (!claimHeight && status == 'BID') {
        return "Auction has not started";
      }
+
+     if (claimHeight) {
      if (currentBlockHeight > claimHeight) {
        return {
          beforeLink: "Auction ended at block",
@@ -43,6 +45,10 @@ return [
        };
      }
      return `Auction last block: #${claimHeight-1}`;
+     } else {
+     return "Auction has ended"
+
+     }
    })(),
    done: (() => {
      if (status === 'TRANSFER') {
