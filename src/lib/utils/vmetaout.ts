@@ -41,7 +41,7 @@ export  function computeTimeline(vmetaout: Vmetaout, currentHeight: number): Spa
       {
         name: "In Auction",
         description: claimHeight ?
-          `Auction ends at block #${claimHeight}` :
+          `Auction last block: #${claimHeight-1}` :
           "Awaiting auction start",
         done: status === 'TRANSFER',
         current: status === 'ROLLOUT' || status === 'BID' && claimHeight,

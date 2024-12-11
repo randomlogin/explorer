@@ -14,6 +14,7 @@
     const claimHeight = vmetaout?.claim_height;
     const expireHeight = vmetaout?.expire_height;
 
+
     return [
       {
         name: "Open",
@@ -31,10 +32,17 @@
         name: "Auction",
         description: claimHeight 
           ? currentBlockHeight > claimHeight 
-            ? `Auction ended at <a href="/block/${claimHeight}" class="text-link">block #${claimHeight}</a>`
-            : `Auction ends at block #${claimHeight}`
+            ? {
+                beforeLink: "Auction ended at block",
+                link: {
+                    href: `/block/${claimHeight}`,
+                    text: `#${claimHeight}`
+                }
+              }
+            : `Auction last block: #${claimHeight-1}`
           : "Auction has ended",
-        done: (status === 'TRANSFER' || status === 'BID' || status === 'ROLLOUT') && (claimHeight && currentBlockHeight > claimHeight),
+        done: (status === 'TRANSFER') || ((status === 'BID' || status === 'ROLLOUT') && (claimHeight &&
+        currentBlockHeight > claimHeight)),
         current: (status === 'BID' || status === 'ROLLOUT') && claimHeight && (currentBlockHeight <  claimHeight ),
         estimatedTime: (status === 'BID' || status === 'ROLLOUT') && claimHeight && (currentBlockHeight <  claimHeight )
           ? ((claimHeight - currentHeight) > 0 
@@ -55,7 +63,13 @@
         name: "Registered",
         description: expireHeight 
           ? currentBlockHeight > expireHeight
-            ? `Registration expired at <a href="/block/${expireHeight}" class="text-link">block #${expireHeight}</a>`
+            ?  {
+                beforeLink: "Registration expired at",
+                link: {
+                    href: `/block/${expireHeight}`,
+                    text: `#${expireHeight}`
+                }
+              }
             : `Registration expires at block #${expireHeight}`
           : "Space is registered",
         done: status === 'TRANSFER',
@@ -120,11 +134,19 @@
                 </span>
               {/if}
             </span>
+
             {#if event.description}
               <span class="timeline-description">
-                {event.description}
+                {#if typeof event.description === 'string'}
+                  {event.description}
+                {:else}
+                  {event.description.beforeLink}
+                  <a href={event.description.link.href} class="block-link">
+                    {event.description.link.text}
+                  </a>
+                {/if}
               </span>
-            {/if}
+{/if}
           </div>
         </div>
       </li>
@@ -252,5 +274,16 @@
   .title-current {
     color: var(--color-primary);
   }
+
+  .block-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: var(--transition-colors);
+  }
+
+  .block-link:hover {
+    text-decoration: underline;
+  }
+
 
 </style>

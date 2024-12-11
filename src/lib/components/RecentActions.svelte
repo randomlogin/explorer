@@ -2,8 +2,15 @@
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
-    import { formatBTC } from '$lib/utils/formatters';
+    import { formatBTC, getActionColor } from '$lib/utils/formatters';
     import EmptyState from '$lib/components/layout/EmptyState.svelte';
+    import Pagination from '$lib/components/Pagination.svelte';
+    import { fade } from 'svelte/transition';
+
+    export let itemsPerPage = 9;
+    export let showPagination = false;
+    export let gridView = true;
+    export let title = false;
 
     interface RecentAction {
         action: 'RESERVE' | 'BID' | 'TRANSFER' | 'ROLLOUT' | 'REVOKE';
@@ -15,46 +22,71 @@
         reason?: string;
     }
 
-    let actions: RecentAction[] = [];
-    let loading = true;
-    let error: string | null = null;
-
-    function getActionColor(action: string): string {
-        switch (action) {
-            case 'RESERVE': return 'text-blue-500';
-            case 'BID': return 'text-green-500';
-            case 'TRANSFER': return 'text-purple-500';
-            case 'ROLLOUT': return 'text-yellow-500';
-            case 'REVOKE': return 'text-red-500';
-            default: return 'text-gray-500';
-        }
+    interface PaginationData {
+        total: number;
+        page: number;
+        totalPages: number;
+        itemsPerPage: number;
     }
 
-    async function fetchRecentActions() {
+    let actions: RecentAction[] = [];
+    let pagination: PaginationData | null = null;
+    let currentPage = 1;
+    let isInitialLoading = true;
+    let isLoadingData = false;
+    let error: string | null = null;
+
+    async function fetchActions(page: number) {
+        if (isInitialLoading) {
+            isLoadingData = false;
+        } else {
+            isLoadingData = true;
+        }
+
+        error = null;
+
         try {
-            const response = await fetch('/api/auctions/recent');
+            const queryParams = new URLSearchParams({
+                limit: itemsPerPage.toString()
+            });
+
+            if (showPagination) {
+                queryParams.set('page', page.toString());
+            }
+
+            const response = await fetch(`/api/auctions/recent?${queryParams}`);
             if (!response.ok) throw new Error('Failed to fetch recent actions');
-            actions = await response.json();
+            const data = await response.json();
+
+            actions = data.items;
+            pagination = data.pagination;
+            currentPage = page;
         } catch (e) {
             error = e instanceof Error ? e.message : 'Failed to load recent actions';
         } finally {
-            loading = false;
+            isInitialLoading = false;
+            isLoadingData = false;
         }
     }
 
+    function handlePageChange(event: CustomEvent<number>) {
+        fetchActions(event.detail);
+    }
+
     onMount(() => {
-        fetchRecentActions();
+        fetchActions(1);
     });
 </script>
 
-
 <section class="recent-actions">
+    {#if title }
     <h2 class="section-title">Recent Spaces Actions</h2>
-
-    {#if loading}
-        <div class="actions-container">
-            <div class="actions-grid">
-                {#each Array(4) as _}
+    {/if}
+    <div class="content-wrapper">
+    <div class="actions-container">
+        {#if isInitialLoading}
+            <div class={gridView ? "actions-grid" : "actions-list"} transition:fade={{ duration: 200 }}>
+                {#each Array(itemsPerPage) as _}
                     <div class="action-card skeleton-card">
                         <div class="skeleton-text-medium" />
                         <div class="action-meta">
@@ -71,19 +103,19 @@
                     </div>
                 {/each}
             </div>
-        </div>
-    {:else if error}
-        <div class="error-card">
-            <span class="error-icon">⚠️</span>
-            <span class="error-text">{error}</span>
-        </div>
-    {:else if actions.length == 0}
-        <EmptyState message="No recent actions found" />
-    {:else}
-        <div class="actions-container">
-            <div class="actions-grid">
-                {#each actions.slice(0,9) as action}
-                    <div class="action-card">
+        {:else if error}
+            <div class="error-card" transition:fade={{ duration: 200 }}>
+                <span class="error-icon">⚠️</span>
+                <span class="error-text">{error}</span>
+            </div>
+        {:else if actions.length === 0}
+            <div transition:fade={{ duration: 200 }}>
+                <EmptyState message="No recent actions found" />
+            </div>
+        {:else}
+            <div class={gridView ? "actions-grid" : "actions-list"} transition:fade={{ duration: 200 }}>
+                {#each actions as action, i (`${action.txid}-${i}`)}
+                    <div class="action-card {gridView ? 'grid-card' : 'list-card'}" class:loading-overlay={isLoadingData}>
                         <div class="action-header">
                             <div class="action-main">
                                 <span class="action-badge {getActionColor(action.action)}">{action.action}</span>
@@ -117,11 +149,23 @@
                     </div>
                 {/each}
             </div>
-        </div>
-    {/if}
+        {/if}
+                        </div>
+
+        {#if showPagination && pagination && pagination.totalPages > 1}
+            <div class="pagination-container">
+                <Pagination
+                    currentPage={pagination.page}
+                    totalPages={pagination.totalPages}
+                    on:pageChange={handlePageChange}
+                />
+            </div>
+        {/if}
+    </div>
 </section>
 
 <style>
+    /* Base Layout */
     .recent-actions {
         width: 100%;
         padding: var(--space-2);
@@ -133,27 +177,45 @@
         margin-bottom: var(--space-6);
     }
 
+    /* Container and Grid/List Layout */
     .actions-container {
-        width: 100%;
+        position: relative;
+        min-height: 500px;
     }
 
-    .actions-grid {
+    .actions-grid, .actions-list {
+        position: absolute;
+        width: 100%;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: var(--space-6);
     }
 
+    .actions-list {
+        grid-template-columns: 1fr;
+    }
+
+    /* Card Styles */
     .action-card {
         display: flex;
         flex-direction: column;
-        height: 160px;
-        padding: var(--space-6);
         background: var(--bg-primary-light);
         border: var(--border-width-1) solid var(--color-primary);
-        border-bottom-width: var(--border-width-8);
-        border-radius: var(--border-radius-3xl);
         box-shadow: var(--shadow-sm);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .grid-card {
+        height: 160px;
+        padding: var(--space-6);
+        border-bottom-width: var(--border-width-8);
+        border-radius: var(--border-radius-3xl);
+    }
+
+    .list-card {
+        padding: var(--space-4);
+        border-left-width: var(--border-width-8);
+        border-radius: var(--border-radius-lg);
     }
 
     .action-card:hover {
@@ -161,8 +223,8 @@
         box-shadow: var(--shadow-md);
     }
 
-
-        .action-header {
+    /* Card Header */
+    .action-header {
         flex: 0 0 auto;
         display: flex;
         justify-content: space-between;
@@ -173,16 +235,16 @@
     .action-main {
         display: flex;
         align-items: center;
-        gap: var(--space-4); /* Increased from var(--space-3) */
+        gap: var(--space-4);
     }
 
     .action-badge {
         font-size: var(--font-size-sm);
         font-weight: 500;
-        padding: var(--space-1) var(--space-3); /* Increased horizontal padding */
+        padding: var(--space-1) var(--space-3);
         border-radius: var(--border-radius-lg);
-        min-width: 80px; /* Added to ensure consistent width */
-        text-align: center; /* Center the text */
+        min-width: 80px;
+        text-align: center;
     }
 
     .space-name {
@@ -190,7 +252,7 @@
         text-decoration: none;
         font-size: var(--font-size-lg);
         font-weight: 600;
-        flex: 1; /* Allow it to take remaining space */
+        flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -206,12 +268,7 @@
         color: var(--color-primary);
     }
 
-    .revoke-reason {
-        font-size: var(--font-size-sm);
-        color: var(--color-error);
-        margin-bottom: var(--space-4);
-    }
-
+    /* Card Metadata */
     .action-meta {
         margin-top: auto;
         padding-top: var(--space-4);
@@ -247,7 +304,13 @@
         text-decoration: underline;
     }
 
-    /* Skeleton styles */
+    /* Loading States */
+    .loading-overlay {
+        opacity: 0.5;
+        pointer-events: none;
+        transition: opacity 0.2s ease;
+    }
+
     .skeleton-card {
         opacity: 0.7;
         animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -273,6 +336,7 @@
         50% { opacity: 0.4; }
     }
 
+    /* Error State */
     .error-card {
         padding: var(--space-4);
         background: rgb(254 226 226);
@@ -285,14 +349,23 @@
         margin-right: var(--space-2);
     }
 
+    /* Pagination */
+    .pagination-container {
+        position: relative;
+        margin-top: var(--space-8);
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Responsive */
     @media (max-width: 640px) {
         .actions-grid {
             grid-template-columns: 1fr;
         }
 
-        .action-card {
-            padding: var(--space-4);
+        .grid-card {
             height: 140px;
+            padding: var(--space-4);
         }
 
         .action-meta {
@@ -300,3 +373,4 @@
         }
     }
 </style>
+

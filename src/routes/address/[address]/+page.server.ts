@@ -8,9 +8,5 @@ export const load: ServerLoad = async ({ fetch, params }) => {
     
     const data = await transaction.json();
 
-    // const testnet = PUBLIC_BTC_NETWORK == "testnet4" ? "testnet4/" : "";
-    // if (!data.spaceHistories.length)
-    //     redirect(302, `https://mempool.space/${testnet}tx/${params.txid}`);
-
     return data;
 };

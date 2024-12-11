@@ -42,7 +42,10 @@
     </div>
 
     <div class="content-section actions-section">
-        <RecentActions />
+            <a href="/actions" class="section-title-link">
+                <h1 class="section-title"> Recent Spaces Actions </h1>
+            </a>
+            <RecentActions title={false} />
     </div>
 
     <div class="content-section rollout-section">

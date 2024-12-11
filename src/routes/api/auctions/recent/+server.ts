@@ -1,26 +1,35 @@
 import db from '$lib/db';
-import { error, json } from '@sveltejs/kit';
-import { type RequestHandler } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
+import type { RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 
-export const GET: RequestHandler = async function ({ request, url }) {
-    // const status = url.searchParams.get('status');
-    // const sortBy = url.searchParams.get('sort');
-    // const direction = url.searchParams.get('direction');
-    //
-    // let orderBy: any;
-    const limit = 10;
+export const GET: RequestHandler = async function ({ url }) {
+    const page = Number(url.searchParams.get('page')) || 1;
+    const limit = Number(url.searchParams.get('limit')) || 20;
+    const offset = (page - 1) * limit;
 
-    const queryResult = await db.execute(sql`
-        SELECT 
-        v.*,
-        b.height,
-        b.time
+    // Get total count
+    const countResult = await db.execute(sql`
+        SELECT COUNT(*) as total
         FROM vmetaouts v
         JOIN blocks b ON v.block_hash = b.hash
-        WHERE NOT b.orphan and v.name is not null
+        WHERE NOT b.orphan AND v.name IS NOT NULL;
+    `);
+
+    const total = Number(countResult.rows[0].total);
+
+    // Get paginated results
+    const queryResult = await db.execute(sql`
+        SELECT 
+            v.*,
+            b.height,
+            b.time
+        FROM vmetaouts v
+        JOIN blocks b ON v.block_hash = b.hash
+        WHERE NOT b.orphan AND v.name IS NOT NULL
         ORDER BY b.height DESC
-        LIMIT ${limit};
+        LIMIT ${limit}
+        OFFSET ${offset};
     `);
 
     const processedResult = queryResult.rows.map(row => ({
@@ -29,6 +38,13 @@ export const GET: RequestHandler = async function ({ request, url }) {
         txid: row.txid.toString('hex'),
     }));
 
-    return json(processedResult)
-
-}
+    return json({
+        items: processedResult,
+        pagination: {
+            total,
+            page,
+            totalPages: Math.ceil(total / limit),
+            itemsPerPage: limit
+        }
+    });
+};

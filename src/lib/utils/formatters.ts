@@ -6,6 +6,38 @@ export const numberFormatter = {
     format: formatNumberWithSpaces
 };
 
+export function getActionColor(action: string): string {
+    switch (action) {
+        case 'RESERVE': return 'text-blue-500';
+        case 'BID': return 'text-green-500';
+        case 'TRANSFER': return 'text-purple-500';
+        case 'ROLLOUT': return 'text-yellow-500';
+        case 'REVOKE': return 'text-red-500';
+        default: return 'text-gray-500';
+    }
+}
+
+export function getHighestBid(vmetaouts): number {
+    // Find the last rollout
+    const lastRollout = vmetaouts
+    .filter(v => v.action === 'ROLLOUT')
+    .sort((a, b) => b.block_height - a.block_height)[0];
+
+    // If no rollout, get highest bid from all bids
+    if (!lastRollout) {
+        return Math.max(0, ...vmetaouts .filter(v => v.action === 'BID') .map(v => Number(v.total_burned ?? 0)));
+    }
+
+    // Get the last bid before rollout and all bids after
+    const relevantBids = vmetaouts
+    .filter(v => v.action === 'BID' && (v.block_height > lastRollout.block_height ||
+                                        v === vmetaouts .filter(bid => bid.action === 'BID' && bid.block_height < lastRollout.block_height)
+    .sort((a, b) => b.block_height - a.block_height)[0]));
+
+    return Math.max(0, ...relevantBids.map(v => Number(v.total_burned ?? 0)));
+}
+
+
 
 export function calculateTimeRemaining(targetHeight: number, currentHeight: number): string {
     const BLOCK_TIME_MINUTES = 10;
@@ -41,16 +73,33 @@ export function formatDuration(seconds: number): string {
 }
 
 export function formatBTC(satoshis: bigint | undefined): string {
-    // 0.0001 BTC = 10000 satoshis
-    const BTC_THRESHOLD = 10000n;
     if (satoshis === undefined || satoshis === null) {
-        return '0 sat';  // or return whatever default value makes sense
+        return '0 sat';
     }
+
+    const BTC_THRESHOLD = 10000n;
+
     if (satoshis >= BTC_THRESHOLD) {
         const btc = Number(satoshis) / 100000000;
-        return btc.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 4 }) + ' BTC';
-        // return btc.toLocaleString('en-US', { minimumFractionDigits: 8, maximumFractionDigits: 8 }) + ' BTC';
-    } else {
-        return satoshis.toLocaleString() + ' sat';
+        const btcString = btc.toString();
+        const [whole, decimal] = btcString.split('.');
+        if (!decimal) {
+            return `${whole} BTC`;
+        }
+
+        // Find last non-zero digit
+        const lastSignificantIndex = decimal.split('').reverse() .findIndex(char => char !== '0');
+
+        if (lastSignificantIndex === -1) {
+            // No significant digits after decimal
+            return `${whole} BTC`;
+        }
+
+        // Calculate required decimal places (minimum 3, maximum 8)
+        const significantDecimals = Math.max( 3, Math.min(8, decimal.length - lastSignificantIndex));
+
+        return btc.toLocaleString('en-US', { minimumFractionDigits: significantDecimals, maximumFractionDigits: significantDecimals }) + ' BTC';
     }
+
+    return satoshis.toLocaleString() + ' sat';
 }

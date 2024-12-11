@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { formatDuration, formatBTC } from "$lib/utils/formatters";
+    import { formatDuration, formatBTC, getHighestBid } from "$lib/utils/formatters";
     import dayjs from "dayjs";
     import LocalizedFormat from "dayjs/plugin/localizedFormat";
     import { page } from '$app/stores';
@@ -34,14 +34,9 @@
             numberOfBids = data.stats.bidCount;
             status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
 
-            // Calculate highest bid from current page
-            highestBid = vmetaouts
-                .filter(event => event.action === 'BID')
-                .reduce((max, event) => {
-                    const totalBurned = event.total_burned ?? 0;
-                    return Math.max(max, Number(totalBurned));
-                }, 0);
-        }
+            //TODO calculate highest bid of all pages
+            highestBid = getHighestBid(vmetaouts)
+            }
     }
 
     function computeSpaceStatus(vmetaout: Vmetaout | null, currentHeight: number): string {
