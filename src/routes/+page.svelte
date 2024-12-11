@@ -43,7 +43,7 @@
 
     <div class="content-section actions-section">
             <a href="/actions" class="section-title-link">
-                <h1 class="section-title"> Recent Spaces Actions </h1>
+                <h1 class="section-title"> Recent spaces actions </h1>
             </a>
             <RecentActions title={false} />
     </div>

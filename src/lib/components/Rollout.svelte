@@ -64,7 +64,7 @@
 
 <div class="rollouts-wrapper">
     <a href="/auctions/rollout" class="section-title-link">
-        <h2 class="rollouts-title">Upcoming Rollouts</h2>
+        <h2 class="rollouts-title">Upcoming rollouts</h2>
     </a>
     <div class="rollouts-container">
         {#if loading}
