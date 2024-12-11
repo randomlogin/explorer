@@ -30,7 +30,7 @@ return [
  {
    name: "Auction",
    description: (() => {
-     if (!claimHeight) {
+     if (!claimHeight && status == 'BID') {
        return "Auction has not started";
      }
      if (currentBlockHeight > claimHeight) {
