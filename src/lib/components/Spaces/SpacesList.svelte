@@ -25,7 +25,7 @@
     let currentPage = 1;
     let totalPages = 0;
     let sortField: SortField = $page.url.searchParams.get('sortBy') as SortField || 'height';
-    let sortDirection: SortDirection = $page.url.searchParams.get('direction') as SortDirection || 'desc';
+    let sortDirection: SortDirection = $page.url.searchParams.get('direction') as SortDirection || 'asc';
     
     async function fetchSpaces() {
         if (!fetchUrl) {
