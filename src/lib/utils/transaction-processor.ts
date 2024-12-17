@@ -1,6 +1,7 @@
 import type { Transaction, TransactionInput, TransactionOutput, TransactionVmetaout } from '$lib/types/transaction';
 import { parseAddress } from '$lib/utils/address-parsers';
 
+
 export function createTransaction(row: any): Transaction {
     const transaction: Transaction = {
         txid: row.txid.toString('hex'),
@@ -58,7 +59,7 @@ export function createTransactionInput(row: any): TransactionInput {
         index_prevout: row.input_index_prevout,
         sequence: row.input_sequence,
         coinbase: row.input_coinbase ? row.input_coinbase.toString('hex') : null,
-        txinwitness: row.input_txinwitness,
+        txinwitness: row.input_txinwitness ? row.input_txinwitness.map(buf => buf.toString('hex')) : null,
         prev_value: row.input_prev_value,
         prev_scriptpubkey: row.input_prev_scriptpubkey ?  row.input_prev_scriptpubkey.toString('hex') : undefined,
         sender_address: row.input_prev_scriptpubkey ?  parseAddress(row.input_prev_scriptpubkey) : null

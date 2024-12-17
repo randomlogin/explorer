@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { formatDuration, formatBTC, getHighestBid } from "$lib/utils/formatters";
+    import { formatDuration, formatBTC } from "$lib/utils/formatters";
     import dayjs from "dayjs";
     import LocalizedFormat from "dayjs/plugin/localizedFormat";
     import { page } from '$app/stores';
@@ -7,6 +7,7 @@
     import SpaceTimeline from '$lib/components/Spaces/SpaceTimeline.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
     import type { SpaceData, Vmetaout } from '$lib/types/space';
+    import { API_ROUTES } from '$lib/routes';
     
     dayjs.extend(LocalizedFormat);
 
@@ -23,6 +24,8 @@
     let numberOfBids: number;
     let highestBid: number;
 
+    $: console.log(data)
+
     $: {
         if (data) {
             vmetaouts = data.items;
@@ -31,11 +34,10 @@
             spaceName = latestVmetaout?.name;
             currentBlockHeight = data.currentHeight;
             expiryHeight = latestVmetaout?.expire_height;
-            numberOfBids = data.stats.bidCount;
+            numberOfBids = data.stats.total_bids;
             status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
 
-            //TODO calculate highest bid of all pages
-            highestBid = getHighestBid(vmetaouts)
+            highestBid = data.stats.highest_bid
             }
     }
 
@@ -78,20 +80,28 @@
             default: return 'text-gray-500';
         }
     }
-
     async function handlePageChange(event: CustomEvent<number>) {
-        const page = event.detail;
-        const response = await fetch(`/api/space/${spaceName}?page=${page}`);
-        if (response.ok) {
-            const newData = await response.json();
-            data = newData; // This will trigger the reactive statements
-            currentPage = page;
-            document.querySelector('.history-section')?.scrollIntoView({ behavior: 'smooth' });
-        }
+    const page = event.detail;
+    const response = await fetch(API_ROUTES.space.history(spaceName, page));
+
+    if (response.ok) {
+        const historyData = await response.json();
+
+        // Update only the paginated data, keep stats the same
+        data = {
+            ...data,
+            items: historyData.items,
+            pagination: historyData.pagination
+        };
+
+        currentPage = page;
+        document.querySelector('.history-section')?.scrollIntoView({ behavior: 'smooth' });
     }
+}
+
 </script>
 
-{#if !data.stats.total}
+{#if !data.stats.total_actions || data.stats.total_actions == 0}
     <h1 class="page-title">{$page.params.name}</h1>
     <div class="page-subtitle">
         <p>This name is available.</p>
@@ -121,33 +131,37 @@
                 {/if}
                 <div class="stat-item">
                     <dt class="stat-label">Total actions</dt>
-                    <dd class="stat-value">{data.stats.total}</dd>
+                    <dd class="stat-value">{data.stats.total_actions}</dd>
                 </div>
                 {#if expiryHeight}
                     <div class="stat-item">
                         <dt class="stat-label">Expires At</dt>
                         <dd class="stat-value">
-                            <a href="/block/{expiryHeight}" class="block-link">Block {expiryHeight}</a>
-                            {#if currentBlockHeight}
-                                <div class="stat-subtitle">
-                                    in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}
-                                </div>
-                            {/if}
+                        {#if expiryHeight <= currentBlockHeight }
+                            <a href="/block/{expiryHeight}" class="block-link"> Block {expiryHeight} </a>
+                        {:else }
+                            Block {expiryHeight}
+                        {/if}
+                        {#if currentBlockHeight}
+                            <div class="stat-subtitle">
+                                in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}
+                            </div>
+                        {/if}
                         </dd>
                     </div>
                 {/if}
             </dl>
         </div>
 
-        {#if latestVmetaout?.claim_height}
+        {#if data.stats.claim_height}
             <div class="claim-height-section">
                 <div class="claim-height-item">
                     <span class="claim-height-label">Claim height:</span>
                     <span class="claim-height-value">
-                        {#if latestVmetaout.claim_height <= currentBlockHeight }
-                            <a href="/block/{latestVmetaout.claim_height}" class="block-link"> Block {latestVmetaout.claim_height} </a>
+                        {#if data.stats.claim_height <= currentBlockHeight }
+                            <a href="/block/{data.stats.claim_height}" class="block-link"> Block {data.stats.claim_height} </a>
                         {:else }
-                            Block {latestVmetaout.claim_height}
+                            Block {data.stats.claim_height}
                         {/if}
                     </span>
                 </div>

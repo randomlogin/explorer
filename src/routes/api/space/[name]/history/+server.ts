@@ -88,6 +88,7 @@ export const GET: RequestHandler = async function ({ params, url }) {
     OFFSET ${offset}
     `);
 
+
     const processVmetaout = (row: any): Vmetaout => ({
         ...row,
         block_hash: row.block_hash.toString('hex'),

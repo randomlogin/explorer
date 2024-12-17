@@ -17,7 +17,7 @@
     <div class="details">
         <div class="detail-item">
             {#if blockHeader.height == -2}
-                <span class="detail-value">Orphaned block</span>
+                <span class="detail-value">Orphan block</span>
             {:else if blockHeader.height == -1}
                 <span class="detail-value">Mempool</span>
             {:else}

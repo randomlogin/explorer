@@ -3,6 +3,7 @@
   import Spinner from "$lib/components/Spinner.svelte";
   import { onMount } from "svelte";
   import { blockStore } from '$lib/stores/blockStore';
+  import { API_ROUTES } from '$lib/routes';
 
   let search = "";
   let timeout: any;
@@ -69,7 +70,7 @@
         path = `/tx/${value.txid}`;
         break;
       case "block":
-        const identifier = value.height || value.hash;
+        const identifier = value.hash || value.height;
         await blockStore.fetchBlockData(identifier);
         path = `/block/${identifier}`;
         break;
