@@ -9,7 +9,7 @@
     type SortDirection = 'asc' | 'desc';
     
     const SORT_OPTIONS = [
-        { label: 'Time left until auction end', field: 'height' },
+        { label: 'Time left until the end of auction', field: 'height' },
         { label: 'Bid value', field: 'total_burned' },
         { label: 'Number of bids', field: 'bid_count' }
     ] as const;
