@@ -37,6 +37,7 @@ export const GET: RequestHandler = async function ({ params }) {
             ti.index_prevout AS input_index_prevout,
             ti.sequence AS input_sequence,
             ti.coinbase AS input_coinbase,
+            ti.scriptsig AS input_scriptsig,
             ti.txinwitness AS input_txinwitness,
             prev_out.scriptpubkey AS input_prev_scriptpubkey,
             prev_out.value AS input_prev_value
@@ -83,6 +84,7 @@ export const GET: RequestHandler = async function ({ params }) {
         tx_inputs_data.input_sequence,
         tx_inputs_data.input_coinbase,
         tx_inputs_data.input_txinwitness,
+        tx_inputs_data.input_scriptsig,
         tx_inputs_data.input_prev_scriptpubkey,
         tx_inputs_data.input_prev_value,
         tx_outputs_data.output_index,

@@ -49,6 +49,7 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination }: 
             tx_inputs.sequence AS input_sequence,
             tx_inputs.coinbase AS input_coinbase,
             tx_inputs.txinwitness AS input_txinwitness,
+            tx_inputs.scriptsig AS input_scriptsig,
             prev_out.scriptpubkey AS input_prev_scriptpubkey,
             prev_out.value AS input_prev_value,
             ROW_NUMBER() OVER (PARTITION BY tx_inputs.txid ORDER BY tx_inputs.index ASC) AS rn
@@ -106,6 +107,7 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination }: 
         limited_tx_inputs.input_txinwitness AS input_txinwitness,
         limited_tx_inputs.input_prev_scriptpubkey,
         limited_tx_inputs.input_prev_value,
+        limited_tx_inputs.input_scriptsig,
 
         limited_tx_outputs.output_index AS output_index,
         limited_tx_outputs.output_value AS output_value,

@@ -60,6 +60,7 @@ export function createTransactionInput(row: any): TransactionInput {
         sequence: row.input_sequence,
         coinbase: row.input_coinbase ? row.input_coinbase.toString('hex') : null,
         txinwitness: row.input_txinwitness ? row.input_txinwitness.map(buf => buf.toString('hex')) : null,
+        scriptsig: row.input_scriptsig ?  row.input_scriptsig.toString('hex') : undefined,
         prev_value: row.input_prev_value,
         prev_scriptpubkey: row.input_prev_scriptpubkey ?  row.input_prev_scriptpubkey.toString('hex') : undefined,
         sender_address: row.input_prev_scriptpubkey ?  parseAddress(row.input_prev_scriptpubkey) : null

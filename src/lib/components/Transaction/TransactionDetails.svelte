@@ -29,29 +29,21 @@
                                         </div>
                                     {/if}
                                     <div class="transaction">
-                                        Created in: <TransactionLink txid={input.hash_prevout} truncate={false} maxLength={20} />
+                                        Created in: <TransactionLink txid={input.hash_prevout} truncate={true} />
                                     </div>
-                                    <details class="witness-details">
-                                        <summary class="witness-summary">Details</summary>
-                                        <div class="witness-content">
-                                            {#if Array.isArray(input.txinwitness) && input.txinwitness.length > 0}
+                                    {#if Array.isArray(input.txinwitness) && input.txinwitness.length > 0}
+                                        <details class="witness-details">
+                                            <summary class="witness-summary">Witness</summary>
+                                            <div class="witness-content">
                                                 {#each input.txinwitness as witness, i}
                                                     <div class="witness-item">
                                                         <span class="witness-index">#{i}</span>
                                                         <span class="witness-data">{witness}</span>
                                                     </div>
                                                 {/each}
-                                            {:else if input.txinwitness}
-                                                <div class="witness-item">
-                                                    <span class="witness-data">{input.txinwitness}</span>
-                                                </div>
-                                            {:else}
-                                                <div class="witness-item">
-                                                    <span class="witness-empty">Empty</span>
-                                                </div>
-                                            {/if}
-                                        </div>
-                                    </details>
+                                            </div>
+                                        </details>
+                                    {/if}
                                 </div>
 
                                 <div class="input-right">
