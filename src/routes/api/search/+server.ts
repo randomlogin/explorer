@@ -5,7 +5,6 @@ import { sql } from 'drizzle-orm';
 import { addressToScriptPubKey } from '$lib/utils/address-parsers';
 
 export const GET: RequestHandler = async function ({ url }) {
-    const startTime = performance.now();
     const search = url.searchParams.get('q');
     if (!search)
         return json([]);
@@ -107,8 +106,5 @@ export const GET: RequestHandler = async function ({ url }) {
         result.push({ type: "space", value: space });
     }
     
-    const endTime = performance.now();
-    const totalResponseTime = endTime - startTime;
-    console.log(`in search Total Response Time: ${totalResponseTime.toFixed(2)} ms`);
     return json(result);
 }

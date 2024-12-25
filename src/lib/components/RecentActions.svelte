@@ -1,6 +1,7 @@
 <script lang="ts">
     import { onMount } from 'svelte';
     import dayjs from 'dayjs';
+    import { ROUTES } from '$lib/routes';
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
     import { formatBTC, getActionColor } from '$lib/utils/formatters';
     import EmptyState from '$lib/components/layout/EmptyState.svelte';
@@ -11,6 +12,9 @@
     export let showPagination = false;
     export let gridView = true;
     export let title = false;
+    export let apiEndpoint: string = ROUTES.api.auctions.recent; // Default endpoint
+    export let spaceRoute: string = ROUTES.space; // Route for space links
+    export let blockRoute: string = ROUTES.block; // Route for block links
 
     interface RecentAction {
         action: 'RESERVE' | 'BID' | 'TRANSFER' | 'ROLLOUT' | 'REVOKE';
@@ -54,7 +58,7 @@
                 queryParams.set('page', page.toString());
             }
 
-            const response = await fetch(`/api/auctions/recent?${queryParams}`);
+            const response = await fetch(`${apiEndpoint}?${queryParams}`);
             if (!response.ok) throw new Error('Failed to fetch recent actions');
             const data = await response.json();
 
@@ -119,7 +123,7 @@
                         <div class="action-header">
                             <div class="action-main">
                                 <span class="action-badge {getActionColor(action.action)}">{action.action}</span>
-                                <a href="/space/{action.name}" class="space-name">{action.name}</a>
+                                <a href="{spaceRoute}/{action.name}" class="space-name">{action.name}</a>
                             </div>
                             {#if action.action === 'BID' && action.total_burned}
                                 <div class="bid-value">
@@ -129,22 +133,26 @@
                         </div>
 
                         <div class="action-meta">
+                            {#if action.height}
                             <div class="meta-item">
                                 <span class="meta-label">Block</span>
-                                <a href="/block/{action.height}" class="meta-value block-link">
+                                <a href="{blockRoute}/{action.height}" class="meta-value block-link">
                                     #{action.height}
                                 </a>
                             </div>
+                            {/if}
                             <div class="meta-item">
                                 <span class="meta-label">Tx</span>
-                                <TransactionLink txid={action.txid} truncate={true} maxLength={6} />
+                                <TransactionLink txid={action.txid} truncate={true} maxLength={10} />
                             </div>
+                            {#if action.time}
                             <div class="meta-item">
                                 <span class="meta-label">Time</span>
                                 <span class="meta-value">
                                     {dayjs.unix(action.time).format('DD MMM HH:mm')}
                                 </span>
                             </div>
+                            {/if}
                         </div>
                     </div>
                 {/each}
@@ -163,7 +171,6 @@
         {/if}
     </div>
 </section>
-
 <style>
     /* Base Layout */
     .recent-actions {
@@ -180,11 +187,11 @@
     /* Container and Grid/List Layout */
     .actions-container {
         position: relative;
-        min-height: 500px;
+        min-height: auto;
     }
 
     .actions-grid, .actions-list {
-        position: absolute;
+        position: relative;
         width: 100%;
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

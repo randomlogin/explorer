@@ -80,7 +80,7 @@
                                 </div>
                                 <div class="transaction">
                                     {#if output.spender}
-                                        Spent in: <TransactionLink txid={output.spender.txid} truncate={false} maxLength={30} />
+                                        Spent in: <TransactionLink txid={output.spender.txid} truncate={true} maxLength={30} />
                                     {:else}
                                         Unspent
                                     {/if}
@@ -102,6 +102,7 @@
         </div>
     </div>
 </div>
+
 <style>
     @import '$lib/styles/variables.css';
 
@@ -240,7 +241,7 @@
         text-align: right; /* Ensure right alignment */
     }
 
-    .witness-details {
+  .witness-details {
         margin-top: var(--space-2);
         font-size: var(--text-sm);
     }
@@ -249,18 +250,14 @@
         cursor: pointer;
         padding: var(--space-2);
         color: var(--text-muted);
-        border: var(--border-width-1) solid var(--border-color);
+        background: var(--bg-primary);
         border-radius: var(--border-radius);
-    }
-
-    .witness-summary:hover {
-        background-color: var(--bg-hover);
     }
 
     .witness-content {
         margin-top: var(--space-2);
         padding: var(--space-3);
-        background-color: var(--bg-subtle);
+        background: var(--bg-primary);
         border-radius: var(--border-radius);
     }
 
@@ -268,7 +265,6 @@
         display: flex;
         gap: var(--space-2);
         padding: var(--space-1) 0;
-        overflow-x: auto;
     }
 
     .witness-index {
@@ -279,11 +275,51 @@
     .witness-data {
         font-family: var(--font-mono);
         word-break: break-all;
+        font-size: var(--text-sm);
     }
 
-        .witness-empty {
-        color: var(--text-muted);
-        font-style: italic;
-    }
+    @media (max-width: 768px) {
+        .transaction-io {
+            grid-template-columns: 1fr;
+            gap: var(--space-4);
+        }
 
+        .section-title {
+            font-size: var(--text-lg);
+        }
+
+        .item-wrapper {
+            padding: var(--space-3);
+        }
+
+        .input-details,
+        .output-details {
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .value {
+            margin-top: var(--space-2);
+            text-align: left;
+            padding-left: 0;
+        }
+
+        .address,
+        .transaction {
+            flex-wrap: wrap;
+            gap: var(--space-1);
+        }
+
+        /* Ensure labels stay on their own line on mobile */
+        .address > :first-child,
+        .transaction > :first-child {
+            width: 100%;
+            margin-bottom: var(--space-1);
+        }
+
+        .witness-content {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+    }
 </style>

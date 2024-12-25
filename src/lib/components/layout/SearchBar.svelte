@@ -3,7 +3,7 @@
   import Spinner from "$lib/components/Spinner.svelte";
   import { onMount } from "svelte";
   import { blockStore } from '$lib/stores/blockStore';
-  import { API_ROUTES } from '$lib/routes';
+  import { ROUTES } from '$lib/routes';
 
   let search = "";
   let timeout: any;
@@ -25,7 +25,7 @@
     searching = true;
     showSearchResults = false;
     highlightedResultIdx = -1;
-    searchResults = await fetch("/api/search?q=" + search).then((x) => x.json());
+    searchResults = await fetch(ROUTES.api.search(search)).then((x) => x.json());
     searching = false;
     if (!navigatingToSpacePage) {
       showSearchResults = true;

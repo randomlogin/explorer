@@ -7,7 +7,6 @@ import { processTransactions } from '$lib/utils/transaction-processor';
 export const GET: RequestHandler = async function ({ params }) {
     const txid = Buffer.from(params.txid, 'hex');
 
-    const startTime = performance.now();
     const queryResult = await db.execute(sql`
     WITH transaction_data AS (
         SELECT
@@ -115,10 +114,6 @@ export const GET: RequestHandler = async function ({ params }) {
     }
 
     const [transaction] = processTransactions(queryResult, true);
-
-    const endTime = performance.now();
-    const totalResponseTime = endTime - startTime;
-    console.log(`in transaction by txid ${params.txid} Total Response Time: ${totalResponseTime.toFixed(2)} ms`);
 
     return json(transaction);
 }

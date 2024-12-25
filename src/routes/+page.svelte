@@ -16,11 +16,10 @@
         <Stats />
     </div>
     
-    
     <div class="content-section auctions-section">
         <div class="auctions-header">
             <a href="/auctions/current" class="section-title-link">
-                <h1 class="section-title"> Spaces in auction </h1>
+                <h1 class="section-title">Spaces in auction</h1>
             </a>
         </div>
         <div class="auctions-grid">
@@ -41,15 +40,17 @@
         </div>
     </div>
 
-    <div class="content-section actions-section">
-            <a href="/actions" class="section-title-link">
-                <h1 class="section-title"> Recent spaces actions </h1>
+    <div class="content-sections-wrapper">
+        <div class="content-section actions-section">
+            <a href="/actions/recent" class="section-title-link">
+                <h1 class="section-title">Recent spaces actions</h1>
             </a>
             <RecentActions title={false} />
-    </div>
+        </div>
 
-    <div class="content-section rollout-section">
-        <Rollout currentHeight={currentBlockHeight} itemsPerPage={10} />
+        <div class="content-section rollout-section">
+            <Rollout currentHeight={currentBlockHeight} itemsPerPage={10} />
+        </div>
     </div>
 </div>
 
@@ -68,15 +69,24 @@
         width: 100%;
     }
 
+    .content-sections-wrapper {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-8);
+    }
+
     .stats-section {
         margin-bottom: var(--space-4);
     }
 
-    .rollout-section, .actions-section {
+    .rollout-section, 
+    .actions-section {
         background: var(--bg-elevated);
         border-radius: var(--border-radius-lg);
         padding: var(--space-4);
         box-shadow: var(--shadow-sm);
+        min-height: auto;
+        height: auto;
     }
 
     .auctions-section {
@@ -154,6 +164,10 @@
             gap: var(--space-6);
         }
 
+        .content-sections-wrapper {
+            gap: var(--space-6);
+        }
+
         .auctions-header {
             flex-direction: column;
             align-items: flex-start;
@@ -162,13 +176,17 @@
 
         .auctions-grid {
             gap: var(--space-4);
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: 1fr;
         }
 
         .section-title {
             font-size: var(--font-size-2xl);
         }
 
+        .rollout-section,
+        .actions-section {
+            padding: var(--space-3);
+            margin-bottom: var(--space-6);
+        }
     }
-
 </style>

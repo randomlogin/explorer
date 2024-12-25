@@ -149,6 +149,8 @@
 
     .rollouts-container {
         width: 100%;
+        position: relative; /* If needed */
+        height: auto;
     }
 
     .rollouts-grid {

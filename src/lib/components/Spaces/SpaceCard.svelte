@@ -8,6 +8,7 @@
   export let active;
   export let currentBlockHeight: number;
 </script>
+
 <div class="space-card">
   <a href={`/space/${space.name}`} class="space-card-link">
     <div class="space-card-container">
@@ -34,8 +35,6 @@
             </div>
         {/if}
       </div>
-      <!--
-      -->
 
       <div class="space-card-footer">
         <div class="bid-info">
@@ -85,6 +84,7 @@
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
   }
+
   .space-card-header {
     flex: 0 0 auto;
     margin-bottom: var(--space-4);
@@ -133,6 +133,7 @@
     padding: var(--space-2) var(--space-3);
     border-radius: var(--border-radius-lg);
     font-weight: 500;
+    white-space: nowrap;
   }
 
   .status-note {
@@ -151,25 +152,34 @@
     justify-content: space-between;
     align-items: center;
     font-size: var(--font-size-sm);
+    gap: var(--space-2);
   }
 
   .bid-label {
     color: var(--text-muted);
+    flex-shrink: 0;
   }
 
   .bid-value {
     font-weight: 500;
+    min-width: 85px;
+    text-align: right;
   }
 
   @media (max-width: 640px) {
     .space-card-container {
       padding: var(--space-4);
-      height: 180px;
+      min-height: 180px;
+      height: auto;
     }
     
     .space-card-footer {
-      padding-bottom: var(--space-1); /* Slightly less padding on mobile */
-      margin-bottom: var(--space-1); /* Slightly less margin on mobile */
+      padding-top: var(--space-3);
+      margin-top: var(--space-2);
+    }
+
+    .bid-value {
+      min-width: 75px;
     }
   }
 </style>

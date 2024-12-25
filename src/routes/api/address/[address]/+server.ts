@@ -6,7 +6,6 @@ import { addressToScriptPubKey } from '$lib/utils/address-parsers';
 import { processTransactions } from '$lib/utils/transaction-processor';
 
 export async function GET({ params, url }) {
-    const startTime = performance.now();
     try {
         const limit = Number(url.searchParams.get('limit')) || 25;
         const outputsLimit = 10
@@ -166,6 +165,9 @@ LEFT JOIN tx_outputs_data ON transaction_data.txid = tx_outputs_data.txid
 ORDER BY transaction_data.block_height DESC, transaction_data.tx_index DESC,
         tx_inputs_data.input_index, tx_outputs_data.output_index
         `);
+// console.log(JSON.stringify(queryResult.rows, null, 2)); // Pretty print the entire result
+// or
+// queryResult.rows.forEach(row => console.log(row['QUERY PLAN']));
 
         if (queryResult.rows.length === 0) {
             return json({
@@ -191,9 +193,6 @@ ORDER BY transaction_data.block_height DESC, transaction_data.tx_index DESC,
         }
 
         const transactions = processTransactions(queryResult, true);
-        const endTime = performance.now();
-        const totalResponseTime = endTime - startTime;
-        console.log(`in address Total Response Time: ${totalResponseTime.toFixed(2)} ms`);
         return json({
             address: params.address,
             stats: {

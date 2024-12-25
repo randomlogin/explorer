@@ -1,26 +1,62 @@
-export const API_ROUTES = {
-    space: {
-        history: (name: string, page?: number) => `/api/space/${name}/history${page ? `?page=${page}` : ''}`,
-        stats: (name: string) => `/api/space/${name}/stats`,
-        info: (name: string) => `/api/space/${name}`,
+export const ROUTES = {
+    // Frontend routes
+    pages: {
+        home: '/',
+        actions: '/actions/recent',
+        mempool: '/mempool',
+        psbt: '/psbt',
+        
+        auctions: {
+            current: '/auctions/current',
+            past: '/auctions/past',
+            rollout: '/auctions/rollout'
+        },
+        
+        space: '/space',
+        
+        block: '/block',
+        
+        transaction: '/tx',
+        
+        address: '/address'
     },
-    address: (address: string) => `/api/address/${address}`,
-    actions: () => `/api/actions/rollout`,
-    auctions: {
-        current: () => `/api/auctions/current`,
-        past: () => `/api/auctions/past`,
-        recent: () => `/api/auctions/recent`,
-    },
-    block: {
-        txs: (identifier) => `/api/block/${identifier}`,
-        header: (identifier) => `/api/block/${identifier}`,
-    },
-    search:() => `/api/search`, 
-    transaction: {
-        get: (txid: string) => `/api/tx/${txid}`,
-        list: (page?: number) => `/api/transactions${page ? `?page=${page}` : ''}`
-    },
-    stats: {
-        overview: () => '/api/stats'
+
+    // API routes
+    api: {
+        actions: {
+            rollout: '/api/actions/rollout',
+            recent: '/api/actions/recent'
+        },
+        
+        address: (address: string) => `/api/address/${address}`,
+        
+        auctions: {
+            current: '/api/auctions/current',
+            mempool: '/api/auctions/mempool',
+            past: '/api/auctions/past',
+            recent: '/api/auctions/recent'
+        },
+        
+        block: {
+            header: {
+                byHash: (hash: string) => `/api/block/${hash}/header`,
+                byHeight: (height: number | string) => `/api/block/${height}/header`
+            },
+            transactions: {
+                byHash: (hash: string) => `/api/block/${hash}/txs`,
+                byHeight: (height: number | string) => `/api/block/${height}/txs`
+            }
+        },
+        
+        search: (query: string) => `/api/search?q=${encodeURIComponent(query)}`,
+        
+        space: {
+            history: (name: string, page = 1) => `/api/space/${name}/history?page=${page}`,
+            stats: (name: string) => `/api/space/${name}/stats`
+        },
+        
+        stats: '/api/stats',
+        
+        transactions: (txid: string) => `/api/transactions/${txid}`
     }
 } as const;

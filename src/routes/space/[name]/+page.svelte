@@ -7,7 +7,7 @@
     import SpaceTimeline from '$lib/components/Spaces/SpaceTimeline.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
     import type { SpaceData, Vmetaout } from '$lib/types/space';
-    import { API_ROUTES } from '$lib/routes';
+    import { ROUTES } from '$lib/routes';
     
     dayjs.extend(LocalizedFormat);
 

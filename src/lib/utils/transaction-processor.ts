@@ -19,7 +19,8 @@ export function createTransaction(row: any): Transaction {
     };
 
     // Add block and confirmations only if block data exists
-    if (row.block_height !== null && row.block_time !== null) {
+    if (row.block_height != null && row.block_time != null) {
+        console.log(row)
         transaction.block = {
             height: row.block_height,
             time: row.block_time,
@@ -60,9 +61,9 @@ export function createTransactionInput(row: any): TransactionInput {
         sequence: row.input_sequence,
         coinbase: row.input_coinbase ? row.input_coinbase.toString('hex') : null,
         txinwitness: row.input_txinwitness ? row.input_txinwitness.map(buf => buf.toString('hex')) : null,
-        scriptsig: row.input_scriptsig ?  row.input_scriptsig.toString('hex') : undefined,
+        scriptsig: row.input_scriptsig ?  row.input_scriptsig.toString('hex') : null,
         prev_value: row.input_prev_value,
-        prev_scriptpubkey: row.input_prev_scriptpubkey ?  row.input_prev_scriptpubkey.toString('hex') : undefined,
+        prev_scriptpubkey: row.input_prev_scriptpubkey ?  row.input_prev_scriptpubkey.toString('hex') : null,
         sender_address: row.input_prev_scriptpubkey ?  parseAddress(row.input_prev_scriptpubkey) : null
     };
 }
@@ -103,13 +104,13 @@ export function processTransactions(queryResult: any, parseAddresses = true): Tr
         const outputKey = `${txid}_${row.output_index}`;
         const vmetaoutKey = `${txid}_${row.vmetaout_name}`;  // Using name as unique identifier
 
-        if (row.input_index !== null && !inputMap.has(inputKey)) {
+        if (row.input_index != null && !inputMap.has(inputKey)) {
             const input = createTransactionInput(row);
             transaction.inputs.push(input);
             inputMap.set(inputKey, true);
         }
 
-        if (row.output_index !== null && !outputMap.has(outputKey)) {
+        if (row.output_index != null && !outputMap.has(outputKey)) {
             const output = createTransactionOutput(row, parseAddresses);
             transaction.outputs.push(output);
             outputMap.set(outputKey, true);

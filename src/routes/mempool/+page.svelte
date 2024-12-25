@@ -3,33 +3,34 @@
     import { goto } from '$app/navigation';
     import { browser } from '$app/environment';
     import { blockStore, totalPages } from '$lib/stores/blockStore';
-    import BlockHeader from '$lib/components/Block/BlockHeader.svelte';
+    /* import BlockHeader from '$lib/components/Block/BlockHeader.svelte'; */
     import BlockTxs from '$lib/components/Block/BlockTxs.svelte';
     import { onDestroy } from 'svelte';
 
-    // Get height from URL params
-    $: height = $page.params.height;
+    // Get hash from URL params
     $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
 
-    let previousHeight: string | null = null;
+    const MEMPOOL_HASH = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
+
+    // Track previous values to prevent unnecessary reloads
+    let previousHash: string | null = null;
     let previousPage: number | null = null;
 
-    $: if (browser && height && (height !== previousHeight || currentPage !== previousPage)) {
+    // Handle initial load and subsequent navigation
+    $: if (browser && MEMPOOL_HASH && (MEMPOOL_HASH !== previousHash || currentPage !== previousPage)) {
         loadBlockData();
     }
-    
+
     async function loadBlockData() {
         try {
-            await blockStore.fetchBlockData(height, currentPage);
+            await blockStore.fetchBlockData(MEMPOOL_HASH, currentPage);
             // Update previous values after successful fetch
-            previousHeight = height;
+            previousHash = MEMPOOL_HASH;
             previousPage = currentPage;
         } catch (error) {
-            console.error('Failed to load block data:', error);
+            console.error('Failed to load mempool data:', error);
         }
     }
-
-
 
     async function handlePageChange(newPage: number) {
         const url = new URL(window.location.href);
@@ -37,6 +38,7 @@
         await goto(url.toString(), { keepFocus: true, replaceState: true });
     }
 
+    // Clear block data when component is destroyed
     onDestroy(() => {
         blockStore.clearBlock();
     });
@@ -50,9 +52,6 @@
     <div class="loading">Loading block data...</div>
 {:else}
     <section>
-        <BlockHeader blockHeader={$blockStore.header} />
-    </section>
-    <section>
         <BlockTxs
             transactions={$blockStore.transactions}
             pagination={{
@@ -65,3 +64,4 @@
         />
     </section>
 {/if}
+

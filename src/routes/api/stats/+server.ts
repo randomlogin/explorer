@@ -17,22 +17,22 @@ name_burns AS (
     SELECT 
         name,
         MAX(total_burned) as name_total_burned
-    FROM vmetaouts
+    FROM vmetaouts join blocks on blocks.hash = vmetaouts.block_hash
     WHERE script_error IS NULL 
-        AND name IS NOT NULL
+        AND name IS NOT NULL and not orphan
     GROUP BY name
 )
 SELECT 
     lb.height as latest_block_height,
     lb.time as latest_block_time,
-    (SELECT COUNT(DISTINCT name) FROM vmetaouts WHERE name IS NOT NULL) as unique_names_count,
-    (SELECT COUNT(*) FROM vmetaouts) as valid_vmetaouts_count,
+    (SELECT COUNT(DISTINCT name) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan) as unique_names_count,
+    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE not blocks.orphan ) as valid_vmetaouts_count,
     (SELECT SUM(name_total_burned) FROM name_burns) as total_burned_sum,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'RESERVE') as reserve_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'BID') as bid_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'TRANSFER') as transfer_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'ROLLOUT') as rollout_count,
-    (SELECT COUNT(*) FROM vmetaouts WHERE action = 'REVOKE') as revoke_count
+    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'RESERVE') as reserve_count,
+    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'BID') as bid_count,
+    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'TRANSFER') as transfer_count,
+    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'ROLLOUT') as rollout_count,
+    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'REVOKE') as revoke_count
 FROM latest_block lb;
     `);
 

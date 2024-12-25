@@ -5,7 +5,6 @@ import { processTransactions } from '$lib/utils/transaction-processor';
 import { getBlockTransactions } from '$lib/utils/query';
 
 export const GET: RequestHandler = async function ({ url, params }) {
-    const startTime = performance.now();
     let limit = parseInt(url.searchParams.get('limit') || '25');
     if (limit > 50) {
         limit = 50
@@ -32,9 +31,5 @@ export const GET: RequestHandler = async function ({ url, params }) {
 
     const txs = processTransactions(queryResult);
 
-    const endTime = performance.now();
-    const totalResponseTime = endTime - startTime;
-
-    console.log(`GET request for block height ${params.height} with limit ${limit} - Total Response Time: ${totalResponseTime.toFixed(2)} ms`);
     return json(txs)
 }
