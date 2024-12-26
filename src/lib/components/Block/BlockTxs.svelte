@@ -41,7 +41,11 @@
         <div class="transaction-card">
             <div class="transaction-header">
                 <div class="transaction-info">
-                    <span class="transaction-number">Tx #{transaction.index}</span>
+                    Transaction 
+
+                {#if transaction.index > 0}
+                    <span class="transaction-number">#{transaction.index}</span>
+                {/if}
                     <TransactionLink txid={transaction.txid} />
                 </div>
                 {#if showTransactionTime}
