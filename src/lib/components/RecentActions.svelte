@@ -13,8 +13,10 @@
     export let gridView = true;
     export let title = false;
     export let apiEndpoint: string = ROUTES.api.auctions.recent; // Default endpoint
-    export let spaceRoute: string = ROUTES.space; // Route for space links
-    export let blockRoute: string = ROUTES.block; // Route for block links
+    export let spaceRoute: string = ROUTES.pages.space; // Route for space links
+    export let blockRoute: string = ROUTES.pages.block; // Route for block links
+
+    
 
     interface RecentAction {
         action: 'RESERVE' | 'BID' | 'TRANSFER' | 'ROLLOUT' | 'REVOKE';

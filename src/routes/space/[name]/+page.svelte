@@ -24,8 +24,6 @@
     let numberOfBids: number;
     let highestBid: number;
 
-    $: console.log(data)
-
     $: {
         if (data) {
             vmetaouts = data.items;
@@ -82,7 +80,7 @@
     }
     async function handlePageChange(event: CustomEvent<number>) {
     const page = event.detail;
-    const response = await fetch(API_ROUTES.space.history(spaceName, page));
+    const response = await fetch(ROUTES.api.space.history(spaceName, page));
 
     if (response.ok) {
         const historyData = await response.json();

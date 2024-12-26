@@ -7,6 +7,7 @@ import { processTransactions } from '$lib/utils/transaction-processor';
 export const GET: RequestHandler = async function ({ params }) {
     const txid = Buffer.from(params.txid, 'hex');
 
+    // First try to get non-orphan transaction
     const queryResult = await db.execute(sql`
     WITH transaction_data AS (
         SELECT
@@ -22,13 +23,15 @@ export const GET: RequestHandler = async function ({ params }) {
             blocks.time AS block_time,
             blocks.height AS block_height,
             blocks.hash AS block_hash,
+            blocks.orphan AS block_orphan,
             (SELECT COALESCE(MAX(height), -1) FROM blocks)::integer AS max_height
         FROM transactions
         JOIN blocks ON transactions.block_hash = blocks.hash
-        WHERE transactions.txid = ${txid} and blocks.orphan is false
+        WHERE transactions.txid = ${txid}
         ORDER by block_height DESC
+        LIMIT 1
     ),
-      tx_inputs_data AS (
+    tx_inputs_data AS (
         SELECT
             ti.txid,
             ti.index AS input_index,

@@ -43,7 +43,7 @@
                 <div class="transaction-info">
                     Transaction 
 
-                {#if transaction.index > 0}
+                {#if transaction.index >= 0}
                     <span class="transaction-number">#{transaction.index}</span>
                 {/if}
                     <TransactionLink txid={transaction.txid} />

@@ -3,10 +3,15 @@
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     import TransactionDetails from '$lib/components/Transaction/TransactionDetails.svelte';
     import CopyButton from '$lib/components/CopyButton.svelte';
-    /* import { numberFormatter } from '$lib/utils/formatters'; */
     dayjs.extend(LocalizedFormat);
+    $: blockLink = data.block.height >= 0 ? 
+        `/block/${data.block.height}` :
+        data.block.height === -1 ?
+        '/mempool'
+            : `/block/${data.block.hash}`;
 
     export let data;
+     console.log(data)
 </script>
 
 <div class="container">
@@ -16,30 +21,42 @@
         <CopyButton value={data.txid} />
     </div>
     <div class="details">
-        <a href={`/block/${data.block.height}`}>
-            <div class="detail-item">
+
+        <a href={blockLink}>
+        <div class="detail-item">
+            {#if data.block.height >= 0 }
                 <span class="detail-value">{data.block.height}</span>
-                <span class="detail-label">Block</span>
+            {:else if data.block.height == -1 }
+                <span class="detail-value">Mempool</span>
+            {:else if data.block.height == -2 }
+                <span class="detail-value">Orphan block</span>
+            {/if}
+            <span class="detail-label">Block</span>
+
+        </div>
+            </a>
+            {#if data.block.time > 0}
+                <div class="detail-item">
+                    <span class="detail-value">{dayjs.unix(data.block.time).format('MMM DD HH:MM')}</span>
+                    <span class="detail-label">Time</span>
+                </div>
+            {/if}
+            <div class="detail-item">
+                <span class="detail-value">{data.version}</span>
+                <span class="detail-label">Version</span>
             </div>
-        </a>
-        <div class="detail-item">
-            <span class="detail-value">{dayjs.unix(data.block.time).format('MMM DD HH:MM')}</span>
-            <span class="detail-label">Time</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-value">{data.version}</span>
-            <span class="detail-label">Version</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-value">{data.index}</span>
-            <span class="detail-label">Index in the block</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-value">{data.weight}</span>
-            <span class="detail-label">Weight</span>
-        </div>
-        <div class="detail-item">
-            <span class="detail-value">{data.fee}</span>
+            {#if data.index > 0}
+            <div class="detail-item">
+                <span class="detail-value">{data.index}</span>
+                <span class="detail-label">Index in the block</span>
+            </div>
+            {/if}
+            <div class="detail-item">
+                <span class="detail-value">{data.weight}</span>
+                <span class="detail-label">Weight</span>
+            </div>
+            <div class="detail-item">
+                <span class="detail-value">{data.fee}</span>
             <span class="detail-label">Fee</span>
         </div>
         <div class="detail-item">
