@@ -111,15 +111,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
     margin: 0 auto;
     background-color: var(--bg-content);
     border-radius: var(--rounded-lg);
-    box-shadow: var(--shadow-sm);
     padding: var(--space-6);
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-6);
 }
 
 .details {
