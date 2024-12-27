@@ -63,6 +63,17 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+  --bg-warning-50: #fffbeb;
+  --bg-warning-100: #fef3c7;
+  --bg-warning-200: #fde68a;
+  --bg-warning-300: #fcd34d;
+  --bg-warning-400: #fbbf24;
+  --bg-warning-500: #f59e0b;
+  --bg-warning-600: #d97706;
+  --bg-warning-700: #b45309;
+  --bg-warning-800: #92400e;
+  --bg-warning-900: #78350f;
 }
 
 /* Dark theme */
