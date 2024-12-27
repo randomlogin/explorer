@@ -26,7 +26,8 @@ export const GET: RequestHandler = async function ({ url }) {
     // Get paginated results
     const queryResult = await db.execute(sql`
         SELECT 
-            *
+            *,
+            -1 as height
         FROM vmetaouts 
         WHERE block_hash = ${mempoolBlockHash}
         AND name IS NOT NULL

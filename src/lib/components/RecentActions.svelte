@@ -6,6 +6,7 @@
     import { formatBTC, getActionColor } from '$lib/utils/formatters';
     import EmptyState from '$lib/components/layout/EmptyState.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
+    import BlockLink from '$lib/components/Block/BlockLink.svelte';
     import { fade } from 'svelte/transition';
 
     export let itemsPerPage = 9;
@@ -14,9 +15,7 @@
     export let title = false;
     export let apiEndpoint: string = ROUTES.api.auctions.recent; // Default endpoint
     export let spaceRoute: string = ROUTES.pages.space; // Route for space links
-    export let blockRoute: string = ROUTES.pages.block; // Route for block links
 
-    
 
     interface RecentAction {
         action: 'RESERVE' | 'BID' | 'TRANSFER' | 'ROLLOUT' | 'REVOKE';
@@ -86,92 +85,89 @@
 
 <section class="recent-actions">
     {#if title }
-    <h2 class="section-title">Recent Spaces Actions</h2>
+        <h2 class="section-title">Recent Spaces Actions</h2>
     {/if}
     <div class="content-wrapper">
-    <div class="actions-container">
-        {#if isInitialLoading}
-            <div class={gridView ? "actions-grid" : "actions-list"} transition:fade={{ duration: 200 }}>
-                {#each Array(itemsPerPage) as _}
-                    <div class="action-card skeleton-card">
-                        <div class="skeleton-text-medium" />
-                        <div class="action-meta">
-                            <div class="meta-item">
-                                <div class="skeleton-text-short" />
-                            </div>
-                            <div class="meta-item">
-                                <div class="skeleton-text-short" />
-                            </div>
-                            <div class="meta-item">
-                                <div class="skeleton-text-short" />
-                            </div>
-                        </div>
-                    </div>
-                {/each}
-            </div>
-        {:else if error}
-            <div class="error-card" transition:fade={{ duration: 200 }}>
-                <span class="error-icon">⚠️</span>
-                <span class="error-text">{error}</span>
-            </div>
-        {:else if actions.length === 0}
-            <div transition:fade={{ duration: 200 }}>
-                <EmptyState message="No actions found" />
-            </div>
-        {:else}
-            <div class={gridView ? "actions-grid" : "actions-list"} transition:fade={{ duration: 200 }}>
-                {#each actions as action, i (`${action.txid}-${i}`)}
-                    <div class="action-card {gridView ? 'grid-card' : 'list-card'}" class:loading-overlay={isLoadingData}>
-                        <div class="action-header">
-                            <div class="action-main">
-                                <span class="action-badge {getActionColor(action.action)}">{action.action}</span>
-                                <a href="{spaceRoute}/{action.name}" class="space-name">{action.name}</a>
-                            </div>
-                            {#if action.action === 'BID' && action.total_burned}
-                                <div class="bid-value">
-                                    {formatBTC(action.total_burned)}
+        <div class="actions-container">
+            {#if isInitialLoading}
+                <div class={gridView ? "actions-grid" : "actions-list"} transition:fade={{ duration: 200 }}>
+                    {#each Array(itemsPerPage) as _}
+                        <div class="action-card skeleton-card">
+                            <div class="skeleton-text-medium" />
+                                <div class="action-meta">
+                                    <div class="meta-item">
+                                        <div class="skeleton-text-short" />
+                                        </div>
+                                        <div class="meta-item">
+                                            <div class="skeleton-text-short" />
+                                            </div>
+                                            <div class="meta-item">
+                                                <div class="skeleton-text-short" />
+                                                </div>
+                                            </div>
+                                        </div>
+                    {/each}
+                                    </div>
+            {:else if error}
+                <div class="error-card" transition:fade={{ duration: 200 }}>
+                    <span class="error-icon">⚠️</span>
+                    <span class="error-text">{error}</span>
+                </div>
+            {:else if actions.length === 0}
+                <div transition:fade={{ duration: 200 }}>
+                    <EmptyState message="No actions found" />
+                </div>
+            {:else}
+                <div class={gridView ? "actions-grid" : "actions-list"} transition:fade={{ duration: 200 }}>
+                    {#each actions as action, i (`${action.txid}-${i}`)}
+                        <div class="action-card {gridView ? 'grid-card' : 'list-card'}" class:loading-overlay={isLoadingData}>
+                            <div class="action-header">
+                                <div class="action-main">
+                                    <span class="action-badge {getActionColor(action.action)}">{action.action}</span>
+                                    <a href="{spaceRoute}/{action.name}" class="space-name">{action.name}</a>
                                 </div>
-                            {/if}
-                        </div>
+                                {#if action.action === 'BID' && action.total_burned}
+                                    <div class="bid-value">
+                                        {formatBTC(action.total_burned)}
+                                    </div>
+                                {/if}
+                            </div>
 
-                        <div class="action-meta">
-                            {#if action.height}
-                            <div class="meta-item">
-                                <span class="meta-label">Block</span>
-                                <a href="{blockRoute}/{action.height}" class="meta-value block-link">
-                                    #{action.height}
-                                </a>
+                            <div class="action-meta">
+                                {#if action.height}
+                                    <div class="meta-item block-link">
+                                        <BlockLink height={action.height} />
+                                    </div>
+                                {/if}
+                                <div class="meta-item">
+                                    <span class="meta-label">Tx</span>
+                                    <TransactionLink txid={action.txid} truncate={true} maxLength={action.time ? 10 : 30 } />
+                                </div>
+                                {#if action.time}
+                                    <div class="meta-item">
+                                        <span class="meta-label">Time</span>
+                                        <span class="meta-value">
+                                            {dayjs.unix(action.time).format('DD MMM HH:mm')}
+                                        </span>
+                                    </div>
+                                {/if}
                             </div>
-                            {/if}
-                            <div class="meta-item">
-                                <span class="meta-label">Tx</span>
-                                <TransactionLink txid={action.txid} truncate={true} maxLength={10} />
-                            </div>
-                            {#if action.time}
-                            <div class="meta-item">
-                                <span class="meta-label">Time</span>
-                                <span class="meta-value">
-                                    {dayjs.unix(action.time).format('DD MMM HH:mm')}
-                                </span>
-                            </div>
-                            {/if}
                         </div>
-                    </div>
-                {/each}
-            </div>
-        {/if}
-                        </div>
+                    {/each}
+                </div>
+            {/if}
+                                </div>
 
-        {#if showPagination && pagination && pagination.totalPages > 1}
-            <div class="pagination-container">
-                <Pagination
-                    currentPage={pagination.page}
-                    totalPages={pagination.totalPages}
-                    on:pageChange={handlePageChange}
-                />
-            </div>
-        {/if}
-    </div>
+                                {#if showPagination && pagination && pagination.totalPages > 1}
+                                    <div class="pagination-container">
+                                        <Pagination
+                                        currentPage={pagination.page}
+                                        totalPages={pagination.totalPages}
+                                        on:pageChange={handlePageChange}
+                                        />
+                                    </div>
+                                {/if}
+                            </div>
 </section>
 <style>
     /* Base Layout */
@@ -212,6 +208,7 @@
         border: var(--border-width-1) solid var(--color-primary);
         box-shadow: var(--shadow-sm);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        overflow: hidden; /* Prevents content overflow */
     }
 
     .grid-card {
@@ -285,28 +282,44 @@
         display: flex;
         justify-content: space-between;
         gap: var(--space-4);
+        flex-wrap: nowrap; /* Prevents wrapping */
+        overflow: hidden; /* Ensures metadata stays inside the card */
     }
 
     .meta-item {
         display: flex;
         flex-direction: column;
-        gap: var(--space-1);
+        flex-shrink: 0; /* Prevents shrinking */
+        min-width: 0; /* Enables text truncation */
+        max-width: 100%; /* Prevents the item from exceeding its parent width */
+        text-align: left;
     }
 
     .meta-label {
         font-size: var(--font-size-xs);
         color: var(--text-muted);
+        white-space: nowrap; /* Prevents label text from wrapping */
     }
 
     .meta-value {
         font-size: var(--font-size-sm);
         font-weight: 500;
         color: var(--text-primary);
+        white-space: nowrap; /* Prevents wrapping */
+        overflow: hidden; /* Hides overflow text */
+        text-overflow: ellipsis; /* Adds ellipsis for overflow */
+        max-width: 100%; /* Ensures it stays within the parent container */
     }
 
+    /* Block Link */
     .block-link {
         color: var(--color-primary);
         text-decoration: none;
+        transition: var(--transition-colors);
+        overflow-wrap: break-word; /* Breaks words if necessary */
+        word-wrap: break-word; /* Compatibility for older browsers */
+        word-break: break-word;
+        white-space: normal; /* Allows multi-line display */
     }
 
     .block-link:hover {
@@ -366,7 +379,7 @@
         justify-content: center;
     }
 
-    /* Responsive */
+    /* Responsive Adjustments */
     @media (max-width: 640px) {
         .actions-grid {
             grid-template-columns: 1fr;
@@ -381,5 +394,11 @@
             gap: var(--space-2);
         }
     }
-</style>
 
+    .block-link {
+        font-size: var(--font-size-xs);
+        line-height: 1.2;
+        max-width: 22%;
+        overflow-wrap: anywhere;
+    }
+</style>
