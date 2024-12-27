@@ -4,6 +4,7 @@
     import Rollout from '$lib/components/Rollout.svelte';
     import EmptyState from '$lib/components/layout/EmptyState.svelte';
     import Stats from '$lib/components/Stats.svelte';
+    import Tooltip from '$lib/components/Tooltip.svelte';
     import { navigating } from '$app/stores';
     import { ROUTES } from '$lib/routes';
     import '$lib/styles/mainpage.css';
@@ -44,7 +45,7 @@
     <div class="content-sections-wrapper">
         <div class="content-section actions-section">
             <a href="/actions/mempool" class="section-title-link">
-                <h1 class="section-title">Unconfirmed spaces actions</h1>
+                <h1 class="section-title">Unconfirmed spaces actions<Tooltip text=" Some spaces actions may be missing from mempool." position="right" /></h1>
             </a>
             <RecentActions title={false} apiEndpoint={ROUTES.api.auctions.mempool}/>
         </div>
@@ -117,6 +118,9 @@
         text-decoration: underline;
         color: var(--text-primary);
         transition: color 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
     }
 
     .section-title-link:hover {
