@@ -1,6 +1,5 @@
 <script lang="ts">
   import { page } from "$app/stores";
-  import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   import { menuLinks } from "$lib/links";
   export let isOpen = false;
 </script>

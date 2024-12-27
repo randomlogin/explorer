@@ -1,27 +1,41 @@
-import adapter from '@sveltejs/adapter-node';
+// svelte.config.js
+import adapter from '@sveltejs/adapter-node'; // or your preferred adapter
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
-	// Consult https://kit.svelte.dev/docs/integrations#preprocessors
-	// for more information about preprocessors
-	preprocess: vitePreprocess(),
-
 	kit: {
-		// adapter-auto only supports some environments, see https://kit.svelte.dev/docs/adapter-auto for a list.
-		// If your environment is not supported, or you settled on a specific environment, switch out the adapter.
-		// See https://kit.svelte.dev/docs/adapters for more information about adapters.
-		adapter: adapter(),
-		alias: {
-			// this will match a directory and its contents
-			// (`my-directory/x` resolves to `path/to/my-directory/x`)
-			'$routes': 'src/routes/',
-
-			// an alias ending /* will only match
-			// the contents of a directory, not the directory itself
-			'my-directory/*': 'path/to/my-directory/*'
+		adapter: adapter({
+			// Production optimization settings
+			precompress: true,  // Enable Brotli & Gzip precompression
+			polyfill: false,    // Disable Node polyfills if not needed
+			out: 'build'        // Output directory
+		}),
+		
+		// Asset optimization
+		inlineStyleThreshold: 8192,  // Inline small styles
+		
+		// CSP settings if needed
+		csp: {
+			mode: 'hash',
+			directives: {
+				'script-src': ['self']
+			}
+		},
+		
+		// Additional optimizations
+		prerender: {
+			handleMissingId: 'ignore'  // More aggressive prerendering
+		},
+		
+		// Environment configuration
+		env: {
+			dir: '.'
 		}
-	}
+	},
+	
+	// Enable preprocessing
+	preprocess: [vitePreprocess()]
 };
 
 export default config;

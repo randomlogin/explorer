@@ -1,9 +1,11 @@
 <script lang="ts">
 export let height: number;
+
+const href = height === -1 ? '/mempool' : `/block/${height}`;
 </script>
 
-<a href={`/block/${height}`} class="block-link">
-  <span>#{height}</span>
+<a {href} class="block-link">
+  <span>{height === -1 ? 'Mempool' : `Block #${height}`}</span>
 </a>
 
 <style>
@@ -12,7 +14,6 @@ export let height: number;
     text-decoration: none;
     transition: var(--transition-colors);
   }
-
   .block-link:hover {
     text-decoration: underline;
   }

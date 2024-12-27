@@ -5,14 +5,15 @@
     import { page } from '$app/stores';
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
     import SpaceTimeline from '$lib/components/Spaces/SpaceTimeline.svelte';
+    import BlockLink from '$lib/components/Block/BlockLink.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
     import type { SpaceData, Vmetaout } from '$lib/types/space';
     import { ROUTES } from '$lib/routes';
-    
+
     dayjs.extend(LocalizedFormat);
 
     export let data: SpaceData;
-    
+
     let vmetaouts: Vmetaout[] = [];
     let latestVmetaout: Vmetaout | null = null;
     let pagination;
@@ -41,7 +42,7 @@
 
     function computeSpaceStatus(vmetaout: Vmetaout | null, currentHeight: number): string {
         if (!vmetaout) return 'Open';
-        
+
         const status = vmetaout.action;
         const claimHeight = vmetaout.claim_height;
 
@@ -136,7 +137,7 @@
                         <dt class="stat-label">Expires At</dt>
                         <dd class="stat-value">
                         {#if expiryHeight <= currentBlockHeight }
-                            <a href="/block/{expiryHeight}" class="block-link"> Block {expiryHeight} </a>
+                            <BlockLink {expiryHeight} />
                         {:else }
                             Block {expiryHeight}
                         {/if}
@@ -157,7 +158,8 @@
                     <span class="claim-height-label">Claim height:</span>
                     <span class="claim-height-value">
                         {#if data.stats.claim_height <= currentBlockHeight }
-                            <a href="/block/{data.stats.claim_height}" class="block-link"> Block {data.stats.claim_height} </a>
+
+                            <BlockLink height={data.stats.claim_height} />
                         {:else }
                             Block {data.stats.claim_height}
                         {/if}
@@ -171,7 +173,7 @@
                 <SpaceTimeline 
                     vmetaout={latestVmetaout} 
                     currentBlockHeight={currentBlockHeight} 
-                />
+                    />
             </div>
 
             <div class="history-section">
@@ -189,7 +191,7 @@
                         </thead>
                         <tbody>
                             {#each vmetaouts as vmetaout}
-                                <tr class="table-row">
+                                <tr class="table-row" class:mempool={vmetaout.block_height === -1}>
                                     <td class="table-cell">
                                         <div class="action-cell">
                                             <div class={getActionColor(vmetaout.action)}>
@@ -204,25 +206,26 @@
                                     </td>
                                     <td class="table-cell">
                                         <div class="transaction-cell">
-                                            Transaction <TransactionLink 
-                                                txid={vmetaout.txid} 
-                                                truncate={true} 
-                                                maxLength={35} 
-                                            />
+                                            {vmetaout.block_height === -1 ? 'Unconfirmed transaction' : 'Transaction'}
+                                            <TransactionLink txid={vmetaout.txid} truncate={true} maxLength={35} />
                                             <div class="tx-details">
-                                                <a href={`/block/${vmetaout.block_height}`} class="block-link">
-                                                    Block {vmetaout.block_height}
-                                                </a>
-                                                <div class="time-detail">
-                                                    {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
-                                                </div>
+                                                <BlockLink height={vmetaout.block_height} />
+                                                {#if vmetaout.block_height !== -1}
+                                                    <div class="time-detail">
+                                                        {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
+                                                    </div>
+                                                {:else}
+                                                    <div class="mempool-badge">
+                                                        unconfirmed
+                                                    </div>
+                                                {/if}
                                             </div>
                                         </div>
                                     </td>
                                     {#if numberOfBids > 0}
                                         <td class="table-cell text-right">
                                             {#if vmetaout.action === 'BID'}
-                                                {formatBTC(vmetaout.total_burned)} 
+                                                {formatBTC(vmetaout.total_burned)}
                                             {/if}
                                         </td>
                                     {/if}
@@ -241,9 +244,9 @@
                     {#if pagination && pagination.totalPages > 1}
                         <div class="pagination-container">
                             <Pagination 
-                                currentPage={currentPage} 
-                                totalPages={pagination.totalPages} 
-                                on:pageChange={handlePageChange} 
+                            currentPage={currentPage} 
+                            totalPages={pagination.totalPages} 
+                            on:pageChange={handlePageChange} 
                             />
                         </div>
                     {/if}
@@ -253,251 +256,271 @@
     </div>
 {/if}
 <style>
-  .page-title {
-    font-size: var(--text-3xl);
-    font-weight: 600;
-    margin-bottom: var(--space-4);
-  }
-
-  .page-subtitle {
-    font-size: var(--text-lg);
-    color: var(--text-muted);
-    line-height: 1.5;
-  }
-
-  .page-link {
-    color: var(--color-primary);
-    text-decoration: none;
-    transition: var(--transition-colors);
-  }
-
-  .page-link:hover {
-    text-decoration: underline;
-  }
-
-  .space-header {
-    display: flex;
-    align-items: center;
-    gap: var(--space-4);
-    margin-bottom: var(--space-8);
-  }
-
-  .space-title {
-    font-size: var(--text-3xl);
-    font-weight: 600;
-  }
-
-  .status-badge {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--border-radius-3xl);
-    font-size: var(--text-sm);
-    font-weight: 500;
-    background-color: var(--bg-secondary);
-  }
-
-  .status-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: currentColor;
-  }
-
-  .status-text {
-    color: currentColor;
-  }
-
-  .stats-section {
-    margin-bottom: var(--space-8);
-  }
-
-  .stats-group {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: var(--space-4);
-  }
-
-  .stat-item {
-    background: var(--bg-secondary);
-    padding: var(--space-6);
-    border-radius: var(--border-radius-lg);
-    border: var(--border-width-1) solid var(--border-color);
-  }
-
-  .stat-label {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-  }
-
-  .stat-value {
-    font-size: var(--text-2xl);
-    font-weight: 600;
-    margin-top: var(--space-2);
-  }
-
-  .stat-subtitle {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-    margin-top: var(--space-2);
-  }
-
-  .claim-height-section {
-    margin-bottom: var(--space-8);
-  }
-
-  .claim-height-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: var(--space-4);
-    background: var(--bg-secondary);
-    border-radius: var(--border-radius-lg);
-    border: var(--border-width-1) solid var(--border-color);
-  }
-
-  .claim-height-label {
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-  }
-
-  .claim-height-value {
-    font-weight: 500;
-  }
-
-  .main-content-layout {
-    display: grid;
-    grid-template-columns: 1fr 2fr;
-    gap: var(--space-8);
-    align-items: start;
-  }
-
-  .timeline-section {
-    position: sticky;
-    top: var(--space-8);
-  }
-
-  .section-title {
-    font-size: var(--text-xl);
-    font-weight: 600;
-    margin-bottom: var(--space-6);
-  }
-
-  .history-container {
-    background: var(--bg-secondary);
-    padding: var(--space-6);
-    border-radius: var(--border-radius-lg);
-    border: var(--border-width-1) solid var(--border-color);
-  }
-
-  .history-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-
-  .table-header {
-    padding: var(--space-4);
-    text-align: left;
-    font-size: var(--text-sm);
-    font-weight: 500;
-    color: var(--text-muted);
-    border-bottom: var(--border-width-1) solid var(--border-color);
-  }
-
-  .table-row {
-    border-bottom: var(--border-width-1) solid var(--border-color);
-    transition: var(--transition-colors);
-  }
-
-  .table-row:hover {
-    background: var(--bg-hover);
-  }
-
-  .table-cell {
-    padding: var(--space-4);
-    font-size: var(--text-sm);
-  }
-
-  .action-cell {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .revoke-reason {
-    font-size: var(--text-sm);
-    color: var(--color-error);
-  }
-
-  .transaction-cell {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-  }
-
-  .tx-details {
-    display: flex;
-    gap: var(--space-4);
-    font-size: var(--text-sm);
-    color: var(--text-muted);
-  }
-
-  .block-link {
-    color: var(--color-primary);
-    text-decoration: none;
-    transition: var(--transition-colors);
-  }
-
-  .block-link:hover {
-    text-decoration: underline;
-  }
-
-  .time-detail {
-    color: var(--text-muted);
-  }
-
-  .error-row {
-    background-color: var(--color-error-50);
-  }
-
-  .error-cell {
-    padding: var(--space-4);
-    color: var(--color-error);
-    font-size: var(--text-sm);
-  }
-
-  .text-right {
-    text-align: right;
-  }
-
-  .pagination-container {
-    margin-top: var(--space-6);
-  }
-
-  @media (max-width: 1023px) {
-    .main-content-layout {
-      grid-template-columns: 1fr;
+    .page-title {
+        font-size: var(--text-3xl);
+        font-weight: 600;
+        margin-bottom: var(--space-4);
     }
 
-    .timeline-section {
-      position: static;
-      margin-bottom: var(--space-8);
+    .page-subtitle {
+        font-size: var(--text-lg);
+        color: var(--text-muted);
+        line-height: 1.5;
     }
-  }
 
-  @media (max-width: 768px) {
+    .page-link {
+        color: var(--color-primary);
+        text-decoration: none;
+        transition: var(--transition-colors);
+    }
+
+    .page-link:hover {
+        text-decoration: underline;
+    }
+
     .space-header {
-      flex-direction: column;
-      align-items: flex-start;
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        margin-bottom: var(--space-8);
+    }
+
+    .space-title {
+        font-size: var(--text-3xl);
+        font-weight: 600;
+    }
+
+    .status-badge {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-4);
+        border-radius: var(--border-radius-3xl);
+        font-size: var(--text-sm);
+        font-weight: 500;
+        background-color: var(--bg-secondary);
+    }
+
+    .status-indicator {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: currentColor;
+    }
+
+    .status-text {
+        color: currentColor;
+    }
+
+    .stats-section {
+        margin-bottom: var(--space-8);
     }
 
     .stats-group {
-      grid-template-columns: 1fr;
+        display: grid;
+        grid-template-columns: var(--grid-template-compact);
+        gap: var(--grid-gap-sm);
+    }
+
+    .stat-item {
+        background: var(--bg-secondary);
+        padding: var(--space-6);
+        border-radius: var(--border-radius-lg);
+        border: var(--border-width-1) solid var(--border-color);
+    }
+
+    .stat-label {
+        font-size: var(--text-sm);
+        color: var(--text-muted);
+    }
+
+    .stat-value {
+        font-size: var(--text-2xl);
+        font-weight: 600;
+        margin-top: var(--space-2);
+    }
+
+    .stat-subtitle {
+        font-size: var(--text-sm);
+        color: var(--text-muted);
+        margin-top: var(--space-2);
+    }
+
+    .claim-height-section {
+        margin-bottom: var(--space-8);
+    }
+
+    .claim-height-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-4);
+        background: var(--bg-secondary);
+        border-radius: var(--border-radius-lg);
+        border: var(--border-width-1) solid var(--border-color);
+    }
+
+    .claim-height-label {
+        color: var(--text-muted);
+        font-size: var(--text-sm);
+    }
+
+    .claim-height-value {
+        font-weight: 500;
+    }
+
+    .main-content-layout {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: var(--space-8);
+        align-items: start;
+    }
+
+    .timeline-section {
+        position: sticky;
+        top: var(--space-8);
+    }
+
+    .section-title {
+        font-size: var(--text-xl);
+        font-weight: 600;
+        margin-bottom: var(--space-6);
+    }
+
+    .history-container {
+        background: var(--bg-secondary);
+        padding: var(--space-6);
+        border-radius: var(--border-radius-lg);
+        border: var(--border-width-1) solid var(--border-color);
+    }
+
+    .history-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table-header {
+        padding: var(--space-4);
+        text-align: left;
+        font-size: var(--text-sm);
+        font-weight: 500;
+        color: var(--text-muted);
+        border-bottom: var(--border-width-1) solid var(--border-color);
+    }
+
+    .table-row {
+        border-bottom: var(--border-width-1) solid var(--border-color);
+        transition: var(--transition-colors);
+    }
+
+    .table-row:hover {
+        background: var(--bg-hover);
     }
 
     .table-cell {
-      padding: var(--space-2);
+        padding: var(--space-4);
+        font-size: var(--text-sm);
     }
-  }
+
+    .action-cell {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .revoke-reason {
+        font-size: var(--text-sm);
+        color: var(--color-error);
+    }
+
+    .transaction-cell {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    .tx-details {
+        display: flex;
+        gap: var(--space-4);
+        font-size: var(--text-sm);
+        color: var(--text-muted);
+    }
+
+    .block-link {
+        color: var(--color-primary);
+        text-decoration: none;
+        transition: var(--transition-colors);
+    }
+
+    .block-link:hover {
+        text-decoration: underline;
+    }
+
+    .time-detail {
+        color: var(--text-muted);
+    }
+
+    .error-row {
+        background-color: var(--color-error-50);
+    }
+
+    .error-cell {
+        padding: var(--space-4);
+        color: var(--color-error);
+        font-size: var(--text-sm);
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .pagination-container {
+        margin-top: var(--space-6);
+    }
+
+    @media (max-width: 1023px) {
+        .main-content-layout {
+            grid-template-columns: 1fr;
+        }
+
+        .timeline-section {
+            position: static;
+            margin-bottom: var(--space-8);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .space-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .stats-group {
+            grid-template-columns: 1fr;
+        }
+
+        .table-cell {
+            padding: var(--space-2);
+        }
+    }
+
+.mempool {
+    background-color: var(--bg-warning-50);
+}
+
+.mempool:hover {
+    background-color: var(--bg-warning-100) !important;
+}
+
+.mempool-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-2);
+    background-color: var(--bg-warning);
+    color: var(--text-warning);
+    border-radius: var(--border-radius-full);
+    font-size: var(--text-xs);
+    font-weight: 500;
+}
+
 </style>

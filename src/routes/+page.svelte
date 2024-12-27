@@ -5,6 +5,7 @@
     import EmptyState from '$lib/components/layout/EmptyState.svelte';
     import Stats from '$lib/components/Stats.svelte';
     import { navigating } from '$app/stores';
+    import { ROUTES } from '$lib/routes';
     import '$lib/styles/mainpage.css';
     
     export let data;
@@ -41,6 +42,14 @@
     </div>
 
     <div class="content-sections-wrapper">
+        <div class="content-section actions-section">
+            <a href="/actions/mempool" class="section-title-link">
+                <h1 class="section-title">Unconfirmed spaces actions</h1>
+            </a>
+            <RecentActions title={false} apiEndpoint={ROUTES.api.auctions.mempool}/>
+        </div>
+
+
         <div class="content-section actions-section">
             <a href="/actions/recent" class="section-title-link">
                 <h1 class="section-title">Recent spaces actions</h1>

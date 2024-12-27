@@ -4,7 +4,6 @@
   import SearchBar from "./SearchBar.svelte";
   import NavigationLinks from "./NavigationLinks.svelte";
   import MobileMenu from "./MobileMenu.svelte";
-  import ThemeToggle from "$lib/components/ThemeToggle.svelte";
   let mobileMenuOpen = false;
 </script>
 

@@ -3,6 +3,7 @@
     import Pagination from '$lib/components/Pagination.svelte';
     import TransactionDetails from '$lib/components/Transaction/TransactionDetails.svelte';
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
+    import BlockLink from '$lib/components/Block/BlockLink.svelte';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(LocalizedFormat);
 
@@ -50,9 +51,7 @@
                 </div>
                 {#if showTransactionTime}
                     <div class="transaction-time">
-                        <a href={`/block/${transaction.block.height}`} class="block-link">
-                            Block {transaction.block.height}
-                        </a>
+                        <BlockLink height={transaction.block.height} />
                         <span class="timestamp">
                             {dayjs.unix(transaction.block.time).format('MMM D, YYYY HH:mm')}
                         </span>

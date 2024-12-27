@@ -83,7 +83,13 @@ export const GET: RequestHandler = async function ({ params, url }) {
     JOIN transactions t ON t.txid = v.txid AND t.block_hash = v.block_hash
     CROSS JOIN counts c
     WHERE v.name = ${spaceName} AND b.orphan is false
-    ORDER BY b.height DESC, t.index DESC
+    ORDER BY
+    CASE
+        WHEN b.height = -1 THEN 1
+        ELSE 0
+    END DESC,
+    b.height DESC,
+    t.index DESC
     LIMIT ${ITEMS_PER_PAGE}
     OFFSET ${offset}
     `);

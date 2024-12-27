@@ -116,7 +116,7 @@
             </div>
         {:else if actions.length === 0}
             <div transition:fade={{ duration: 200 }}>
-                <EmptyState message="No recent actions found" />
+                <EmptyState message="No actions found" />
             </div>
         {:else}
             <div class={gridView ? "actions-grid" : "actions-list"} transition:fade={{ duration: 200 }}>

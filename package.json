@@ -4,7 +4,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",
-		"build": "vite build && shx cp server.js build/ ",
+		"build": "vite build --mode production && shx cp server.js build/ ",
 		"preview": "vite preview",
 		"push": "drizzle-kit push",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
