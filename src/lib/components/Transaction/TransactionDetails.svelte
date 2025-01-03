@@ -25,11 +25,13 @@
                                 <div class="input-left">
                                     {#if input.sender_address}
                                         <div class="address">
-                                            Address <AddressLink address={input.sender_address} truncate={true}  />
+                                            Address <AddressLink address={input.sender_address} truncate={false}
+                                                                 maxLength={40} />
                                         </div>
                                     {/if}
                                     <div class="transaction">
-                                        Created in: <TransactionLink txid={input.hash_prevout} truncate={true} />
+                                        Created in: <TransactionLink txid={input.hash_prevout} truncate={true}
+                                                                     maxLength={40}/>
                                     </div>
                                     {#if Array.isArray(input.txinwitness) && input.txinwitness.length > 0}
                                         <details class="witness-details">
@@ -73,7 +75,7 @@
                             <div class="output-left">
                                 <div class="address">
                                     {#if output.address}
-                                        Address <AddressLink address={output.address} truncate={true}  />
+                                        Address <AddressLink address={output.address} truncate={false}  maxLength={62}/>
                                     {:else}
                                         <span class="font-mono">Scriptpubkey: {output.scriptpubkey.slice(0, 20)}...</span>
                                     {/if}

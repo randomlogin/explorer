@@ -10,9 +10,6 @@
     $: href = outputIndex !== null ? `/tx/${txid}#output-${outputIndex}` : `/tx/${txid}`;
 </script>
 
-<a {href} class="mono-link" title={txid}>
+<a {href} class="mono-link no-wrap" title={txid}>
     {displayTxid}
 </a>
-<style>
-@import '$lib/styles/variables.css';
-</style>

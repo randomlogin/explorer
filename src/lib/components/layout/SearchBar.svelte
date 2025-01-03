@@ -77,9 +77,9 @@
       case "space":
         path = `/space/${value.name}`;
         break;
-      case "address":
-        path = `/address/${value.address}`;
-        break;
+      /* case "address": */
+      /*   path = `/address/${value.address}`; */
+      /*   break; */
     }
 
     if (path) {

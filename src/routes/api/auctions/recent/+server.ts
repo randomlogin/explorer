@@ -13,7 +13,7 @@ export const GET: RequestHandler = async function ({ url }) {
         SELECT COUNT(*) as total
         FROM vmetaouts v
         JOIN blocks b ON v.block_hash = b.hash
-        WHERE NOT b.orphan AND v.name IS NOT NULL;
+        WHERE b.height >= 0 AND v.name IS NOT NULL;
     `);
 
     const total = Number(countResult.rows[0].total);
@@ -26,7 +26,7 @@ export const GET: RequestHandler = async function ({ url }) {
             b.time
         FROM vmetaouts v
         JOIN blocks b ON v.block_hash = b.hash
-        WHERE NOT b.orphan AND v.name IS NOT NULL
+        WHERE b.height >= 0 AND v.name IS NOT NULL
         ORDER BY b.height DESC
         LIMIT ${limit}
         OFFSET ${offset};

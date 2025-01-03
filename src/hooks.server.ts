@@ -21,7 +21,7 @@ export const handle: Handle = async ({ event, resolve }) => {
     
     if (event.url.pathname.startsWith('/api/')) {
         const endTime = Date.now();
-        console.log(`IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | Response Time: ${endTime - startTime} ms`);
+        console.log(`${endTime} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | Response Time: ${endTime - startTime} ms`);
     }
     
     return response;

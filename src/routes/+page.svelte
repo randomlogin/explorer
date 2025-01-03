@@ -44,11 +44,14 @@
 
     <div class="content-sections-wrapper">
         <div class="content-section actions-section">
-            <a href="/actions/mempool" class="section-title-link">
-                <h1 class="section-title">Unconfirmed spaces actions<Tooltip text=" Some spaces actions may be missing from mempool." position="right" /></h1>
-            </a>
-            <RecentActions title={false} apiEndpoint={ROUTES.api.auctions.mempool}/>
-        </div>
+    <div class="header-container">
+        <a href="/actions/mempool" class="section-title-link">
+            <h1 class="section-title">Unconfirmed spaces actions</h1>
+        </a>
+        <Tooltip text="Some spaces actions may be missing or shown incorrectly in mempool." position="right" />
+    </div>
+    <RecentActions title={false} apiEndpoint={ROUTES.api.auctions.mempool}/>
+</div>
 
 
         <div class="content-section actions-section">
@@ -201,5 +204,16 @@
             padding: var(--space-3);
             margin-bottom: var(--space-6);
         }
+    }
+
+    .header-container {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    /* If you need to preserve heading styles */
+    .section-title {
+        margin: 0;  /* Remove default margin to ensure proper alignment */
     }
 </style>

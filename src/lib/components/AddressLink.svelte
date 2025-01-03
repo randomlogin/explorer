@@ -12,6 +12,6 @@
             : address;
 </script>
 
-<a href="/address/{address}" class="mono-link" title={truncate || maxLength ? address : undefined} >
-    {displayAddress}
-</a>
+    <span class="mono-link" title={truncate || maxLength ? address : undefined}>
+        {displayAddress}
+    </span>

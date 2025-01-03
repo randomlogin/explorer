@@ -13,26 +13,26 @@ export const GET: RequestHandler = async function ({ url }) {
     const heightRegexp = /^\d+$/;
 
     // Try to parse as address first
-    try {
-        const scriptPubKey = Buffer.from(addressToScriptPubKey(search), 'hex');
-        
-        const addressTx = await db.execute(sql`
-            SELECT 1 FROM tx_outputs 
-            WHERE scriptPubKey = ${scriptPubKey} 
-            LIMIT 1
-        `);
-
-        if (addressTx.rows[0]) {
-            result.push({
-                type: "address",
-                value: {
-                    address: search
-                }
-            });
-        }
-    } catch (e) {
-        // Not a valid address, continue with other searches
-    }
+    // try {
+    //     const scriptPubKey = Buffer.from(addressToScriptPubKey(search), 'hex');
+    //     
+    //     const addressTx = await db.execute(sql`
+    //         SELECT 1 FROM tx_outputs 
+    //         WHERE scriptPubKey = ${scriptPubKey} 
+    //         LIMIT 1
+    //     `);
+    //
+    //     if (addressTx.rows[0]) {
+    //         result.push({
+    //             type: "address",
+    //             value: {
+    //                 address: search
+    //             }
+    //         });
+    //     }
+    // } catch (e) {
+    //     // Not a valid address, continue with other searches
+    // }
 
     if (hashRegexp.test(search)) {
         const hexString = Buffer.from(search, 'hex');

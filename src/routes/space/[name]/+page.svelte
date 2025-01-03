@@ -28,6 +28,8 @@
     $: {
         if (data) {
             vmetaouts = data.items;
+            console.log(data)
+        console.log(data.latest)
             latestVmetaout = data.latest;
             pagination = data.pagination;
             spaceName = latestVmetaout?.name;
@@ -85,6 +87,7 @@
 
     if (response.ok) {
         const historyData = await response.json();
+
 
         // Update only the paginated data, keep stats the same
         data = {
