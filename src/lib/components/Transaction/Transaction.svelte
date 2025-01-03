@@ -11,7 +11,6 @@
             : `/block/${data.block.hash}`;
 
     export let data;
-     console.log(data)
 </script>
 
 <div class="container">

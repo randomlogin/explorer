@@ -7,11 +7,8 @@ export const GET: RequestHandler = async function ({ url }) {
     const page = Number(url.searchParams.get('page')) || 1;
     const limit = Number(url.searchParams.get('limit')) || 20;
     const offset = (page - 1) * limit;
-    // const mempoolBlockHash = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef"
 
     const mempoolBlockHash = Buffer.from('deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'hex');
-    console.log(limit, "limit")
-    console.log(offset, "offset")
 
     // Get total count
     const countResult = await db.execute(sql`

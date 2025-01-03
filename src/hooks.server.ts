@@ -20,8 +20,10 @@ export const handle: Handle = async ({ event, resolve }) => {
     const response = await resolve(event);
     
     if (event.url.pathname.startsWith('/api/')) {
+        // const endTime = Date.now();
         const endTime = Date.now();
-        console.log(`${endTime} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | Response Time: ${endTime - startTime} ms`);
+        const timestamp = new Date().toISOString(); 
+        console.log(`${timestamp} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | Response Time: ${endTime - startTime} ms`);
     }
     
     return response;

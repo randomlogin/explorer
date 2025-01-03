@@ -20,7 +20,6 @@ export function createTransaction(row: any): Transaction {
 
     // Add block and confirmations only if block data exists
     if (row.block_height != null && row.block_time != null) {
-        console.log(row)
         transaction.block = {
             height: row.block_height,
             time: row.block_time,

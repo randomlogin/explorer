@@ -28,8 +28,6 @@
     $: {
         if (data) {
             vmetaouts = data.items;
-            console.log(data)
-        console.log(data.latest)
             latestVmetaout = data.latest;
             pagination = data.pagination;
             spaceName = latestVmetaout?.name;
