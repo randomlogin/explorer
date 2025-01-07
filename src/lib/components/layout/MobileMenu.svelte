@@ -1,28 +1,41 @@
 <script lang="ts">
   import { page } from "$app/stores";
   import { menuLinks } from "$lib/links";
-  export let isOpen = false;
+  import { slide } from "svelte/transition";
+  import { onMount } from "svelte";
+
+  export let isOpen: boolean;
+
 </script>
 
-<nav class="fixed top-0 left-0 w-screen h-screen z-[500] flex transition-transform ease-in-out {isOpen ? 'translate-x-0' : 'translate-x-full'}">
-  <div class="w-[20%] bg-black bg-opacity-30 h-full"></div>
-  <ul class="w-[80%] bg-[#b0661d] flex flex-col gap-10 pt-20">
-    {#each menuLinks as { href, label, external }}
-      <li class="text-center">
-        <a
-          on:click={() => isOpen = false}
-          {href}
-          class="!text-lg btn {$page.url.pathname === href ? 'light:bg-primary light:border-primary bg-[#25292e] border-[#25292e]' : 'btn-ghost'} btn-sm"
-          target={external ? "_blank" : undefined}
-        >
-          {label}
-        </a>
-      </li>
-    {/each}
-    <!--
-    <li class="mt-20 !text-lg">
-      <ThemeToggle showName={true} />
-    </li>
-    -->
-  </ul>
-</nav>
+{#if isOpen}
+  <!-- Backdrop -->
+  <div 
+    class="fixed inset-0 bg-black bg-opacity-50 z-[499] md:hidden" 
+    on:click={() => isOpen = false}
+    role="presentation"
+  />
+  
+  <!-- Menu -->
+  <div class="fixed top-[57px] left-0 right-0 bg-base-100 z-[500] border-t md:hidden overflow-y-auto max-h-[calc(100vh-57px)]" transition:slide={{ duration: 200 }} role="navigation" >
+    <nav class="flex flex-col p-4">
+      {#each menuLinks as { href, label, external }}
+    <a  
+      {href}
+      class="btn {$page.url.pathname === href ? 'btn-primary' : 'btn-ghost'} btn-sm my-1 justify-start w-full text-left"
+      target={external ? "_blank" : undefined}
+      on:click={() => isOpen = false}
+      rel={external ? "noopener noreferrer" : undefined}
+    >
+      {label}
+    </a>
+{/each}
+    </nav>
+  </div>
+{/if}
+
+<style>
+  :global(body.mobile-menu-open) {
+    overflow: hidden;
+  }
+</style>

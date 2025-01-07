@@ -93,4 +93,5 @@ body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
   transition: var(--transition-colors);
+    overflow-x: hidden;
 }

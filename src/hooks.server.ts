@@ -3,7 +3,6 @@ import type { Handle } from '@sveltejs/kit';
 export const handle: Handle = async ({ event, resolve }) => {
     const startTime = Date.now();
     
-    // Try different headers to get client IP
     const getClientIP = (event: any): string => {
         const headers = event.request.headers;
         return headers.get('cf-connecting-ip') || // Cloudflare
@@ -13,19 +12,39 @@ export const handle: Handle = async ({ event, resolve }) => {
                event.getClientAddress?.() || // SvelteKit method
                'unknown';
     };
-
+    
     const clientIP = getClientIP(event);
     const userAgent = event.request.headers.get('user-agent') || 'unknown';
     
-    const response = await resolve(event);
-    
     if (event.url.pathname.startsWith('/api/')) {
-        // const endTime = Date.now();
-        const endTime = Date.now();
-        const timestamp = new Date().toISOString(); 
-        console.log(`${timestamp} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | Response Time: ${endTime - startTime} ms`);
+        const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('Request timeout')), 5000);
+        });
+
+        try {
+            const response = await Promise.race([
+                resolve(event),
+                timeoutPromise
+            ]);
+            
+            const endTime = Date.now();
+            const timestamp = new Date().toISOString();
+            console.log(`${timestamp} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | Response Time: ${endTime - startTime} ms`);
+            
+            return response;
+        } catch (error) {
+            const timestamp = new Date().toISOString();
+            console.log(`${timestamp} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | TIMEOUT after 5000ms`);
+            
+            return new Response('Request timed out', { 
+                status: 504,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
     }
     
+    const response = await resolve(event);
     return response;
 };
-
