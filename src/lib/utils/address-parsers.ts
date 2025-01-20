@@ -1,6 +1,6 @@
 import { bech32, bech32m } from 'bech32';
 import bs58 from 'bs58';
-import { PUBLIC_BTC_NETWORK } from "$env/static/public";
+import { env } from "$env/dynamic/public";
 import { Buffer } from 'buffer';
 import { sha256 as sha256Hasher } from '@noble/hashes/sha256';
 
@@ -13,7 +13,7 @@ export function parseAddress(scriptPubKey: Buffer): string | null {
            parseP2SHScriptPubKey(scriptPubKey) ||  // Added P2SH parsing
            parseP2WPKH(scriptPubKey) ||
            parseP2WSH(scriptPubKey) ||
-           decodeScriptPubKeyToTaprootAddress(scriptPubKey, PUBLIC_BTC_NETWORK);
+           decodeScriptPubKeyToTaprootAddress(scriptPubKey, env.PUBLIC_BTC_NETWORK);
 }
 
 export function parseP2SHScriptPubKey(scriptPubKey: Buffer): string | null {
@@ -26,7 +26,7 @@ export function parseP2SHScriptPubKey(scriptPubKey: Buffer): string | null {
     }
 
     const scriptHash = scriptPubKey.slice(2, 22);
-    const prefix = PUBLIC_BTC_NETWORK === 'mainnet' ? 0x05 : 0xc4;  // 0x05 for mainnet, 0xc4 for testnet
+    const prefix = env.PUBLIC_BTC_NETWORK === 'mainnet' ? 0x05 : 0xc4;  // 0x05 for mainnet, 0xc4 for testnet
     const payload = Buffer.concat([Buffer.from([prefix]), scriptHash]);
 
     // Double SHA256 for checksum
@@ -61,7 +61,7 @@ export function parseP2PKHScriptPubKey(scriptPubKey: Buffer): string | null {
     }
 
     const pubKeyHash = scriptPubKey.slice(3, 23);
-    const prefix = PUBLIC_BTC_NETWORK === 'mainnet' ? 0x00 : 0x6f;
+    const prefix = env.PUBLIC_BTC_NETWORK === 'mainnet' ? 0x00 : 0x6f;
     const payload = Buffer.concat([Buffer.from([prefix]), pubKeyHash]);
 
     // Calculate checksum (double SHA256)
@@ -81,7 +81,7 @@ export function parseP2WPKH(scriptPubKey: Buffer) {
     }
     const pubKeyHash = scriptPubKey.slice(2);
     const words = bech32m.toWords(pubKeyHash);
-    const prefix = PUBLIC_BTC_NETWORK === 'mainnet' ? 'bc' : 'tb';
+    const prefix = env.PUBLIC_BTC_NETWORK === 'mainnet' ? 'bc' : 'tb';
     return bech32m.encode(prefix, [0].concat(words));
 }
 
@@ -91,7 +91,7 @@ export function parseP2WSH(scriptPubKey: Buffer) {
     }
     const scriptHash = scriptPubKey.slice(2);
     const words = bech32m.toWords(scriptHash);
-    const prefix = PUBLIC_BTC_NETWORK === 'mainnet' ? 'bc' : 'tb';
+    const prefix = env.PUBLIC_BTC_NETWORK === 'mainnet' ? 'bc' : 'tb';
     return bech32m.encode(prefix, [0].concat(words));
 }
 

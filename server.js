@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
+const port = process.env.PORT || 3000;  // Add this line
 
 // add a route that lives separately from the SvelteKit app
 app.get('/healthcheck', (req, res) => {
@@ -35,7 +36,7 @@ if (SSL_CERT_PATH && SSL_KEY_PATH) {
             console.log('HTTPS server running on port 443');
         });
 } else {
-    app.listen(3000, () => {
+    app.listen(port, () => {
         console.log('HTTP server running on port 3000');
     });
 }

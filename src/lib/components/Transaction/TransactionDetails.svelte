@@ -1,16 +1,21 @@
 <script lang="ts">
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
     import TransactionSpaces from '$lib/components/Transaction/TransactionSpaces.svelte';
+    import TruncatableText from '$lib/components/TruncatableText.svelte';
     import AddressLink from '$lib/components/AddressLink.svelte';
+    import CopyButton from '$lib/components/CopyButton.svelte';
     import { formatBTC } from '$lib/utils/formatters';
+    import '$lib/styles/link.css';
+    
     export let transaction;
     export let showAllInputsOutputs = false;
     export let maxInputsOutputs = showAllInputsOutputs ? Infinity : 5;
-
 </script>
+
 {#if transaction.vmetaouts?.length > 0}
     <TransactionSpaces vmetaouts={transaction.vmetaouts} />
 {/if}
+
 <div class="transaction-io">
     <div class="io-section inputs">
         <h2 class="section-title">Inputs</h2>
@@ -25,13 +30,22 @@
                                 <div class="input-left">
                                     {#if input.sender_address}
                                         <div class="address">
-                                            Address <AddressLink address={input.sender_address} truncate={false}
-                                                                 maxLength={40} />
+                                            <span class="text">Address</span>
+                                            <div class="truncate-wrapper">
+                                                <div class="content-wrapper">
+                                                    <AddressLink address={input.sender_address} truncate={true} minLength={8} />
+                                                </div>
+                                                <CopyButton value={input.sender_address} size={14} />
+                                            </div>
                                         </div>
                                     {/if}
-                                    <div class="transaction">
-                                        Created in: <TransactionLink txid={input.hash_prevout} truncate={true}
-                                                                     maxLength={40}/>
+                                    <div class="transaction-status">
+                                        <span class="label">Created in:</span>
+                                        <div class="truncate-wrapper">
+                                            <div class="content-wrapper">
+                                                <TransactionLink txid={input.hash_prevout} truncate={true} minLength={8}/>
+                                            </div>
+                                        </div>
                                     </div>
                                     {#if Array.isArray(input.txinwitness) && input.txinwitness.length > 0}
                                         <details class="witness-details">
@@ -47,20 +61,19 @@
                                         </details>
                                     {/if}
                                 </div>
-
                                 <div class="input-right">
                                     <span class="value">{formatBTC(input.prev_value)}</span>
                                 </div>
                             </div>
                         {/if}
                     </div>
-                    {#if index < transaction.inputs.slice(0, maxInputsOutputs).length - 1}
-                        <div class="separator"></div>
-                    {/if}
                 </div>
+                {#if index < transaction.inputs.slice(0, maxInputsOutputs).length - 1}
+                    <div class="separator"></div>
+                {/if}
             {/each}
             {#if transaction.inputs.length > maxInputsOutputs}
-                <div class="more-items">... other inputs omitted </div>
+                <div class="more-items">... other inputs omitted</div>
             {/if}
         </div>
     </div>
@@ -74,18 +87,34 @@
                         <div class="output-details">
                             <div class="output-left">
                                 <div class="address">
-                                    {#if output.address}
-                                        Address <AddressLink address={output.address} truncate={false}  maxLength={62}/>
-                                    {:else}
-                                        <span class="font-mono">Scriptpubkey: {output.scriptpubkey.slice(0, 20)}...</span>
-                                    {/if}
+                                    <span class="text">
+                                        {output.address ? 'Address' : 'Scriptpubkey'}
+                                    </span>
+                                    <div class="truncate-wrapper">
+                                        <div class="content-wrapper">
+                                            {#if output.address}
+                                                <AddressLink address={output.address} truncate={true} minLength={8}/>
+                                            {:else}
+                                                <TruncatableText text={output.scriptpubkey} />
+                                            {/if}
+                                        </div>
+                                        <CopyButton value={output.address || output.scriptpubkey} size={14} />
+                                    </div>
                                 </div>
-                                <div class="transaction">
-                                    {#if output.spender}
-                                        Spent in: <TransactionLink txid={output.spender.txid} truncate={true} maxLength={30} />
-                                    {:else}
-                                        Unspent
-                                    {/if}
+                                <div class="transaction-status">
+                                    <span class="label">
+                                        {#if output.spender}
+                                            
+                                        <span class="label">Spent in:</span>
+                                         <div class="truncate-wrapper">
+                                            <div class="content-wrapper">
+                                                <TransactionLink txid={output.spender.txid} truncate={true} minLength={8} />
+                                            </div>
+                                        </div>
+                                        {:else}
+                                            Unspent
+                                        {/if}
+                                    </span>
                                 </div>
                             </div>
                             <div class="output-right">
@@ -93,10 +122,10 @@
                             </div>
                         </div>
                     </div>
-                    {#if index < transaction.outputs.slice(0, maxInputsOutputs).length - 1}
-                        <div class="separator"></div>
-                    {/if}
                 </div>
+                {#if index < transaction.outputs.slice(0, maxInputsOutputs).length - 1}
+                    <div class="separator"></div>
+                {/if}
             {/each}
             {#if transaction.outputs.length > maxInputsOutputs}
                 <div class="more-items">... other outputs omitted</div>
@@ -106,12 +135,21 @@
 </div>
 
 <style>
-    @import '$lib/styles/variables.css';
+    .transaction-io {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: var(--space-6);
+        margin-top: var(--space-2);
+        width: 100%;
+    }
 
+    .io-section {
+        min-width: 0;
+    }
 
     .section-title {
         font-size: var(--text-xl);
-        margin-bottom: var(--space-4);
+        margin-bottom: var(--space-2);
         padding-bottom: var(--space-2);
         border-bottom: var(--border-width-1) solid var(--text-muted);
     }
@@ -119,66 +157,28 @@
     .section-content {
         display: flex;
         flex-direction: column;
-        gap: var(--space-4);
-    }
-
-    .item, .output-item {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
-
-    .output-item {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .output-details {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        width: 100%;
-    }
-
-    .input-details, .output-details {
-        display: flex;
-        width: 100%;
-        gap: var(--space-4);
-    }
-
-    .separator {
-        display: none;
-    }
-
-    .transaction-io {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-6);
-        margin-top: var(--space-10);
-    }
-
-    .io-section {
-        flex: 1;
-    }
-
-
-    .more-items {
-        color: var(--text-muted);
-        margin-top: var(--space-2);
+        gap: var(--space-2);
     }
 
     .item-wrapper {
-        margin-bottom: var(--space-4);
-    }
-
-    .item-wrapper:last-child {
         margin-bottom: 0;
     }
 
-    @media (max-width: 768px) {
-        .transaction-io {
-            grid-template-columns: 1fr;
-        }
+    .item,
+    .output-item {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+    .input-details,
+    .output-details {
+        display: flex;
+        justify-content: space-between;
+        gap: var(--space-2);
+        width: 100%;
+        min-width: 0;
+        align-items: baseline;
     }
 
     .input-left,
@@ -186,64 +186,68 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-2);
+        min-width: 0;
         flex: 1;
-        min-width: 0;
-        overflow: hidden;
     }
+
+    .input-right,
+    .output-right {
+        flex-shrink: 0;
+    }
+
     .address,
-    .transaction {
-        display: flex;
+    .transaction-status {
+        display: grid;
+        grid-template-columns: auto 1fr;
         gap: var(--space-2);
-        align-items: center;
+        align-items: baseline;
         min-width: 0;
-        width: 100%; /* Take full width */
-        white-space: nowrap;
-        overflow: hidden;
     }
 
-
-
-    .address {
+    .label {
+        white-space: nowrap;
+        color: var(--text-muted);
         font-size: var(--text-base);
     }
 
-    .transaction {
-        font-size: var(--text-sm);
-        color: var(--text-muted);
+    .truncate-wrapper {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+        max-width: 100%;
     }
 
-    /* Add these new styles to handle the link text overflow */
-    :global(.address a),
-    :global(.transaction a) {
+    .content-wrapper {
+        min-width: 0;
+        margin-right: var(--space-2);
+    }
+
+    .content-wrapper :global(.link-container) {
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        min-width: 0; /* Enable truncation */
+        min-width: 0;
+        font-size: var(--text-base);
     }
-
-
-    .output-details {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
-        gap: var(--space-4);
-        align-items: flex-start; /* Align items to top */
-    }
-
-    /* Label text (Address:, Tx:, etc) */
-    .address > :first-child {
-        flex-shrink: 0; /* Don't shrink the label */
-    }
-
 
     .value {
         color: var(--color-primary);
         font-weight: 600;
         white-space: nowrap;
-        text-align: right; /* Ensure right alignment */
     }
 
-  .witness-details {
+    .separator {
+        height: 1px;
+        background-color: var(--border-color);
+        margin: var(--space-2) 0;
+    }
+
+    .more-items {
+        color: var(--text-muted);
+        font-style: italic;
+    }
+
+    .witness-details {
         margin-top: var(--space-2);
         font-size: var(--text-sm);
     }
@@ -258,15 +262,16 @@
 
     .witness-content {
         margin-top: var(--space-2);
-        padding: var(--space-3);
+        padding: var(--space-2);
         background: var(--bg-primary);
         border-radius: var(--border-radius);
+        overflow-x: auto;
     }
 
     .witness-item {
         display: flex;
         gap: var(--space-2);
-        padding: var(--space-1) 0;
+        padding: var(--space-2) 0;
     }
 
     .witness-index {
@@ -283,15 +288,7 @@
     @media (max-width: 768px) {
         .transaction-io {
             grid-template-columns: 1fr;
-            gap: var(--space-4);
-        }
-
-        .section-title {
-            font-size: var(--text-lg);
-        }
-
-        .item-wrapper {
-            padding: var(--space-3);
+            gap: var(--space-2);
         }
 
         .input-details,
@@ -302,26 +299,10 @@
 
         .value {
             margin-top: var(--space-2);
-            text-align: left;
-            padding-left: 0;
-        }
-
-        .address,
-        .transaction {
-            flex-wrap: wrap;
-            gap: var(--space-1);
-        }
-
-        /* Ensure labels stay on their own line on mobile */
-        .address > :first-child,
-        .transaction > :first-child {
-            width: 100%;
-            margin-bottom: var(--space-1);
         }
 
         .witness-content {
             max-width: 100%;
-            overflow-x: auto;
         }
     }
 </style>

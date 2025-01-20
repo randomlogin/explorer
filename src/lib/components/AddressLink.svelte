@@ -1,17 +1,27 @@
 <script lang="ts">
     import '$lib/styles/link.css';
+    import TruncatableText from '$lib/components/TruncatableText.svelte';
     
     export let address: string;
     export let truncate = false;
-    export let maxLength: number | undefined = undefined;
-
-    $: displayAddress = truncate 
-        ? `${address.slice(0, 8)}...${address.slice(-8)}`
-        : maxLength && address.length > maxLength 
-            ? `${address.slice(0, maxLength)}...` 
-            : address;
+    export let minLength = 8;
 </script>
 
-    <span class="mono-link" title={truncate || maxLength ? address : undefined}>
-        {displayAddress}
-    </span>
+<span class="link-container mono-link" title={truncate ? address : undefined}>
+    {#if truncate}
+        <TruncatableText text={address} {minLength} />
+    {:else}
+        {address}
+    {/if}
+</span>
+
+<style>
+    .link-container {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 100%;
+        vertical-align: middle;
+    }
+</style>

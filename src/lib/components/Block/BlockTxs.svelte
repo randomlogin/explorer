@@ -42,12 +42,13 @@
         <div class="transaction-card">
             <div class="transaction-header">
                 <div class="transaction-info">
-                    Transaction 
-
-                {#if transaction.index >= 0}
-                    <span class="transaction-number">#{transaction.index}</span>
-                {/if}
-                    <TransactionLink txid={transaction.txid} />
+                    <span class="transaction-label">Transaction</span>
+                    {#if transaction.index >= 0}
+                        <span class="transaction-number">#{transaction.index}</span>
+                    {/if}
+                    <div class="transaction-link-wrapper">
+                        <TransactionLink txid={transaction.txid} truncate={true} minLength={8}/>
+                    </div>
                 </div>
                 {#if showTransactionTime}
                     <div class="transaction-time">
@@ -94,6 +95,7 @@
         position: relative;
         box-shadow: var(--shadow-sm);
         transition: var(--transition-all);
+        min-width: 0; /* Add this to enable truncation */
     }
 
     .transaction-card:hover {
@@ -108,20 +110,37 @@
         align-items: flex-start;
         gap: var(--space-4);
         margin-bottom: var(--space-4);
-        flex-wrap: wrap;
+        min-width: 0; /* Add this to enable truncation */
     }
 
     .transaction-info {
         display: flex;
         align-items: center;
         gap: var(--space-2);
-        flex-wrap: wrap;
+        min-width: 0; /* Add this to enable truncation */
+    }
+
+    .transaction-label {
+        flex-shrink: 0; /* Prevent "Transaction" text from shrinking */
     }
 
     .transaction-number {
         color: var(--text-muted);
         font-size: var(--font-size-sm);
         white-space: nowrap;
+        flex-shrink: 0; /* Prevent number from shrinking */
+    }
+
+    .transaction-link-wrapper {
+        min-width: 0; /* Enable truncation */
+        overflow: hidden; /* Enable truncation */
+    }
+
+    .transaction-link-wrapper :global(.link-container) {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
     }
 
     .transaction-time {
@@ -131,15 +150,7 @@
         gap: var(--space-1);
         color: var(--text-muted);
         font-size: var(--font-size-sm);
-    }
-
-    .block-link {
-        color: var(--color-primary);
-        text-decoration: none;
-    }
-
-    .block-link:hover {
-        text-decoration: underline;
+        flex-shrink: 0; /* Prevent time from shrinking */
     }
 
     .timestamp {
@@ -154,15 +165,18 @@
         .transaction-header {
             flex-direction: column;
             gap: var(--space-2);
+            width: 100%;
+        }
+
+        .transaction-info {
+            width: 100%;
+            overflow: hidden;
         }
 
         .transaction-time {
             align-items: flex-start;
             margin-top: var(--space-2);
-        }
-
-        .transaction-info {
-            gap: var(--space-2);
+            width: 100%;
         }
     }
 </style>

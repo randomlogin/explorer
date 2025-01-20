@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_URL=${DB_URL}
+      - PUBLIC_BTC_NETWORK=${PUBLIC_BTC_NETWORK}
+    networks:
+      - spacesprotocol-explorer
+
+networks:
+  spacesprotocol-explorer:
+    external: true

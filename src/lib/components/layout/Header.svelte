@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { PUBLIC_BTC_NETWORK } from "$env/static/public";
+  import { env } from "$env/dynamic/public";
   import Logo from "./Logo.svelte";
   import SearchBar from "./SearchBar.svelte";
   import NavigationLinks from "./NavigationLinks.svelte";
@@ -7,7 +7,7 @@
   let mobileMenuOpen = false;
 </script>
 
-{#if PUBLIC_BTC_NETWORK === "testnet4"}
+{#if env.PUBLIC_BTC_NETWORK === "testnet4"}
   <div class="justify-center bg-red-500 text-white text-center">
     This is testnet4 explorer, all transactions have no value on this chain.
   </div>
