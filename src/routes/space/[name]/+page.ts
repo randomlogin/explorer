@@ -2,9 +2,10 @@ import type { PageLoad } from './$types';
 import { ROUTES } from '$lib/routes';
 
 export const load: PageLoad = async ({ fetch, params }) => {
+    const name = params.name.toLowerCase();
     const [spaceHistoryResponse, statsResponse] = await Promise.all([
-        fetch(ROUTES.api.space.history(params.name)),
-        fetch(ROUTES.api.space.stats(params.name))
+        fetch(ROUTES.api.space.history(name)),
+        fetch(ROUTES.api.space.stats(name))
     ]);
 
     if (!spaceHistoryResponse.ok) {

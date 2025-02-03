@@ -12,7 +12,7 @@ if (env.DB_CREDENTIALS) {
 } else if (env.DB_URL) {
   dbUrl = env.DB_URL;
 } else {
-  throw new Error('No database configuration found. Please provide either DB_CREDENTIALS or DATABASE_URL in environment variables.');
+  throw new Error('No database configuration found. Please provide either DB_CREDENTIALS or DB_URL in environment variables.');
 }
 
 const pool = new Pool({ connectionString: dbUrl });

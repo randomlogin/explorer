@@ -104,8 +104,7 @@
                                 <div class="transaction-status">
                                     <span class="label">
                                         {#if output.spender}
-                                            
-                                        <span class="label">Spent in:</span>
+                                        Spent in: 
                                          <div class="truncate-wrapper">
                                             <div class="content-wrapper">
                                                 <TransactionLink txid={output.spender.txid} truncate={true} minLength={8} />
@@ -157,7 +156,7 @@
     .section-content {
         display: flex;
         flex-direction: column;
-        gap: var(--space-2);
+        gap: var(--space-1);
     }
 
     .item-wrapper {
@@ -239,7 +238,7 @@
     .separator {
         height: 1px;
         background-color: var(--border-color);
-        margin: var(--space-2) 0;
+        margin: var(--space-1) 0;
     }
 
     .more-items {

@@ -43,7 +43,6 @@
     display: flex;
     justify-content: center;
     width: 100%;
-    overflow-x: hidden;
   }
 
   .layout-header-content {
