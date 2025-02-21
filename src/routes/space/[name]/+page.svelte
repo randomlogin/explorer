@@ -28,13 +28,14 @@
 
     $: {
         if (data) {
+        console.log(data)
             vmetaouts = data.items;
             latestVmetaout = data.latest;
             pagination = data.pagination;
             spaceName = latestVmetaout?.name;
             currentBlockHeight = data.currentHeight;
             expiryHeight = latestVmetaout?.expire_height;
-            numberOfBids = data.stats.total_bids;
+            numberOfBids = data.items.filter(item => item.burn_increment !== null).length;
             status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
             highestBid = data.stats.highest_bid
             winningBid = data.stats.winning_bid
@@ -119,17 +120,13 @@
         </div>
 
         <div class="details">
-            {#if winningBid && winningBid != 0 && !highestBid}
-                <div class="detail-item">
-                    <span class="detail-value">{formatBTC(winningBid)}</span>
-                    <span class="detail-label">Winning bid</span>
-                </div>
-            {/if}
-            {#if numberOfBids > 0}
+            {#if highestBid && highestBid !=0}
                 <div class="detail-item">
                     <span class="detail-value">{formatBTC(highestBid)}</span>
                     <span class="detail-label">Highest bid</span>
                 </div>
+            {/if}
+            {#if numberOfBids > 0}
                 <div class="detail-item">
                     <span class="detail-value">{numberOfBids}</span>
                     <span class="detail-label">Number of bids</span>
