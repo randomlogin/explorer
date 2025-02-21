@@ -157,9 +157,9 @@
                         {#if expiryHeight <= currentBlockHeight}
                             <BlockLink {expiryHeight} inline={true}/>
                         {:else}
-                            <div class="flex items-baseline gap-2">
+                            <div class="future-block-info">
                                 <span class="future-block">Block #{expiryHeight}</span>
-                                <span class="text-xs text-muted">in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}</span>
+                                <span class="time-remaining text-xs text-muted">in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}</span>
                             </div>
                         {/if}
                     </span>
@@ -181,78 +181,76 @@
                 <div class="history-section">
                     <h2 class="section-title">Transaction History</h2>
                     <div class="history-container">
-                        <table class="history-table">
-                            <thead>
-                                <tr>
-                                    <th class="table-header">Action</th>
-                                    <th class="table-header">Transaction</th>
-                                    {#if numberOfBids > 0}
-                                        <th class="table-header text-right">Bid Amount</th>
-                                    {/if}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {#each vmetaouts as vmetaout}
-    <tr class="table-row" class:mempool={vmetaout.block_height === -1}>
-        <td class="table-cell">
-            <div class="action-cell">
-                <div class={getActionColor(vmetaout.action)}>
-                    {vmetaout.action}
-                </div>
-            </div>
-        </td>
-        <td class="table-cell transaction-cell">
-            {#if vmetaout.script_error || vmetaout.reason}
-                <tr class="error-row">
-                    <td colspan="4" class="error-cell">
-                        <div class="error-container">
-                            {#if vmetaout.script_error}
-                                <div class="script-error">
-                                    Script Error: {vmetaout.script_error}
-                                </div>
-                            {/if}
-                            {#if vmetaout.reason}
-                                <div class="revoke-reason">
-                                    Reason: {vmetaout.reason}
-                                </div>
-                            {/if}
-                        </div>
-                    </td>
-                </tr>
-            {/if}
+                        <div class="table-wrapper">
+                            <table class="history-table">
+                                <thead>
+                                    <tr>
+                                        <th class="table-header">Action</th>
+                                        <th class="table-header">Transaction</th>
+                                        {#if numberOfBids > 0}
+                                            <th class="table-header text-right">Bid Amount</th>
+                                        {/if}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {#each vmetaouts as vmetaout}
+                                        <tr class="table-row" class:mempool={vmetaout.block_height === -1}>
+                                            <td class="table-cell">
+                                                <div class="action-cell">
+                                                    <div class={getActionColor(vmetaout.action)}>
+                                                        {vmetaout.action}
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="table-cell transaction-cell">
+                                                <div class="transaction-info">
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="tx-label">{vmetaout.block_height === -1 ? 'Unconfirmed transaction' : 'Transaction'}</span>
+                                                        <TransactionLink txid={vmetaout.txid} truncate={true} />
+                                                    </div>
+                                                    <div class="tx-details">
+                                                        <BlockLink height={vmetaout.block_height} />
+                                                        {#if vmetaout.block_height !== -1}
+                                                            <div class="time-detail">
+                                                                {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
+                                                            </div>
+                                                        {:else}
+                                                            <div class="mempool-badge">
+                                                                unconfirmed
+                                                            </div>
+                                                        {/if}
+                                                    </div>
+                                                </div>
+
+                                                {#if vmetaout.script_error || vmetaout.reason}
+                                                    <div class="error-container">
+                                                        {#if vmetaout.script_error}
+                                                            <div class="script-error">
+                                                                Script Error: {vmetaout.script_error}
+                                                            </div>
+                                                        {/if}
+                                                        {#if vmetaout.reason}
+                                                            <div class="revoke-reason">
+                                                                Reason: {vmetaout.reason}
+                                                            </div>
+                                                        {/if}
+                                                    </div>
+                                                {/if}
+                                            </td>
 
 
-            <div class="transaction-cell">
-                <div class="flex items-center gap-2">
-                    <span>{vmetaout.block_height === -1 ? 'Unconfirmed transaction' : 'Transaction'}</span>
-                    <TransactionLink txid={vmetaout.txid} truncate={true} />
-                </div>
-                <div class="tx-details">
-                    <BlockLink height={vmetaout.block_height} />
-                    {#if vmetaout.block_height !== -1}
-                        <div class="time-detail">
-                            {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
+                                            {#if numberOfBids > 0}
+                                                <td class="table-cell text-right bid-amount">
+                                                    {#if vmetaout.action === 'BID'}
+                                                        {formatBTC(vmetaout.total_burned)}
+                                                    {/if}
+                                                </td>
+                                            {/if}
+                                        </tr>
+                                    {/each}
+                                </tbody>
+                            </table>
                         </div>
-                    {:else}
-                        <div class="mempool-badge">
-                            unconfirmed
-                        </div>
-                    {/if}
-                </div>
-            </div>
-        </td>
-
-        {#if numberOfBids > 0}
-            <td class="table-cell text-right">
-                {#if vmetaout.action === 'BID'}
-                    {formatBTC(vmetaout.total_burned)}
-                {/if}
-            </td>
-        {/if}
-    </tr>
-                                {/each}
-                            </tbody>
-                        </table>
 
                         {#if pagination && pagination.totalPages > 1}
                             <div class="pagination-container">
@@ -273,274 +271,398 @@
 <style>
     @import '$lib/styles/headers.css';
 
-    .container {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-4);
-        padding: var(--space-4);
-        color: var(--text-primary);
-        transition: var(--transition-colors);
-    }
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    color: var(--text-primary);
+    transition: var(--transition-colors);
+    max-width: 100%;
+    overflow-x: hidden;
+}
 
-    @media (min-width: 768px) {
-        .container {
-            padding: var(--space-6) var(--space-10);
-        }
-    }
+.header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+    margin-bottom: var(--space-6);
+}
 
-    .header {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--space-2);
-        align-items: center;
-        margin-bottom: var(--space-6);
-    }
+.title {
+    font-weight: 700;
+    font-size: var(--text-3xl);
+    color: var(--text-primary);
+}
 
-    .title {
-        font-weight: 700;
-        font-size: var(--text-3xl);
-        color: var(--text-primary);
-    }
+.details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8) var(--space-10);
+    margin-bottom: var(--space-8);
+}
 
+.detail-item {
+    display: flex;
+    flex-direction: column-reverse;
+    gap: var(--space-2);
+}
+
+.detail-value {
+    font-size: var(--text-xl);
+    color: var(--color-primary);
+    font-weight: 600;
+    transition: var(--transition-colors);
+    line-height: 1.2;
+    min-height: 1.2em;
+}
+
+.detail-label {
+    color: var(--text-muted);
+    transition: var(--transition-colors);
+    font-size: var(--text-lg);
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.future-block-info {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+}
+
+.status-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--border-radius-3xl);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    background-color: var(--bg-secondary);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+}
+
+.status-text {
+    color: currentColor;
+}
+
+.main-content-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: var(--space-8);
+    align-items: start;
+}
+
+.timeline-section {
+    position: sticky;
+    top: var(--space-8);
+}
+
+.section-title {
+    font-size: var(--text-xl);
+    font-weight: 600;
+    margin-bottom: var(--space-6);
+}
+
+.history-container {
+    background: var(--bg-secondary);
+    padding: var(--space-6);
+    border-radius: var(--border-radius-lg);
+    border: var(--border-width-1) solid var(--border-color);
+}
+
+.table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.history-table {
+    width: 100%;
+    min-width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.table-header {
+    padding: var(--space-4);
+    text-align: left;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--text-muted);
+    border-bottom: var(--border-width-1) solid var(--border-color);
+}
+
+/* Set column widths */
+.table-header:nth-child(1) {
+    width: 120px;
+}
+
+.table-header:nth-child(2) {
+    width: auto;
+}
+
+.table-header:nth-child(3) {
+    width: 120px;
+}
+
+.table-row {
+    border-bottom: var(--border-width-1) solid var(--border-color);
+    transition: var(--transition-colors);
+}
+
+.table-row:hover {
+    background: var(--bg-hover);
+}
+
+.table-cell {
+    padding: var(--space-4);
+    font-size: var(--text-sm);
+}
+
+.action-cell {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.transaction-cell {
+    max-width: 0;
+    width: 100%;
+}
+
+.transaction-info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    word-break: break-word;
+    min-width: 0;
+}
+
+.tx-label {
+    font-size: var(--text-sm);
+    white-space: nowrap;
+    margin-right: var(--space-2);
+}
+
+.tx-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+
+.text-right {
+    text-align: right;
+}
+
+.bid-amount {
+    white-space: nowrap;
+    min-width: 80px;
+}
+
+.pagination-container {
+    margin-top: var(--space-6);
+}
+
+.mempool {
+    background-color: var(--bg-warning-50);
+}
+
+.mempool:hover {
+    background-color: var(--bg-warning-100) !important;
+}
+
+.mempool-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-2);
+    background-color: var(--bg-warning);
+    color: var(--text-warning);
+    border-radius: var(--border-radius-full);
+    font-size: var(--text-xs);
+    font-weight: 500;
+}
+
+.error-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-top: var(--space-2);
+    word-break: break-word;
+}
+
+.error-row {
+    background-color: var(--bg-error-50);
+}
+
+.error-cell {
+    border-bottom: none;
+}
+
+.script-error, .revoke-reason {
+    color: var(--color-error);
+    font-size: var(--text-sm);
+}
+
+.script-error {
+    font-family: var(--font-mono);
+}
+
+/* Utility classes */
+.flex {
+    display: flex;
+}
+
+.items-baseline {
+    align-items: baseline;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.gap-2 {
+    gap: var(--space-2);
+}
+
+.text-xs {
+    font-size: var(--text-xs);
+}
+
+.text-sm {
+    font-size: var(--text-sm);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.future-block {
+    color: var(--text-muted);
+    font-family: var(--font-mono);
+}
+
+/* Media Queries */
+@media (min-width: 1280px) {
     .details {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--space-8) var(--space-10);
-        margin-bottom: var(--space-8);
+        gap: var(--space-6);
     }
+}
 
-    @media (min-width: 1280px) {
-        .details {
-            gap: var(--space-6);
-        }
-    }
-
-    .detail-item {
-        display: flex;
-        flex-direction: column-reverse;
-        gap: var(--space-2);
-    }
-
-    .detail-value {
-        font-size: var(--text-xl);
-        color: var(--color-primary);
-        font-weight: 600;
-        transition: var(--transition-colors);
-        line-height: 1.2;
-        min-height: 1.2em;
-    }
-
-    .detail-label {
-        color: var(--text-muted);
-        transition: var(--transition-colors);
-        font-size: var(--text-lg);
-        font-weight: 500;
-        line-height: 1.5;
-    }
-
-    @media (max-width: 640px) {
-        .detail-value {
-            font-size: var(--text-lg);
-        }
-
-        .details {
-            gap: var(--space-6) var(--space-6);
-        }
-    }
-
-    .status-badge {
-        display: flex;
-        align-items: center;
-        gap: var(--space-2);
-        padding: var(--space-2) var(--space-4);
-        border-radius: var(--border-radius-3xl);
-        font-size: var(--text-sm);
-        font-weight: 500;
-        background-color: var(--bg-secondary);
-    }
-
-    .status-indicator {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background-color: currentColor;
-    }
-
-    .status-text {
-        color: currentColor;
-    }
-
+@media (max-width: 1023px) {
     .main-content-layout {
-        display: grid;
-        grid-template-columns: 1fr 2fr;
-        gap: var(--space-8);
-        align-items: start;
+        grid-template-columns: 1fr;
     }
 
     .timeline-section {
-        position: sticky;
-        top: var(--space-8);
+        position: static;
+        margin-bottom: var(--space-8);
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: var(--space-2);
     }
 
-    .section-title {
-        font-size: var(--text-xl);
-        font-weight: 600;
-        margin-bottom: var(--space-6);
-    }
-
-    .history-container {
-        background: var(--bg-secondary);
-        padding: var(--space-6);
-        border-radius: var(--border-radius-lg);
-        border: var(--border-width-1) solid var(--border-color);
-    }
-
-    .history-table {
-        width: 100%;
-        border-collapse: collapse;
-    }
-
-    .table-header {
-        padding: var(--space-4);
-        text-align: left;
-        font-size: var(--text-sm);
-        font-weight: 500;
-        color: var(--text-muted);
-        border-bottom: var(--border-width-1) solid var(--border-color);
-    }
-
-    .table-row {
-        border-bottom: var(--border-width-1) solid var(--border-color);
-        transition: var(--transition-colors);
-    }
-
-    .table-row:hover {
-        background: var(--bg-hover);
-    }
-
-    .table-cell {
-        padding: var(--space-4);
-        font-size: var(--text-sm);
-    }
-
-    .action-cell {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
-    }
-
-    .transaction-cell {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-2);
-    }
-
-    .tx-details {
-        display: flex;
+    .details {
         gap: var(--space-4);
-        font-size: var(--text-sm);
-        color: var(--text-muted);
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
     }
 
-    .text-right {
-        text-align: right;
+    .detail-item {
+        width: 100%;
     }
 
-    .pagination-container {
-        margin-top: var(--space-6);
+    .detail-value {
+        font-size: var(--text-lg);
+        word-break: break-word;
+        width: 100%;
     }
 
-    .mempool {
-        background-color: var(--bg-warning-50);
+    .detail-label {
+        font-size: var(--text-base);
+        white-space: nowrap;
     }
 
-    .mempool:hover {
-        background-color: var(--bg-warning-100) !important;
+    .detail-item:last-child {
+        grid-column: 1 / -1;
     }
 
-    .mempool-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: var(--space-1) var(--space-2);
-        background-color: var(--bg-warning);
-        color: var(--text-warning);
-        border-radius: var(--border-radius-full);
-        font-size: var(--text-xs);
-        font-weight: 500;
-    }
-
-    .error-container {
+    .future-block-info {
         display: flex;
         flex-direction: column;
         gap: var(--space-1);
     }
 
-    .error-row {
-        background-color: var(--bg-error-50);
+    .future-block {
+        display: block;
     }
 
-    .error-cell {
-        border-bottom: none;
-    }
-
-    .script-error, .revoke-reason {
-        color: var(--color-error);
+    .time-remaining {
         font-size: var(--text-sm);
+        color: var(--text-muted);
     }
 
-
-    .script-error {
-        color: var(--color-error);
-        font-size: var(--text-sm);
-        font-family: var(--font-mono);
+    .history-container {
+        padding: var(--space-2);
     }
 
-    .revoke-reason {
-        font-size: var(--text-sm);
-        color: var(--color-error);
+    .table-cell {
+        padding: var(--space-2);
     }
 
-    @media (max-width: 1023px) {
-        .main-content-layout {
-            grid-template-columns: 1fr;
-        }
-
-        .timeline-section {
-            position: static;
-            margin-bottom: var(--space-8);
-        }
+    .table-header:nth-child(1) {
+        width: 100px;
     }
 
-    @media (max-width: 768px) {
-        .table-cell {
-            padding: var(--space-2);
-        }
+    .table-header:nth-child(3) {
+        width: 80px;
     }
 
-    /* Utility classes */
-    .flex {
-        display: flex;
+    .transaction-cell {
+        min-width: 200px;
     }
 
-    .items-baseline {
-        align-items: baseline;
+    .tx-label {
+        white-space: normal;
     }
 
-    .gap-2 {
+    .title {
+        font-size: var(--text-2xl);
+    }
+
+    .status-badge {
+        padding: var(--space-1) var(--space-2);
+    }
+
+    .history-table {
+        width: 100%;
+    }
+
+    .transaction-cell {
+        word-break: break-all;
+    }
+
+    .tx-details {
+        flex-wrap: wrap;
         gap: var(--space-2);
     }
 
-    .text-sm {
+    .text-right {
         font-size: var(--text-sm);
+        white-space: normal;
     }
-
-    .text-muted {
-        color: var(--text-muted);
-    }
-
-    .future-block {
-        color: var(--text-muted);
-        font-family: var(--font-mono);
-    }
-
+}
 </style>

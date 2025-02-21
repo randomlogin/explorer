@@ -4,7 +4,6 @@
     
     export let txid: string;
     export let truncate = false;
-    export let minLength = 8;
     export let outputIndex: number | null = null;
     
     $: href = outputIndex !== null ? `/tx/${txid}#output-${outputIndex}` : `/tx/${txid}`;
