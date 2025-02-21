@@ -43,7 +43,7 @@
                                         <span class="label">Created in:</span>
                                         <div class="truncate-wrapper">
                                             <div class="content-wrapper">
-                                                <TransactionLink txid={input.hash_prevout} truncate={true} minLength={8}/>
+                                                <TransactionLink txid={input.hash_prevout} truncate={true} />
                                             </div>
                                         </div>
                                     </div>

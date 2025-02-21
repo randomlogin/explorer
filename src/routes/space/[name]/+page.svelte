@@ -171,7 +171,7 @@
         <div class="space-content">
             <div class="main-content-layout">
                 <div class="timeline-section">
-                    <h2 class="section-title">Space Status</h2>
+                    <h2 class="section-title">Space Timeline</h2>
                     <SpaceTimeline
                     vmetaout={latestVmetaout}
                     currentBlockHeight={currentBlockHeight}

@@ -141,7 +141,7 @@
                                 {/if}
                                 <div class="meta-item">
                                     <span class="meta-label">Tx</span>
-                                    <TransactionLink txid={action.txid} truncate={true} maxLength={action.time ? 10 : 30 } />
+                                    <TransactionLink txid={action.txid} truncate={true}  />
                                 </div>
                                 {#if action.time}
                                     <div class="meta-item">

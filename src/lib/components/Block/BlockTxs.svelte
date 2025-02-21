@@ -47,7 +47,7 @@
                         <span class="transaction-number">#{transaction.index}</span>
                     {/if}
                     <div class="transaction-link-wrapper">
-                        <TransactionLink txid={transaction.txid} truncate={true} minLength={8}/>
+                        <TransactionLink txid={transaction.txid} truncate={true} />
                     </div>
                 </div>
                 {#if showTransactionTime}
