@@ -72,15 +72,15 @@ import relativeTime from 'dayjs/plugin/relativeTime';
             </div>
             <div class="detail-item">
                 <span class="detail-value">{stats.unique_names_count}</span>
-                <span class="detail-label">Unique spaces</span>
+                <span class="detail-label">Spaces</span>
             </div>
             <div class="detail-item">
                 <span class="detail-value">{stats.valid_vmetaouts_count}</span>
-                <span class="detail-label">Total spaces actions</span>
+                <span class="detail-label">Events</span>
             </div>
             <div class="detail-item">
                 <span class="detail-value">{formatBTC(stats.total_burned_sum)}</span>
-                <span class="detail-label">Total burned amount</span>
+                <span class="detail-label">Total burned</span>
             </div>
             <div class="detail-item">
                 <span class="detail-value">{stats.bid_count}</span>

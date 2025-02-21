@@ -25,17 +25,20 @@
     let numberOfBids: number;
     let highestBid: number;
     let winningBid: number;
+    let bidsPresent: boolean;
 
     $: {
         if (data) {
-        console.log(data)
             vmetaouts = data.items;
             latestVmetaout = data.latest;
             pagination = data.pagination;
             spaceName = latestVmetaout?.name;
             currentBlockHeight = data.currentHeight;
             expiryHeight = latestVmetaout?.expire_height;
-            numberOfBids = data.items.filter(item => item.burn_increment !== null).length;
+            numberOfBids = data.stats.number_of_bids;
+
+            bidsPresent = data.items.filter(item => item.burn_increment !== null).length > 0;
+
             status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
             highestBid = data.stats.highest_bid
             winningBid = data.stats.winning_bid
@@ -170,9 +173,9 @@
                 <div class="timeline-section">
                     <h2 class="section-title">Space Timeline</h2>
                     <SpaceTimeline
-                    vmetaout={latestVmetaout}
-                    currentBlockHeight={currentBlockHeight}
-                    />
+                        vmetaout={latestVmetaout}
+                        currentBlockHeight={currentBlockHeight}
+                        />
                 </div>
 
                 <div class="history-section">
@@ -184,7 +187,7 @@
                                     <tr>
                                         <th class="table-header">Action</th>
                                         <th class="table-header">Transaction</th>
-                                        {#if numberOfBids > 0}
+                                        {#if bidsPresent > 0}
                                             <th class="table-header text-right">Bid Amount</th>
                                         {/if}
                                     </tr>
@@ -202,18 +205,16 @@
                                             <td class="table-cell transaction-cell">
                                                 <div class="transaction-info">
                                                     <div class="flex items-center gap-2">
-                                                        <span class="tx-label">{vmetaout.block_height === -1 ? 'Unconfirmed transaction' : 'Transaction'}</span>
                                                         <TransactionLink txid={vmetaout.txid} truncate={true} />
+                                                        {#if vmetaout.block_height === -1}
+                                                            <span class="mempool-badge">unconfirmed</span>
+                                                        {/if}
                                                     </div>
                                                     <div class="tx-details">
                                                         <BlockLink height={vmetaout.block_height} />
                                                         {#if vmetaout.block_height !== -1}
                                                             <div class="time-detail">
                                                                 {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
-                                                            </div>
-                                                        {:else}
-                                                            <div class="mempool-badge">
-                                                                unconfirmed
                                                             </div>
                                                         {/if}
                                                     </div>
@@ -235,8 +236,7 @@
                                                 {/if}
                                             </td>
 
-
-                                            {#if numberOfBids > 0}
+                                            {#if bidsPresent }
                                                 <td class="table-cell text-right bid-amount">
                                                     {#if vmetaout.action === 'BID'}
                                                         {formatBTC(vmetaout.total_burned)}
@@ -294,10 +294,11 @@
 }
 
 .details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-8) var(--space-10);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--space-6) var(--space-8);
     margin-bottom: var(--space-8);
+    width: 100%;
 }
 
 .detail-item {
@@ -325,8 +326,8 @@
 
 .future-block-info {
     display: flex;
-    align-items: baseline;
-    gap: var(--space-2);
+    flex-direction: column;
+    gap: var(--space-1);
 }
 
 .status-badge {
@@ -374,10 +375,13 @@
     padding: var(--space-6);
     border-radius: var(--border-radius-lg);
     border: var(--border-width-1) solid var(--border-color);
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .table-wrapper {
     width: 100%;
+    max-width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -398,9 +402,8 @@
     border-bottom: var(--border-width-1) solid var(--border-color);
 }
 
-/* Set column widths */
 .table-header:nth-child(1) {
-    width: 120px;
+    width: 100px;
 }
 
 .table-header:nth-child(2) {
@@ -408,7 +411,7 @@
 }
 
 .table-header:nth-child(3) {
-    width: 120px;
+    width: 140px;
 }
 
 .table-row {
@@ -444,12 +447,6 @@
     min-width: 0;
 }
 
-.tx-label {
-    font-size: var(--text-sm);
-    white-space: nowrap;
-    margin-right: var(--space-2);
-}
-
 .tx-details {
     display: flex;
     flex-wrap: wrap;
@@ -464,7 +461,9 @@
 
 .bid-amount {
     white-space: nowrap;
-    min-width: 80px;
+    min-width: 120px;
+    padding-left: var(--space-2);
+    text-align: right;
 }
 
 .pagination-container {
@@ -488,6 +487,7 @@
     border-radius: var(--border-radius-full);
     font-size: var(--text-xs);
     font-weight: 500;
+    margin-left: var(--space-2);
 }
 
 .error-container {
@@ -509,6 +509,9 @@
 .script-error, .revoke-reason {
     color: var(--color-error);
     font-size: var(--text-sm);
+    background-color: var(--bg-error-50);
+    padding: var(--space-2);
+    border-radius: var(--border-radius-md);
 }
 
 .script-error {
@@ -550,12 +553,6 @@
 }
 
 /* Media Queries */
-@media (min-width: 1280px) {
-    .details {
-        gap: var(--space-6);
-    }
-}
-
 @media (max-width: 1023px) {
     .main-content-layout {
         grid-template-columns: 1fr;
@@ -573,19 +570,17 @@
     }
 
     .details {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: var(--space-4);
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
     }
 
     .detail-item {
-        width: 100%;
+        min-width: 120px;
     }
 
     .detail-value {
         font-size: var(--text-lg);
         word-break: break-word;
-        width: 100%;
     }
 
     .detail-label {
@@ -593,23 +588,8 @@
         white-space: nowrap;
     }
 
-    .detail-item:last-child {
-        grid-column: 1 / -1;
-    }
-
     .future-block-info {
-        display: flex;
-        flex-direction: column;
-        gap: var(--space-1);
-    }
-
-    .future-block {
-        display: block;
-    }
-
-    .time-remaining {
-        font-size: var(--text-sm);
-        color: var(--text-muted);
+        width: 100%;
     }
 
     .history-container {
@@ -621,19 +601,26 @@
     }
 
     .table-header:nth-child(1) {
-        width: 100px;
-    }
-
-    .table-header:nth-child(3) {
         width: 80px;
     }
 
-    .transaction-cell {
-        min-width: 200px;
+    .table-header:nth-child(3) {
+        width: 100px;
     }
 
-    .tx-label {
-        white-space: normal;
+    .transaction-cell {
+        min-width: 180px;
+        word-break: break-all;
+    }
+
+    .tx-details {
+        flex-wrap: wrap;
+        gap: var(--space-1);
+    }
+
+    .bid-amount {
+        font-size: var(--text-xs);
+        min-width: 90px;
     }
 
     .title {
@@ -642,24 +629,6 @@
 
     .status-badge {
         padding: var(--space-1) var(--space-2);
-    }
-
-    .history-table {
-        width: 100%;
-    }
-
-    .transaction-cell {
-        word-break: break-all;
-    }
-
-    .tx-details {
-        flex-wrap: wrap;
-        gap: var(--space-2);
-    }
-
-    .text-right {
-        font-size: var(--text-sm);
-        white-space: normal;
     }
 }
 </style>
