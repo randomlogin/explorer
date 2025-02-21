@@ -33,7 +33,7 @@
                                             <span class="text">Address</span>
                                             <div class="truncate-wrapper">
                                                 <div class="content-wrapper">
-                                                    <AddressLink address={input.sender_address} truncate={true} minLength={8} />
+                                                    <AddressLink address={input.sender_address} truncate={true} />
                                                 </div>
                                                 <CopyButton value={input.sender_address} size={14} />
                                             </div>
@@ -93,7 +93,7 @@
                                     <div class="truncate-wrapper">
                                         <div class="content-wrapper">
                                             {#if output.address}
-                                                <AddressLink address={output.address} truncate={true} minLength={8}/>
+                                                <AddressLink address={output.address} truncate={true} />
                                             {:else}
                                                 <TruncatableText text={output.scriptpubkey} />
                                             {/if}
@@ -102,19 +102,17 @@
                                     </div>
                                 </div>
                                 <div class="transaction-status">
-                                    <span class="label">
-                                        {#if output.spender}
-                                        Spent in: 
-                                         <div class="truncate-wrapper">
-                                            <div class="content-wrapper">
-                                                <TransactionLink txid={output.spender.txid} truncate={true} minLength={8} />
-                                            </div>
-                                        </div>
-                                        {:else}
-                                            Unspent
-                                        {/if}
-                                    </span>
-                                </div>
+    {#if output.spender}
+        <span class="label">Spent in:</span>
+        <div class="truncate-wrapper">
+            <div class="content-wrapper">
+                <TransactionLink txid={output.spender.txid} truncate={true} />
+            </div>
+        </div>
+    {:else}
+        <span class="label">Unspent</span>
+    {/if}
+</div>
                             </div>
                             <div class="output-right">
                                 <span class="value">{formatBTC(output.value)}</span>
@@ -197,7 +195,7 @@
     .address,
     .transaction-status {
         display: grid;
-        grid-template-columns: auto 1fr;
+        grid-template-columns: auto minmax(0, 1fr);
         gap: var(--space-2);
         align-items: baseline;
         min-width: 0;
@@ -210,18 +208,21 @@
     }
 
     .truncate-wrapper {
-        display: inline-flex;
+        display: flex;
         align-items: center;
+        width: 100%;
         min-width: 0;
-        max-width: 100%;
     }
 
     .content-wrapper {
+        flex: 1;
         min-width: 0;
         margin-right: var(--space-2);
     }
 
     .content-wrapper :global(.link-container) {
+        display: block;
+        width: 100%;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -294,6 +295,20 @@
         .output-details {
             flex-direction: column;
             gap: var(--space-2);
+        }
+
+        .address,
+        .transaction-status {
+            grid-template-columns: auto minmax(0, 1fr);
+        }
+
+        .truncate-wrapper {
+            width: 100%;
+        }
+
+        .content-wrapper {
+            flex: 1;
+            min-width: 0;
         }
 
         .value {

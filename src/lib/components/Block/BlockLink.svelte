@@ -1,23 +1,27 @@
 <script lang="ts">
   export let height: number;
-
+  export let inline = false; // Add prop to control display
   const href = height === -1 ? '/mempool' : `/block/${height}`;
 </script>
 
-<a {href} class="block-link">
-  <span class="block-text">{height === -1 ? 'Mempool' : `Block #${height}`}</span>
+<a {href} class="block-link" class:inline>
+  <span class="block-text" class:inline>{height === -1 ? 'Mempool' : `Block #${height}`}</span>
 </a>
 
 <style>
 .block-link {
     color: var(--color-primary);
     text-decoration: none;
-    display: block; /* Ensures the link takes full width */
-    overflow: hidden; /* Prevents overflow outside the container */
-    text-overflow: ellipsis; /* Adds ellipsis for long text */
-    white-space: normal; /* Allows wrapping for multi-line text */
-    word-wrap: break-word; /* Breaks long words to fit within container */
-    max-width: 100%; /* Prevents the link from exceeding its parent's width */
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+.block-link.inline {
+    display: inline;
 }
 
 .block-link:hover {
@@ -25,11 +29,14 @@
 }
 
 .block-text {
-    display: block; /* Ensures the text behaves like a block element */
-    white-space: normal; /* Enables text wrapping */
-    line-height: 1.2; /* Adjust line spacing for multi-line text */
-    word-wrap: break-word; /* Breaks long words to fit within width */
-    max-width: 100%; /* Prevents text from exceeding its container width */
+    display: block;
+    white-space: normal;
+    line-height: 1.2;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+.block-text.inline {
+    display: inline;
 }
 </style>
-

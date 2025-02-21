@@ -23,6 +23,7 @@
   --space-10: 2.5rem;
   
   /* Typography */
+  --text-xs: 0.75rem;
   --text-sm: 0.875rem;
   --text-base: 1rem;
   --text-lg: 1.125rem;
@@ -75,6 +76,10 @@
   --bg-warning-700: #b45309;
   --bg-warning-800: #92400e;
   --bg-warning-900: #78350f;
+
+  /* Errors */
+  --bg-error-50: #fef2f2;
+  --color-error: #dc2626;
 }
 
 /* Dark theme */

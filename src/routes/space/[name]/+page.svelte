@@ -24,6 +24,7 @@
     let status: string;
     let numberOfBids: number;
     let highestBid: number;
+    let winningBid: number;
 
     $: {
         if (data) {
@@ -35,8 +36,8 @@
             expiryHeight = latestVmetaout?.expire_height;
             numberOfBids = data.stats.total_bids;
             status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
-
             highestBid = data.stats.highest_bid
+            winningBid = data.stats.winning_bid
             }
     }
 
@@ -80,215 +81,271 @@
         }
     }
     async function handlePageChange(event: CustomEvent<number>) {
-    const page = event.detail;
-    const response = await fetch(ROUTES.api.space.history(spaceName, page));
+        const page = event.detail;
+        const response = await fetch(ROUTES.api.space.history(spaceName, page));
 
-    if (response.ok) {
-        const historyData = await response.json();
+        if (response.ok) {
+            const historyData = await response.json();
 
+            // Update only the paginated data, keep stats the same
+            data = {
+                ...data,
+                items: historyData.items,
+                pagination: historyData.pagination
+            };
 
-        // Update only the paginated data, keep stats the same
-        data = {
-            ...data,
-            items: historyData.items,
-            pagination: historyData.pagination
-        };
-
-        currentPage = page;
-        document.querySelector('.history-section')?.scrollIntoView({ behavior: 'smooth' });
+            currentPage = page;
+            document.querySelector('.history-section')?.scrollIntoView({ behavior: 'smooth' });
+        }
     }
-}
-
 </script>
 
 {#if !data.stats.total_actions || data.stats.total_actions == 0}
-    <h1 class="page-title">{$page.params.name}</h1>
-    <div class="page-subtitle">
-        <p>This name is available.</p>
-        <p>You can open an auction for it, <a class="page-link" href="https://spacesprotocol.org/" target="_blank">learn more here.</a></p>
+    <div class="container">
+        <h1 class="page-title">{$page.params.name}</h1>
+        <div class="page-subtitle">
+            <p>This name is available.</p>
+            <p>You can open an auction for it, <a class="page-link" href="https://spacesprotocol.org/" target="_blank">learn more here.</a></p>
+        </div>
     </div>
 {:else}
-    <div class="space-header">
-        <h1 class="space-title">{spaceName}</h1>
-        <div class="status-badge {getStatusColor(status)}">
-            <span class="status-indicator"></span>
-            <span class="status-text">{status}</span>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">{spaceName}</h1>
+            <div class="status-badge {getStatusColor(status)}">
+                <span class="status-indicator"></span>
+                <span class="status-text">{status}</span>
+            </div>
         </div>
-    </div>
 
-    <div class="space-content">
-        <div class="stats-section">
-            <dl class="stats-group">
-                {#if numberOfBids > 0}
-                    <div class="stat-item">
-                        <dt class="stat-label">Highest bid</dt>
-                        <dd class="stat-value">{formatBTC(highestBid)}</dd>
-                    </div>
-                    <div class="stat-item">
-                        <dt class="stat-label">Number of bids</dt>
-                        <dd class="stat-value">{numberOfBids}</dd>
-                    </div>
-                {/if}
-                <div class="stat-item">
-                    <dt class="stat-label">Total actions</dt>
-                    <dd class="stat-value">{data.stats.total_actions}</dd>
+        <div class="details">
+            {#if winningBid && winningBid != 0 && !highestBid}
+                <div class="detail-item">
+                    <span class="detail-value">{formatBTC(winningBid)}</span>
+                    <span class="detail-label">Winning bid</span>
                 </div>
-                {#if expiryHeight}
-                    <div class="stat-item">
-                        <dt class="stat-label">Expires At</dt>
-                        <dd class="stat-value">
-                        {#if expiryHeight <= currentBlockHeight }
-                            <BlockLink {expiryHeight} />
-                        {:else }
-                            Block {expiryHeight}
-                        {/if}
-                        {#if currentBlockHeight}
-                            <div class="stat-subtitle">
-                                in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}
-                            </div>
-                        {/if}
-                        </dd>
-                    </div>
-                {/if}
-            </dl>
-        </div>
-
-        {#if data.stats.claim_height}
-            <div class="claim-height-section">
-                <div class="claim-height-item">
-                    <span class="claim-height-label">Claim height:</span>
-                    <span class="claim-height-value">
+            {/if}
+            {#if numberOfBids > 0}
+                <div class="detail-item">
+                    <span class="detail-value">{formatBTC(highestBid)}</span>
+                    <span class="detail-label">Highest bid</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-value">{numberOfBids}</span>
+                    <span class="detail-label">Number of bids</span>
+                </div>
+            {/if}
+            <div class="detail-item">
+                <span class="detail-value">{data.stats.total_actions}</span>
+                <span class="detail-label">Total actions</span>
+            </div>
+            {#if data.stats.claim_height}
+                <div class="detail-item">
+                    <span class="detail-value">
                         {#if data.stats.claim_height <= currentBlockHeight }
-
-                            <BlockLink height={data.stats.claim_height} />
+                            <BlockLink height={data.stats.claim_height} inline={true} />
                         {:else }
                             Block {data.stats.claim_height}
                         {/if}
                     </span>
+                    <span class="detail-label">Claim height</span>
                 </div>
-            </div>
-        {/if}
+            {/if}
+            {#if expiryHeight}
+                <div class="detail-item">
+                    <span class="detail-value">
+                        {#if expiryHeight <= currentBlockHeight}
+                            <BlockLink {expiryHeight} inline={true}/>
+                        {:else}
+                            <div class="flex items-baseline gap-2">
+                                <span class="future-block">Block #{expiryHeight}</span>
+                                <span class="text-xs text-muted">in {formatDuration((expiryHeight - currentBlockHeight) * 10 * 60)}</span>
+                            </div>
+                        {/if}
+                    </span>
+                    <span class="detail-label">Expires at</span>
+                </div>
+            {/if}
+        </div>
 
-        <div class="main-content-layout">
-            <div class="timeline-section">
-                <SpaceTimeline 
-                    vmetaout={latestVmetaout} 
-                    currentBlockHeight={currentBlockHeight} 
+        <div class="space-content">
+            <div class="main-content-layout">
+                <div class="timeline-section">
+                    <h2 class="section-title">Space Status</h2>
+                    <SpaceTimeline
+                    vmetaout={latestVmetaout}
+                    currentBlockHeight={currentBlockHeight}
                     />
-            </div>
+                </div>
 
-            <div class="history-section">
-                <h2 class="section-title">Transaction History</h2>
-                <div class="history-container">
-                    <table class="history-table">
-                        <thead>
-                            <tr>
-                                <th class="table-header">Action</th>
-                                <th class="table-header">Transaction</th>
-                                {#if numberOfBids > 0}
-                                    <th class="table-header text-right">Bid Amount</th>
-                                {/if}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {#each vmetaouts as vmetaout}
-                                <tr class="table-row" class:mempool={vmetaout.block_height === -1}>
-                                    <td class="table-cell">
-                                        <div class="action-cell">
-                                            <div class={getActionColor(vmetaout.action)}>
-                                                {vmetaout.action}
-                                            </div>
-                                            {#if vmetaout.reason}
-                                                <div class="revoke-reason">
-                                                    Reason: {vmetaout.reason}
-                                                </div>
-                                            {/if}
-                                        </div>
-                                    </td>
-                                    <td class="table-cell">
-                                        <div class="transaction-cell">
-                                            {vmetaout.block_height === -1 ? 'Unconfirmed transaction' : 'Transaction'}
-                                            <TransactionLink txid={vmetaout.txid} truncate={true} maxLength={35} />
-                                            <div class="tx-details">
-                                                <BlockLink height={vmetaout.block_height} />
-                                                {#if vmetaout.block_height !== -1}
-                                                    <div class="time-detail">
-                                                        {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
-                                                    </div>
-                                                {:else}
-                                                    <div class="mempool-badge">
-                                                        unconfirmed
-                                                    </div>
-                                                {/if}
-                                            </div>
-                                        </div>
-                                    </td>
+                <div class="history-section">
+                    <h2 class="section-title">Transaction History</h2>
+                    <div class="history-container">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th class="table-header">Action</th>
+                                    <th class="table-header">Transaction</th>
                                     {#if numberOfBids > 0}
-                                        <td class="table-cell text-right">
-                                            {#if vmetaout.action === 'BID'}
-                                                {formatBTC(vmetaout.total_burned)}
-                                            {/if}
-                                        </td>
+                                        <th class="table-header text-right">Bid Amount</th>
                                     {/if}
                                 </tr>
-                                {#if vmetaout.script_error}
-                                    <tr class="error-row">
-                                        <td colspan="4" class="error-cell">
-                                            Error: {vmetaout.script_error}
-                                        </td>
-                                    </tr>
-                                {/if}
-                            {/each}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {#each vmetaouts as vmetaout}
+    <tr class="table-row" class:mempool={vmetaout.block_height === -1}>
+        <td class="table-cell">
+            <div class="action-cell">
+                <div class={getActionColor(vmetaout.action)}>
+                    {vmetaout.action}
+                </div>
+            </div>
+        </td>
+        <td class="table-cell transaction-cell">
+            {#if vmetaout.script_error || vmetaout.reason}
+                <tr class="error-row">
+                    <td colspan="4" class="error-cell">
+                        <div class="error-container">
+                            {#if vmetaout.script_error}
+                                <div class="script-error">
+                                    Script Error: {vmetaout.script_error}
+                                </div>
+                            {/if}
+                            {#if vmetaout.reason}
+                                <div class="revoke-reason">
+                                    Reason: {vmetaout.reason}
+                                </div>
+                            {/if}
+                        </div>
+                    </td>
+                </tr>
+            {/if}
 
-                    {#if pagination && pagination.totalPages > 1}
-                        <div class="pagination-container">
-                            <Pagination 
-                            currentPage={currentPage} 
-                            totalPages={pagination.totalPages} 
-                            on:pageChange={handlePageChange} 
-                            />
+
+            <div class="transaction-cell">
+                <div class="flex items-center gap-2">
+                    <span>{vmetaout.block_height === -1 ? 'Unconfirmed transaction' : 'Transaction'}</span>
+                    <TransactionLink txid={vmetaout.txid} truncate={true} />
+                </div>
+                <div class="tx-details">
+                    <BlockLink height={vmetaout.block_height} />
+                    {#if vmetaout.block_height !== -1}
+                        <div class="time-detail">
+                            {dayjs.unix(vmetaout.block_time).format('MMM DD HH:mm')}
+                        </div>
+                    {:else}
+                        <div class="mempool-badge">
+                            unconfirmed
                         </div>
                     {/if}
+                </div>
+            </div>
+        </td>
+
+        {#if numberOfBids > 0}
+            <td class="table-cell text-right">
+                {#if vmetaout.action === 'BID'}
+                    {formatBTC(vmetaout.total_burned)}
+                {/if}
+            </td>
+        {/if}
+    </tr>
+                                {/each}
+                            </tbody>
+                        </table>
+
+                        {#if pagination && pagination.totalPages > 1}
+                            <div class="pagination-container">
+                                <Pagination
+                                currentPage={currentPage}
+                                totalPages={pagination.totalPages}
+                                on:pageChange={handlePageChange}
+                                />
+                            </div>
+                        {/if}
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 {/if}
+
 <style>
-    .page-title {
-        font-size: var(--text-3xl);
-        font-weight: 600;
-        margin-bottom: var(--space-4);
-    }
+    @import '$lib/styles/headers.css';
 
-    .page-subtitle {
-        font-size: var(--text-lg);
-        color: var(--text-muted);
-        line-height: 1.5;
-    }
-
-    .page-link {
-        color: var(--color-primary);
-        text-decoration: none;
+    .container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        padding: var(--space-4);
+        color: var(--text-primary);
         transition: var(--transition-colors);
     }
 
-    .page-link:hover {
-        text-decoration: underline;
+    @media (min-width: 768px) {
+        .container {
+            padding: var(--space-6) var(--space-10);
+        }
     }
 
-    .space-header {
+    .header {
         display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
         align-items: center;
-        gap: var(--space-4);
+        margin-bottom: var(--space-6);
+    }
+
+    .title {
+        font-weight: 700;
+        font-size: var(--text-3xl);
+        color: var(--text-primary);
+    }
+
+    .details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-8) var(--space-10);
         margin-bottom: var(--space-8);
     }
 
-    .space-title {
-        font-size: var(--text-3xl);
+    @media (min-width: 1280px) {
+        .details {
+            gap: var(--space-6);
+        }
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: var(--space-2);
+    }
+
+    .detail-value {
+        font-size: var(--text-xl);
+        color: var(--color-primary);
         font-weight: 600;
+        transition: var(--transition-colors);
+        line-height: 1.2;
+        min-height: 1.2em;
+    }
+
+    .detail-label {
+        color: var(--text-muted);
+        transition: var(--transition-colors);
+        font-size: var(--text-lg);
+        font-weight: 500;
+        line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+        .detail-value {
+            font-size: var(--text-lg);
+        }
+
+        .details {
+            gap: var(--space-6) var(--space-6);
+        }
     }
 
     .status-badge {
@@ -311,63 +368,6 @@
 
     .status-text {
         color: currentColor;
-    }
-
-    .stats-section {
-        margin-bottom: var(--space-8);
-    }
-
-    .stats-group {
-        display: grid;
-        grid-template-columns: var(--grid-template-compact);
-        gap: var(--grid-gap-sm);
-    }
-
-    .stat-item {
-        background: var(--bg-secondary);
-        padding: var(--space-6);
-        border-radius: var(--border-radius-lg);
-        border: var(--border-width-1) solid var(--border-color);
-    }
-
-    .stat-label {
-        font-size: var(--text-sm);
-        color: var(--text-muted);
-    }
-
-    .stat-value {
-        font-size: var(--text-2xl);
-        font-weight: 600;
-        margin-top: var(--space-2);
-    }
-
-    .stat-subtitle {
-        font-size: var(--text-sm);
-        color: var(--text-muted);
-        margin-top: var(--space-2);
-    }
-
-    .claim-height-section {
-        margin-bottom: var(--space-8);
-    }
-
-    .claim-height-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: var(--space-4);
-        background: var(--bg-secondary);
-        border-radius: var(--border-radius-lg);
-        border: var(--border-width-1) solid var(--border-color);
-    }
-
-    .claim-height-label {
-        color: var(--text-muted);
-        font-size: var(--text-sm);
-    }
-
-    .claim-height-value {
-        font-weight: 500;
     }
 
     .main-content-layout {
@@ -429,11 +429,6 @@
         gap: var(--space-2);
     }
 
-    .revoke-reason {
-        font-size: var(--text-sm);
-        color: var(--color-error);
-    }
-
     .transaction-cell {
         display: flex;
         flex-direction: column;
@@ -447,36 +442,62 @@
         color: var(--text-muted);
     }
 
-    .block-link {
-        color: var(--color-primary);
-        text-decoration: none;
-        transition: var(--transition-colors);
-    }
-
-    .block-link:hover {
-        text-decoration: underline;
-    }
-
-    .time-detail {
-        color: var(--text-muted);
-    }
-
-    .error-row {
-        background-color: var(--color-error-50);
-    }
-
-    .error-cell {
-        padding: var(--space-4);
-        color: var(--color-error);
-        font-size: var(--text-sm);
-    }
-
     .text-right {
         text-align: right;
     }
 
     .pagination-container {
         margin-top: var(--space-6);
+    }
+
+    .mempool {
+        background-color: var(--bg-warning-50);
+    }
+
+    .mempool:hover {
+        background-color: var(--bg-warning-100) !important;
+    }
+
+    .mempool-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: var(--space-1) var(--space-2);
+        background-color: var(--bg-warning);
+        color: var(--text-warning);
+        border-radius: var(--border-radius-full);
+        font-size: var(--text-xs);
+        font-weight: 500;
+    }
+
+    .error-container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+    }
+
+    .error-row {
+        background-color: var(--bg-error-50);
+    }
+
+    .error-cell {
+        border-bottom: none;
+    }
+
+    .script-error, .revoke-reason {
+        color: var(--color-error);
+        font-size: var(--text-sm);
+    }
+
+
+    .script-error {
+        color: var(--color-error);
+        font-size: var(--text-sm);
+        font-family: var(--font-mono);
+    }
+
+    .revoke-reason {
+        font-size: var(--text-sm);
+        color: var(--color-error);
     }
 
     @media (max-width: 1023px) {
@@ -491,37 +512,35 @@
     }
 
     @media (max-width: 768px) {
-        .space-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .stats-group {
-            grid-template-columns: 1fr;
-        }
-
         .table-cell {
             padding: var(--space-2);
         }
     }
 
-.mempool {
-    background-color: var(--bg-warning-50);
-}
+    /* Utility classes */
+    .flex {
+        display: flex;
+    }
 
-.mempool:hover {
-    background-color: var(--bg-warning-100) !important;
-}
+    .items-baseline {
+        align-items: baseline;
+    }
 
-.mempool-badge {
-    display: inline-flex;
-    align-items: center;
-    padding: var(--space-1) var(--space-2);
-    background-color: var(--bg-warning);
-    color: var(--text-warning);
-    border-radius: var(--border-radius-full);
-    font-size: var(--text-xs);
-    font-weight: 500;
-}
+    .gap-2 {
+        gap: var(--space-2);
+    }
+
+    .text-sm {
+        font-size: var(--text-sm);
+    }
+
+    .text-muted {
+        color: var(--text-muted);
+    }
+
+    .future-block {
+        color: var(--text-muted);
+        font-family: var(--font-mono);
+    }
 
 </style>

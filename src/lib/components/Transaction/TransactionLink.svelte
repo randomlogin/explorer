@@ -10,22 +10,31 @@
     $: href = outputIndex !== null ? `/tx/${txid}#output-${outputIndex}` : `/tx/${txid}`;
 </script>
 
-<a {href} class="link-container mono-link" title={txid}>
-    {#if truncate}
-        <TruncatableText text={txid} {minLength} />
-    {:else}
-        {txid}
-    {/if}
-</a>
+<span class="link-container mono-link">
+    <a {href} class="tx-link" title={txid}>
+        {#if truncate}
+            <TruncatableText text={txid} />
+        {:else}
+            {txid}
+        {/if}
+    </a>
+</span>
 
 <style>
     .link-container {
-        font-family: var(--font-mono);
-        display: inline-block;
+        display: block;
+        width: 100%;
+        min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        max-width: 100%;
-        vertical-align: middle;
+    }
+
+    .tx-link {
+        display: block;
+        width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 </style>

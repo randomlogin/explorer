@@ -4,12 +4,11 @@
     
     export let address: string;
     export let truncate = false;
-    export let minLength = 8;
 </script>
 
 <span class="link-container mono-link" title={truncate ? address : undefined}>
     {#if truncate}
-        <TruncatableText text={address} {minLength} />
+        <TruncatableText text={address}  />
     {:else}
         {address}
     {/if}
@@ -17,7 +16,7 @@
 
 <style>
     .link-container {
-        display: inline-block;
+        display: inline-flex;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
