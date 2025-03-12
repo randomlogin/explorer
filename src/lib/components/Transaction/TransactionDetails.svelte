@@ -6,10 +6,29 @@
     import CopyButton from '$lib/components/CopyButton.svelte';
     import { formatBTC } from '$lib/utils/formatters';
     import '$lib/styles/link.css';
+    import { onMount } from 'svelte';
     
     export let transaction;
     export let showAllInputsOutputs = false;
     export let maxInputsOutputs = showAllInputsOutputs ? Infinity : 5;
+    export let highlightedOutputIndex: number | null = null;
+
+    onMount(() => {
+        // Check URL for output-index fragment
+        const hash = window.location.hash;
+        if (hash && hash.startsWith('#output-')) {
+            highlightedOutputIndex = parseInt(hash.substring(8));
+            console.log("Highlighting output:", highlightedOutputIndex);
+            
+            // Scroll to highlighted element after a short delay
+            setTimeout(() => {
+                const element = document.getElementById(`output-${highlightedOutputIndex}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 100);
+        }
+    });
 </script>
 
 {#if transaction.vmetaouts?.length > 0}
@@ -82,7 +101,10 @@
         <h2 class="section-title">Outputs</h2>
         <div class="section-content">
             {#each transaction.outputs.slice(0, maxInputsOutputs) as output, index}
-                <div class="item-wrapper">
+                <div 
+                    class="item-wrapper {highlightedOutputIndex === index ? 'highlighted-output' : ''}"
+                    id={`output-${index}`}
+                >
                     <div class="output-item">
                         <div class="output-details">
                             <div class="output-left">
@@ -102,17 +124,17 @@
                                     </div>
                                 </div>
                                 <div class="transaction-status">
-    {#if output.spender}
-        <span class="label">Spent in:</span>
-        <div class="truncate-wrapper">
-            <div class="content-wrapper">
-                <TransactionLink txid={output.spender.txid} truncate={true} />
-            </div>
-        </div>
-    {:else}
-        <span class="label">Unspent</span>
-    {/if}
-</div>
+                                    {#if output.spender}
+                                        <span class="label">Spent in:</span>
+                                        <div class="truncate-wrapper">
+                                            <div class="content-wrapper">
+                                                <TransactionLink txid={output.spender.txid} truncate={true} />
+                                            </div>
+                                        </div>
+                                    {:else}
+                                        <span class="label">Unspent</span>
+                                    {/if}
+                                </div>
                             </div>
                             <div class="output-right">
                                 <span class="value">{formatBTC(output.value)}</span>
@@ -132,6 +154,34 @@
 </div>
 
 <style>
+    /* Highlight styles */
+    .highlighted-output {
+        background-color: var(--bg-highlight); /* Light yellow/orange background */
+        padding: var(--space-2);
+        border-radius: var(--border-radius-md);
+        border-left: 4px solid var(--color-primary);
+        margin-bottom: var(--space-2);
+    }
+    
+    
+    .output-index {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-2);
+    }
+    
+    .index-label {
+        color: var(--text-muted);
+    }
+    
+    .index-value {
+        font-family: var(--font-mono, monospace);
+        color: var(--color-primary);
+        font-weight: 600;
+    }
+
+    /* Existing styles */
     .transaction-io {
         display: grid;
         grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import dayjs from 'dayjs';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     import TransactionDetails from '$lib/components/Transaction/TransactionDetails.svelte';
@@ -11,6 +12,23 @@
             : `/block/${data.block.hash}`;
 
     export let data;
+
+    let highlightedOutputIndex: number | null = null;
+
+    onMount(() => {
+        const hash = window.location.hash;
+        console.log(hash)
+        if (hash && hash.startsWith('#output-')) {
+            highlightedOutputIndex = parseInt(hash.substring(8));
+
+            setTimeout(() => {
+                const element = document.getElementById(`output-${highlightedOutputIndex}`);
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, 100);
+        }
+    });
 </script>
 
 <div class="container">
@@ -73,7 +91,7 @@
             <span class="detail-label">Spaces Actions</span>
         </div>
     </div>
-    <TransactionDetails transaction={data} showAllInputsOutputs={true} />
+    <TransactionDetails transaction={data} showAllInputsOutputs={true} highlightedOutputIndex={highlightedOutputIndex}/>
 </div>
 
 <style>

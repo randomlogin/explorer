@@ -84,6 +84,20 @@ export const GET: RequestHandler = async function ({ params }) {
             WHERE v.name = ${spaceName}
             AND b.orphan = false
         ),
+        latest_outpoint AS (
+            -- Get the latest valid outpoint for this name
+            SELECT DISTINCT ON (v.name)
+                v.outpoint_txid as txid,
+                v.outpoint_index as index
+            FROM vmetaouts v
+            JOIN blocks b ON v.block_hash = b.hash
+            JOIN transactions t ON t.block_hash = v.block_hash AND t.txid = v.txid
+            WHERE v.name = ${spaceName}
+            AND b.orphan = false
+            AND v.outpoint_txid IS NOT NULL
+            AND v.outpoint_index IS NOT NULL
+            ORDER BY v.name, b.height DESC, t.index DESC
+        ),
         auction_status AS (
             -- Calculate current auction stats
             SELECT
@@ -126,9 +140,12 @@ export const GET: RequestHandler = async function ({ params }) {
             CASE WHEN a.is_active THEN a.post_rollout_bids ELSE 0 END as post_rollout_bids,
             h.total_actions,
             h.total_bids_all_time,
-            h.highest_bid_all_time
+            h.highest_bid_all_time,
+            encode(o.txid, 'hex') as outpoint_txid,
+            o.index as outpoint_index
         FROM historical_stats h
-        LEFT JOIN auction_status a ON true;
+        LEFT JOIN auction_status a ON true
+        LEFT JOIN latest_outpoint o ON true;
     `);
 
     if (queryResult.rows.length === 0) {
@@ -143,7 +160,9 @@ export const GET: RequestHandler = async function ({ params }) {
             post_rollout_bids: 0,
             total_actions: 0,
             total_bids_all_time: 0,
-            highest_bid_all_time: null
+            highest_bid_all_time: null,
+            outpoint_txid: null,
+            outpoint_index: null
         });
     }
 

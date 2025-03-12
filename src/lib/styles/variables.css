@@ -77,6 +77,11 @@
   --bg-warning-800: #92400e;
   --bg-warning-900: #78350f;
 
+    /* Highlight colors */
+  --bg-highlight: var(--bg-warning-50);
+  --bg-highlight-active: var(--bg-warning-100);
+  --highlight-border: var(--color-primary);
+
   /* Errors */
   --bg-error-50: #fef2f2;
   --color-error: #dc2626;

@@ -7,12 +7,12 @@
     import SpaceTimeline from '$lib/components/Spaces/SpaceTimeline.svelte';
     import BlockLink from '$lib/components/Block/BlockLink.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
-    import type { SpaceData, Vmetaout } from '$lib/types/space';
+    import type { Vmetaout } from '$lib/types/space';
     import { ROUTES } from '$lib/routes';
 
     dayjs.extend(LocalizedFormat);
 
-    export let data: SpaceData;
+    export let data;
 
     let vmetaouts: Vmetaout[] = [];
     let latestVmetaout: Vmetaout | null = null;
@@ -26,6 +26,8 @@
     let highestBid: number;
     let winningBid: number;
     let bidsPresent: boolean;
+    let outpointTxid: string | null = null;
+    let outpointIndex: number | null = null;
 
     $: {
         if (data) {
@@ -36,6 +38,10 @@
             currentBlockHeight = data.currentHeight;
             expiryHeight = latestVmetaout?.expire_height;
             numberOfBids = data.stats.number_of_bids;
+
+            outpointTxid = data.stats.outpoint_txid || null;
+            outpointIndex = data.stats.outpoint_index !== undefined ? Number(data.stats.outpoint_index) : null;
+
 
             bidsPresent = data.items.filter(item => item.burn_increment !== null).length > 0;
 
@@ -164,6 +170,14 @@
                         {/if}
                     </span>
                     <span class="detail-label">Expires at</span>
+                </div>
+            {/if}
+            {#if outpointTxid}
+                <div class="detail-item">
+                    <span class="detail-value outpoint-value">
+                        <TransactionLink txid={outpointTxid} truncate={true} outputIndex={outpointIndex} />
+                    </span>
+                    <span class="detail-label">Outpoint</span>
                 </div>
             {/if}
         </div>
