@@ -21,6 +21,7 @@ interface BlockTxsQueryParams {
 
 export async function getBlockTransactions({ db, blockIdentifier, pagination }: BlockTxsQueryParams) {
     const blockCondition = blockIdentifier.type === 'hash' ? sql`blocks.hash = ${blockIdentifier.value}` : sql`blocks.height = ${blockIdentifier.value}`;
+    console.log(pagination)
 
     const queryResult = await db.execute(sql`
     WITH limited_transactions AS (
@@ -39,6 +40,7 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination }: 
     WHERE transactions.block_hash = (
         SELECT hash FROM blocks WHERE ${blockCondition}
     )
+    ORDER BY transactions.index
     LIMIT ${pagination.limit} OFFSET ${pagination.offset}),
     limited_tx_inputs AS (
         SELECT

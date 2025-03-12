@@ -48,7 +48,7 @@
         <a href="/actions/mempool" class="section-title-link">
             <h1 class="section-title">Unconfirmed</h1>
         </a>
-        <Tooltip text="Some spaces actions may be missing or shown incorrectly in mempool." position="right" />
+        <Tooltip text="Some spaces events may be missing or shown incorrectly in mempool." position="right" />
     </div>
     <RecentActions title={false} apiEndpoint={ROUTES.api.auctions.mempool}/>
 </div>

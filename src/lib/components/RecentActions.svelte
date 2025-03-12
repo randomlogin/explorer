@@ -3,7 +3,7 @@
     import dayjs from 'dayjs';
     import { ROUTES } from '$lib/routes';
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
-    import { formatBTC, getActionColor } from '$lib/utils/formatters';
+    import { formatBTC, getActionColor, displayUnicodeSpace } from '$lib/utils/formatters';
     import EmptyState from '$lib/components/layout/EmptyState.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
     import BlockLink from '$lib/components/Block/BlockLink.svelte';
@@ -40,6 +40,7 @@
     let isInitialLoading = true;
     let isLoadingData = false;
     let error: string | null = null;
+
 
     async function fetchActions(page: number) {
         if (isInitialLoading) {
@@ -94,20 +95,20 @@
                     {#each Array(itemsPerPage) as _}
                         <div class="action-card skeleton-card">
                             <div class="skeleton-text-medium" />
-                                <div class="action-meta">
+                            <div class="action-meta">
+                                <div class="meta-item">
+                                    <div class="skeleton-text-short" />
+                                    </div>
                                     <div class="meta-item">
                                         <div class="skeleton-text-short" />
                                         </div>
                                         <div class="meta-item">
                                             <div class="skeleton-text-short" />
                                             </div>
-                                            <div class="meta-item">
-                                                <div class="skeleton-text-short" />
-                                                </div>
-                                            </div>
                                         </div>
-                    {/each}
                                     </div>
+                    {/each}
+                                </div>
             {:else if error}
                 <div class="error-card" transition:fade={{ duration: 200 }}>
                     <span class="error-icon">⚠️</span>
@@ -115,7 +116,7 @@
                 </div>
             {:else if actions.length === 0}
                 <div transition:fade={{ duration: 200 }}>
-                    <EmptyState message="No actions found" />
+                    <EmptyState message="No events found" />
                 </div>
             {:else}
                 <div class={gridView ? "actions-grid" : "actions-list"} transition:fade={{ duration: 200 }}>
@@ -124,7 +125,7 @@
                             <div class="action-header">
                                 <div class="action-main">
                                     <span class="action-badge {getActionColor(action.action)}">{action.action}</span>
-                                    <a href="{spaceRoute}/{action.name}" class="space-name">{action.name}</a>
+                                    <a href="{spaceRoute}/{action.name}" class="space-name">{displayUnicodeSpace(action.name)}</a>
                                 </div>
                                 {#if action.action === 'BID' && action.total_burned}
                                     <div class="bid-value">
@@ -156,17 +157,17 @@
                     {/each}
                 </div>
             {/if}
-                                </div>
+                            </div>
 
-                                {#if showPagination && pagination && pagination.totalPages > 1}
-                                    <div class="pagination-container">
-                                        <Pagination
+                            {#if showPagination && pagination && pagination.totalPages > 1}
+                                <div class="pagination-container">
+                                    <Pagination
                                         currentPage={pagination.page}
                                         totalPages={pagination.totalPages}
                                         on:pageChange={handlePageChange}
                                         />
-                                    </div>
-                                {/if}
+                                </div>
+                            {/if}
                             </div>
 </section>
 <style>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { formatBTC } from '$lib/utils/formatters';
+    import { formatBTC, displayUnicodeSpace } from '$lib/utils/formatters';
     import { fly } from 'svelte/transition';
 
     export let vmetaouts;
@@ -36,7 +36,7 @@
                 <div class="vmetaout-header">
                     <div class="name-action">
                         <a href="/space/{vmetaout.name}" class="space-name">
-                            {vmetaout.name}
+                            {displayUnicodeSpace(vmetaout.name)}
                         </a>
                         {#if vmetaout.action}
                             <span class="dot">•</span>

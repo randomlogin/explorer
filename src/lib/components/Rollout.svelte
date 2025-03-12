@@ -1,6 +1,6 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import { calculateTimeRemaining, formatBTC } from '$lib/utils/formatters';
+    import { calculateTimeRemaining, formatBTC, displayUnicodeSpace } from '$lib/utils/formatters';
     import Pagination from '$lib/components/Pagination.svelte';
     
     export let currentHeight: number;
@@ -93,7 +93,7 @@
                     {@const releaseHeight = calculateReleaseHeight(rollout.target, currentHeight)}
                     <div class="rollout-card">
                         <a href="/space/{rollout.name}" class="space-name">
-                            {rollout.name}
+                            {displayUnicodeSpace(rollout.name)}
                         </a>
                         <div class="bid-amount">
                             Bid: {formatBTC(rollout.bid)} 

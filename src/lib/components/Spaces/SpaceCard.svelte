@@ -1,7 +1,7 @@
 <script lang="ts">
   import dayjs from "dayjs";
   import LocalizedFormat from "dayjs/plugin/localizedFormat";
-  import { formatBTC, calculateTimeRemaining } from "$lib/utils/formatters";
+  import { formatBTC, calculateTimeRemaining, displayUnicodeSpace } from "$lib/utils/formatters";
   dayjs.extend(LocalizedFormat);
 
   export let space;
@@ -10,10 +10,10 @@
 </script>
 
 <div class="space-card">
-  <a href={`/space/${space.name}`} class="space-card-link">
+  <a href={`/space/${displayUnicodeSpace(space.name)}`} class="space-card-link">
     <div class="space-card-container">
       <div class="space-card-header">
-        <span title={space.name} class="space-name">{space.name}</span>
+        <span title={space.name} class="space-name">{displayUnicodeSpace(space.name)}</span>
       </div>
 
       <div class="space-card-body">

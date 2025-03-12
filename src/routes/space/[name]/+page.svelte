@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { formatDuration, formatBTC } from "$lib/utils/formatters";
+    import { formatDuration, formatBTC, displayUnicodeSpace } from "$lib/utils/formatters";
     import dayjs from "dayjs";
     import LocalizedFormat from "dayjs/plugin/localizedFormat";
     import { page } from '$app/stores';
@@ -32,7 +32,7 @@
             vmetaouts = data.items;
             latestVmetaout = data.latest;
             pagination = data.pagination;
-            spaceName = latestVmetaout?.name;
+            spaceName = displayUnicodeSpace(latestVmetaout?.name);
             currentBlockHeight = data.currentHeight;
             expiryHeight = latestVmetaout?.expire_height;
             numberOfBids = data.stats.number_of_bids;
@@ -206,9 +206,6 @@
                                                 <div class="transaction-info">
                                                     <div class="flex items-center gap-2">
                                                         <TransactionLink txid={vmetaout.txid} truncate={true} />
-                                                        {#if vmetaout.block_height === -1}
-                                                            <span class="mempool-badge">unconfirmed</span>
-                                                        {/if}
                                                     </div>
                                                     <div class="tx-details">
                                                         <BlockLink height={vmetaout.block_height} />
