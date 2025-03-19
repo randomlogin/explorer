@@ -135,6 +135,10 @@ export function normalizeSpace(space: string): string {
  * @returns {boolean} - True if in punycode format
  */
 export function isPunycode(space: string): boolean {
+  if (!space || typeof space !== 'string') {
+    return false;
+  }
+  
   return space.includes('xn--');
 }
 

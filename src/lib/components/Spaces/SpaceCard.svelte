@@ -10,7 +10,7 @@
 </script>
 
 <div class="space-card">
-  <a href={`/space/${displayUnicodeSpace(space.name)}`} class="space-card-link">
+  <a href={`/space/${space.name}`} class="space-card-link">
     <div class="space-card-container">
       <div class="space-card-header">
         <span title={space.name} class="space-name">{displayUnicodeSpace(space.name)}</span>

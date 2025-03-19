@@ -143,7 +143,7 @@
             {/if}
             <div class="detail-item">
                 <span class="detail-value">{data.stats.total_actions}</span>
-                <span class="detail-label">Total actions</span>
+                <span class="detail-label">Total events</span>
             </div>
             {#if data.stats.claim_height}
                 <div class="detail-item">
@@ -199,7 +199,7 @@
                             <table class="history-table">
                                 <thead>
                                     <tr>
-                                        <th class="table-header">Action</th>
+                                        <th class="table-header">Event</th>
                                         <th class="table-header">Transaction</th>
                                         {#if bidsPresent > 0}
                                             <th class="table-header text-right">Bid Amount</th>
