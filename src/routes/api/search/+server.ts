@@ -34,6 +34,7 @@ export const GET: RequestHandler = async function ({ url }) {
     //     // Not a valid address, continue with other searches
     // }
 
+    //looks like hash, search for txid or block hash
     if (hashRegexp.test(search)) {
         const hexString = Buffer.from(search, 'hex');
         
@@ -70,6 +71,7 @@ export const GET: RequestHandler = async function ({ url }) {
             });
         }
     }
+    //looks like height
     else if (heightRegexp.test(search)) {
         const height = +search;
         if (height <= 2**32) {
@@ -92,13 +94,14 @@ export const GET: RequestHandler = async function ({ url }) {
         }
     }
 
-    // Raw SQL for name search with similarity
+    // the rest should be a space
+    const strippedSpace = search.startsWith('@') ? search.substring(1) : search;
     const names = await db.execute(sql`
         SELECT DISTINCT 
             name,
-            similarity(name, ${search}) AS similarity_score
+            similarity(name, ${strippedSpace}) AS similarity_score
         FROM vmetaouts
-        WHERE similarity(name, ${search}) > 0
+        WHERE similarity(name, ${strippedSpace}) > 0
         ORDER BY similarity_score DESC, name ASC
         LIMIT 3
     `);

@@ -110,12 +110,6 @@ export function formatBTC(satoshis: number | undefined): string {
 }
 
 
-// export function normalizeSpace(space : string): string {
-//   space = space.startsWith('@') ? space.substring(1) : space;
-//   return space.toLocaleLowerCase()
-// }
-//
-
 /**
  * Normalizes a space name by removing '@' prefix and converting to lowercase
  *

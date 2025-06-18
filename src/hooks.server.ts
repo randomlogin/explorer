@@ -1,5 +1,4 @@
 import type { Handle } from '@sveltejs/kit';
-
 export const handle: Handle = async ({ event, resolve }) => {
     const startTime = Date.now();
     
@@ -20,7 +19,6 @@ export const handle: Handle = async ({ event, resolve }) => {
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Request timeout')), 5000);
         });
-
         try {
             const response = await Promise.race([
                 resolve(event),
@@ -36,7 +34,11 @@ export const handle: Handle = async ({ event, resolve }) => {
             const timestamp = new Date().toISOString();
             console.log(`${timestamp} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | TIMEOUT after 5000ms`);
             
-            return new Response('Request timed out', { 
+            return new Response(JSON.stringify({ 
+                error: 'Request timed out',
+                status: 504,
+                path: event.url.pathname
+            }), { 
                 status: 504,
                 headers: {
                     'Content-Type': 'application/json'

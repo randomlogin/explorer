@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { formatDuration, formatBTC, displayUnicodeSpace } from "$lib/utils/formatters";
+    import { formatDuration, formatBTC, displayUnicodeSpace, getActionColor, normalizeSpace } from "$lib/utils/formatters";
     import dayjs from "dayjs";
     import LocalizedFormat from "dayjs/plugin/localizedFormat";
     import { page } from '$app/stores';
@@ -9,10 +9,15 @@
     import Pagination from '$lib/components/Pagination.svelte';
     import type { Vmetaout } from '$lib/types/space';
     import { ROUTES } from '$lib/routes';
+    import { env }  from '$env/dynamic/public';
 
     dayjs.extend(LocalizedFormat);
 
     export let data;
+
+    const MARKETPLACE_URI = env.MARKETPLACE_URI || 'https://spaces.market';
+    const rawSpaceName = normalizeSpace($page.params.name);
+    const marketplaceUrl = `${MARKETPLACE_URI}/space/${rawSpaceName}`;
 
     let vmetaouts: Vmetaout[] = [];
     let latestVmetaout: Vmetaout | null = null;
@@ -28,6 +33,7 @@
     let bidsPresent: boolean;
     let outpointTxid: string | null = null;
     let outpointIndex: number | null = null;
+    let isListedInMarketplace: boolean = false;
 
     $: {
         if (data) {
@@ -42,6 +48,7 @@
             outpointTxid = data.stats.outpoint_txid || null;
             outpointIndex = data.stats.outpoint_index !== undefined ? Number(data.stats.outpoint_index) : null;
 
+            isListedInMarketplace = data.stats.is_listed_in_marketplace || false;
 
             bidsPresent = data.items.filter(item => item.burn_increment !== null).length > 0;
 
@@ -79,17 +86,6 @@
         }
     }
 
-    function getActionColor(action: string | undefined): string {
-        switch (action) {
-            case 'RESERVE': return 'text-blue-500';
-            case 'BID': return 'text-green-500';
-            case 'TRANSFER': return 'text-purple-500';
-            case 'ROLLOUT': return 'text-yellow-500';
-            case 'REVOKE': return 'text-red-500';
-            case 'REJECT': return 'text-red-500';
-            default: return 'text-gray-500';
-        }
-    }
     async function handlePageChange(event: CustomEvent<number>) {
         const page = event.detail;
         const response = await fetch(ROUTES.api.space.history(spaceName, page));
@@ -121,11 +117,27 @@
 {:else}
     <div class="container">
         <div class="header">
-            <h1 class="title">{spaceName}</h1>
-            <div class="status-badge {getStatusColor(status)}">
-                <span class="status-indicator"></span>
-                <span class="status-text">{status}</span>
+            <div class="header-left">
+                <h1 class="title">{spaceName}</h1>
+                <div class="status-badge {getStatusColor(status)}">
+                    <span class="status-indicator"></span>
+                    <span class="status-text">{status}</span>
+                </div>
             </div>
+            
+            {#if isListedInMarketplace}
+                <div class="header-right">
+                    <a 
+                        class="marketplace-link"
+                        href={marketplaceUrl}
+                        title="view on marketplace"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >
+                        view on marketplace
+                    </a>
+                </div>
+            {/if}
         </div>
 
         <div class="details">
@@ -263,10 +275,10 @@
                         {#if pagination && pagination.totalPages > 1}
                             <div class="pagination-container">
                                 <Pagination
-                                currentPage={currentPage}
-                                totalPages={pagination.totalPages}
-                                on:pageChange={handlePageChange}
-                                />
+                                    currentPage={currentPage}
+                                    totalPages={pagination.totalPages}
+                                    on:pageChange={handlePageChange}
+                                    />
                             </div>
                         {/if}
                     </div>
@@ -279,23 +291,37 @@
 <style>
     @import '$lib/styles/headers.css';
 
-.container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-4);
-    padding: var(--space-4);
-    color: var(--text-primary);
-    transition: var(--transition-colors);
-    max-width: 100%;
-    overflow-x: hidden;
-}
+    .container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+        padding: var(--space-4);
+        color: var(--text-primary);
+        transition: var(--transition-colors);
+        max-width: 100%;
+        overflow-x: hidden;
+    }
 
-.header {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    align-items: center;
-    margin-bottom: var(--space-6);
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-6);
+        gap: var(--space-4);
+    }
+
+    .header-left {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+        align-items: center;
+        flex: 1;
+    }
+
+    .header-right {
+        display: flex;
+        align-items: center;
+        flex-shrink: 0;
 }
 
 .title {
@@ -580,6 +606,22 @@
         padding: var(--space-2);
     }
 
+    .header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-4);
+    }
+
+    .header-left {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: center;
+    }
+
     .details {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: var(--space-4);
@@ -641,5 +683,38 @@
     .status-badge {
         padding: var(--space-1) var(--space-2);
     }
+}
+
+
+.marketplace-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    color: var(--color-primary);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: var(--border-radius-md);
+    line-height: 1;
+    height: fit-content;
+}
+
+.marketplace-link:hover {
+    color: var(--color-primary-dark);
+    background-color: var(--color-primary-light, rgba(59, 130, 246, 0.1));
+    text-decoration: underline;
+}
+
+.marketplace-link:visited {
+    color: var(--color-primary);
+}
+
+.marketplace-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
 }
 </style>

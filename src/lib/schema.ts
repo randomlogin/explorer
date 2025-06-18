@@ -1,4 +1,4 @@
-import { pgTable, pgEnum, serial, bigint, boolean, timestamp, unique, integer, doublePrecision, uniqueIndex, foreignKey, primaryKey, index, text, customType} from "drizzle-orm/pg-core"
+import { pgTable, pgEnum, serial, bigint, boolean, timestamp, unique, integer, doublePrecision, uniqueIndex, primaryKey, index, text, customType} from "drizzle-orm/pg-core"
 
 import  db  from "$lib/db";
 import { sql } from "drizzle-orm";

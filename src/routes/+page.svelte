@@ -25,21 +25,23 @@
             </a>
         </div>
         <div class="auctions-grid">
-            {#if $navigating}
-                <div class="loading-state">
-                    <div class="loading-spinner"></div>
-                    <span>Loading spaces...</span>
-                </div>
-            {:else if data.spaces.items.length === 0}
-                <EmptyState message="No auctions found" />
-            {:else}
-                {#each data.spaces.items.slice(0,9) as space (space.name)}
-                    <div class="card-wrapper">
-                        <SpaceCard {space} {currentBlockHeight} active=true/>
-                    </div>
-                {/each}
-            {/if}
+    {#if $navigating}
+        <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <span>Loading spaces...</span>
         </div>
+    {:else if data.spaces?.items?.length === 0}
+        <EmptyState message="No auctions found" />
+    {:else if data.spaces?.items}
+        {#each data.spaces.items.slice(0,9) as space (space.name)}
+            <div class="card-wrapper">
+                <SpaceCard {space} {currentBlockHeight} active=true/>
+            </div>
+        {/each}
+    {:else}
+        <EmptyState message="Error loading auctions" />
+    {/if}
+</div>
     </div>
 
     <div class="content-sections-wrapper">

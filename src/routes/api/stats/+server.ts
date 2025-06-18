@@ -1,10 +1,9 @@
 import db from '$lib/db';
-import { error, json } from '@sveltejs/kit';
+import { json } from '@sveltejs/kit';
 import { type RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 
 export const GET: RequestHandler = async function ({ request, url }) {
-
     const queryResult = await db.execute(sql`
 WITH latest_block AS (
     SELECT height, time
