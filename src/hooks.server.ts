@@ -11,13 +11,15 @@ export const handle: Handle = async ({ event, resolve }) => {
                event.getClientAddress?.() || // SvelteKit method
                'unknown';
     };
+
+    const timeout = 3000;
     
     const clientIP = getClientIP(event);
     const userAgent = event.request.headers.get('user-agent') || 'unknown';
     
     if (event.url.pathname.startsWith('/api/')) {
         const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('Request timeout')), 5000);
+            setTimeout(() => reject(new Error('Request timeout')), timeout);
         });
         try {
             const response = await Promise.race([
@@ -32,7 +34,7 @@ export const handle: Handle = async ({ event, resolve }) => {
             return response;
         } catch (error) {
             const timestamp = new Date().toISOString();
-            console.log(`${timestamp} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | TIMEOUT after 5000ms`);
+            console.log(`${timestamp} IP: ${clientIP} | UA: ${userAgent} | ${event.url.pathname} | TIMEOUT after ${timeout}ms`);
             
             return new Response(JSON.stringify({ 
                 error: 'Request timed out',
