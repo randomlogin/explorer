@@ -77,6 +77,12 @@
       case "space":
         path = `/space/${value.name}`;
         break;
+      case "external-transaction":
+      case "external-block":
+        // Redirect to mempool.space
+        window.location.href = value.url;
+        search = "";
+        return;
       /* case "address": */
       /*   path = `/address/${value.address}`; */
       /*   break; */
@@ -120,10 +126,10 @@
 
 
          {#if !navigatingToSpacePage && (searching || showSearchResults)}
-           <div 
+           <div
              role="listbox"
              aria-label="Search results"
-             class="text-sm text-gray-500 flex flex-col px-4 py-2 gap-1 bg-black light:bg-primary light:text-primary-content border border-primary w-full absolute top-[calc(100%+5px)] left-0"
+             class="search-results-dropdown text-sm text-gray-500 flex flex-col px-4 py-2 gap-1 bg-black light:bg-primary light:text-primary-content border border-primary w-full absolute top-[calc(100%+5px)] left-0"
              >
              {#if searching}
                <div class="flex p-1 py-2 items-center">
@@ -155,6 +161,16 @@
                      {:else }
                      Block #{result.value.height}: {result.value.hash}
                      {/if}
+                   {:else if result.type === "external-transaction"}
+                     <span class="flex items-center gap-2">
+                       <span>Transaction: {result.value.txid.slice(0, 16)}...</span>
+                       <span class="text-xs opacity-70">(on mempool.space)</span>
+                     </span>
+                   {:else if result.type === "external-block"}
+                     <span class="flex items-center gap-2">
+                       <span>Block #{result.value.height}: {result.value.hash.slice(0, 16)}...</span>
+                       <span class="text-xs opacity-70">(on mempool.space)</span>
+                     </span>
                    {:else if result.type === "space"}
                      Space: {result.value.name}
                    {:else if result.type === "address"}
@@ -200,3 +216,15 @@
              />
          </svg>
 </label>
+
+<style>
+  .search-results-dropdown {
+    opacity: 1 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+    z-index: 50;
+  }
+
+  :global(.light) .search-results-dropdown {
+    background-color: #ffffff !important;
+  }
+</style>

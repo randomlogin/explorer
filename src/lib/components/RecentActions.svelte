@@ -86,7 +86,7 @@
 
 <section class="recent-actions">
     {#if title }
-        <h2 class="section-title">Recent Spaces Actions</h2>
+        <h2 class="section-title">Recent Spaces Events</h2>
     {/if}
     <div class="content-wrapper">
         <div class="actions-container">

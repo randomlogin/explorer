@@ -110,8 +110,12 @@
     <div class="container">
         <h1 class="page-title">{$page.params.name}</h1>
         <div class="page-subtitle">
-            <p>This name is available.</p>
-            <p>You can open an auction for it, <a class="page-link" href="https://spacesprotocol.org/" target="_blank">learn more here.</a></p>
+            {#if ['example', 'test', 'local'].includes(rawSpaceName)}
+                <p>This name is reserved and not available for purchase.</p>
+            {:else}
+                <p>This name is available.</p>
+                <p>You can open an auction for it, <a class="page-link" href="https://spacesprotocol.org/" target="_blank">learn more here.</a></p>
+            {/if}
         </div>
     </div>
 {:else}

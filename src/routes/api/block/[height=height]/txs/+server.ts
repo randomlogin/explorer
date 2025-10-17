@@ -10,19 +10,18 @@ export const GET: RequestHandler = async function ({ url, params }) {
         limit = 50
     }
     const offset = parseInt(url.searchParams.get('offset') || '0');
-    const queryResult = await getBlockTransactions({
+    const onlyWithSpaces = url.searchParams.get('onlyWithSpaces') === 'true';
+
+    const { queryResult, totalCount } = await getBlockTransactions({
         db,
         blockIdentifier: { type: 'height', value: params.height },
         pagination: {
             limit,
             offset,
-            input_limit: 10,
-            input_offset: 0,
-            output_limit: 10,
-            output_offset: 0,
             spaces_limit: 10,
             spaces_offset: 0
-        }
+        },
+        onlyWithSpaces
     });
 
     if (!queryResult.rows || queryResult.rows.length === 0) {
@@ -31,5 +30,5 @@ export const GET: RequestHandler = async function ({ url, params }) {
 
     const txs = processTransactions(queryResult);
 
-    return json(txs)
+    return json({ transactions: txs, totalCount })
 }

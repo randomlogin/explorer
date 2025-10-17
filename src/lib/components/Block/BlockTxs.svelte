@@ -1,9 +1,10 @@
 <script lang="ts">
     import dayjs from 'dayjs';
     import Pagination from '$lib/components/Pagination.svelte';
-    import TransactionDetails from '$lib/components/Transaction/TransactionDetails.svelte';
+    import TransactionSpaces from '$lib/components/Transaction/TransactionSpaces.svelte';
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
     import BlockLink from '$lib/components/Block/BlockLink.svelte';
+    import { formatBTC } from '$lib/utils/formatters';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(LocalizedFormat);
 
@@ -17,28 +18,31 @@
     export let transactions: Transaction[];
     export let pagination: PaginationInfo;
     export let onPageChange: (page: number) => Promise<void>;
+    export let onFilterChange: ((showOnlySpaces: boolean) => Promise<void>) | undefined = undefined;
     export let showTransactionTime: boolean = false;
-    
-    let showOnlySpaceActions = false;
-    
-    $: filteredTransactions = showOnlySpaceActions 
-        ? transactions.filter(tx => tx.vmetaouts.some(vmetaout => vmetaout)) 
-        : transactions;
+    export let showOnlySpaceActions: boolean = false;
+
+    function handleFilterToggle() {
+        if (onFilterChange) {
+            onFilterChange(!showOnlySpaceActions);
+        }
+    }
 </script>
 
 <div class="filter-container mb-4">
     <label class="flex items-center space-x-2 text-sm">
-        <input 
-            type="checkbox" 
-            bind:checked={showOnlySpaceActions} 
-            class="form-checkbox h-4 w-4 text-orange-600" 
+        <input
+            type="checkbox"
+            checked={showOnlySpaceActions}
+            on:change={handleFilterToggle}
+            class="form-checkbox h-4 w-4 text-orange-600"
         />
-        <span>Show only transactions with Space Actions</span>
+        <span>Show only transactions with Spaces events</span>
     </label>
 </div>
 
 <div class="transactions-container">
-    {#each filteredTransactions as transaction}
+    {#each transactions as transaction}
         <div class="transaction-card">
             <div class="transaction-header">
                 <div class="transaction-info">
@@ -59,7 +63,29 @@
                     </div>
                 {/if}
             </div>
-            <TransactionDetails {transaction} />
+            <div class="transaction-aggregates">
+                <div class="aggregate-item">
+                    <span class="aggregate-label">Inputs:</span>
+                    <span class="aggregate-value">{transaction.input_count}</span>
+                </div>
+                <div class="aggregate-item">
+                    <span class="aggregate-label">Outputs:</span>
+                    <span class="aggregate-value">{transaction.output_count}</span>
+                </div>
+                <div class="aggregate-item">
+                    <span class="aggregate-label">Total Value:</span>
+                    <span class="aggregate-value">{formatBTC(transaction.total_output_value)}</span>
+                </div>
+                {#if transaction.vmetaouts?.length > 0}
+                    <div class="aggregate-item">
+                        <span class="aggregate-label">Spaces Events:</span>
+                        <span class="aggregate-value">{transaction.vmetaouts.length}</span>
+                    </div>
+                {/if}
+            </div>
+            {#if transaction.vmetaouts?.length > 0}
+                <TransactionSpaces vmetaouts={transaction.vmetaouts} />
+            {/if}
         </div>
     {/each}
 </div>
@@ -90,7 +116,7 @@
         background: var(--bg-secondary);
         border: var(--border-width-1) solid var(--border-color);
         border-radius: var(--border-radius-xl);
-        padding: var(--space-6);
+        padding: var(--space-4);
         color: var(--text-primary);
         position: relative;
         box-shadow: var(--shadow-sm);
@@ -155,6 +181,31 @@
 
     .timestamp {
         white-space: nowrap;
+    }
+
+    .transaction-aggregates {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-4);
+        margin-top: var(--space-4);
+        padding-top: var(--space-4);
+        border-top: var(--border-width-1) solid var(--border-color);
+        font-size: var(--font-size-sm);
+    }
+
+    .aggregate-item {
+        display: flex;
+        gap: var(--space-2);
+        align-items: baseline;
+    }
+
+    .aggregate-label {
+        color: var(--text-muted);
+    }
+
+    .aggregate-value {
+        color: var(--color-primary);
+        font-weight: 600;
     }
 
     @media (max-width: 640px) {

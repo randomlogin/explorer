@@ -3,6 +3,20 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 import { addressToScriptPubKey } from '$lib/utils/address-parsers';
+import { PUBLIC_BTC_NETWORK } from '$env/static/public';
+
+// Helper to get mempool.space API URL
+function getMempoolApiUrl(path: string): string {
+    const isTestnet = PUBLIC_BTC_NETWORK && PUBLIC_BTC_NETWORK !== 'mainnet';
+    const network = isTestnet ? `${PUBLIC_BTC_NETWORK}/` : '';
+    return `https://mempool.space/${network}api/${path}`;
+}
+
+function getMempoolUrl(path: string): string {
+    const isTestnet = PUBLIC_BTC_NETWORK && PUBLIC_BTC_NETWORK !== 'mainnet';
+    const network = isTestnet ? `${PUBLIC_BTC_NETWORK}/` : '';
+    return `https://mempool.space/${network}${path}`;
+}
 
 export const GET: RequestHandler = async function ({ url }) {
     const search = url.searchParams.get('q');
@@ -11,6 +25,7 @@ export const GET: RequestHandler = async function ({ url }) {
     const result = [];
     const hashRegexp = /^[a-fA-F0-9]{64}$/;
     const heightRegexp = /^\d+$/;
+    let foundLocally = false;
 
     // Try to parse as address first
     // try {
@@ -37,16 +52,17 @@ export const GET: RequestHandler = async function ({ url }) {
     //looks like hash, search for txid or block hash
     if (hashRegexp.test(search)) {
         const hexString = Buffer.from(search, 'hex');
-        
+
         const transaction = await db.execute(sql`
-            SELECT transactions.txid, transactions.block_hash 
-            FROM transactions 
-            WHERE txid = ${hexString} 
+            SELECT transactions.txid, transactions.block_hash
+            FROM transactions
+            WHERE txid = ${hexString}
             LIMIT 1
         `);
         if (transaction.rows[0]) {
-            result.push({ 
-                type: "transaction", 
+            foundLocally = true;
+            result.push({
+                type: "transaction",
                 value: {
                     ...transaction.rows[0],
                     txid: transaction.rows[0].txid.toString('hex'),
@@ -55,20 +71,54 @@ export const GET: RequestHandler = async function ({ url }) {
             });
         }
         const block = await db.execute(sql`
-            SELECT blocks.hash, blocks.height 
-            FROM blocks 
-            WHERE hash = ${hexString} 
+            SELECT blocks.hash, blocks.height
+            FROM blocks
+            WHERE hash = ${hexString}
             LIMIT 1
         `);
         if (block.rows[0]) {
-            result.push({ 
-                type: "block", 
+            foundLocally = true;
+            result.push({
+                type: "block",
                 value: {
                     ...block.rows[0],
                     hash: block.rows[0].hash.toString('hex'),
                     height: block.rows[0].height
                 }
             });
+        }
+
+        // If not found locally, check mempool.space
+        if (!foundLocally) {
+            try {
+                // Try as transaction first
+                const txResponse = await fetch(getMempoolApiUrl(`tx/${search}`));
+                if (txResponse.ok) {
+                    result.push({
+                        type: "external-transaction",
+                        value: {
+                            txid: search,
+                            url: getMempoolUrl(`tx/${search}`)
+                        }
+                    });
+                } else {
+                    // Try as block hash
+                    const blockResponse = await fetch(getMempoolApiUrl(`block/${search}`));
+                    if (blockResponse.ok) {
+                        const blockData = await blockResponse.json();
+                        result.push({
+                            type: "external-block",
+                            value: {
+                                hash: search,
+                                height: blockData.height,
+                                url: getMempoolUrl(`block/${search}`)
+                            }
+                        });
+                    }
+                }
+            } catch (e) {
+                // Ignore errors from external API
+            }
         }
     }
     //looks like height
@@ -77,19 +127,40 @@ export const GET: RequestHandler = async function ({ url }) {
         if (height <= 2**32) {
             const block = await db.execute(sql`
                 SELECT blocks.hash, blocks.height
-                FROM blocks 
-                WHERE height = ${height} 
+                FROM blocks
+                WHERE height = ${height}
                 LIMIT 1
             `);
             if (block.rows[0]) {
-                result.push({ 
-                    type: "block", 
+                foundLocally = true;
+                result.push({
+                    type: "block",
                     value: {
                         ...block.rows[0],
                         hash: block.rows[0].hash.toString('hex'),
                         height: block.rows[0].height
                     }
                 });
+            }
+
+            // If not found locally, check mempool.space
+            if (!foundLocally) {
+                try {
+                    const blockResponse = await fetch(getMempoolApiUrl(`block-height/${height}`));
+                    if (blockResponse.ok) {
+                        const blockHash = await blockResponse.text();
+                        result.push({
+                            type: "external-block",
+                            value: {
+                                hash: blockHash,
+                                height: height,
+                                url: getMempoolUrl(`block/${blockHash}`)
+                            }
+                        });
+                    }
+                } catch (e) {
+                    // Ignore errors from external API
+                }
             }
         }
     }

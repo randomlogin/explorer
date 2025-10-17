@@ -7,32 +7,44 @@ export const GET: RequestHandler = async function ({ request, url }) {
     const queryResult = await db.execute(sql`
 WITH latest_block AS (
     SELECT height, time
-    FROM blocks 
-    WHERE NOT orphan 
-    ORDER BY height DESC 
+    FROM blocks
+    WHERE NOT orphan
+    ORDER BY height DESC
     LIMIT 1
 ),
+vmetaouts_stats AS (
+    SELECT
+        v.name,
+        v.action,
+        v.total_burned,
+        v.script_error
+    FROM vmetaouts v
+    INNER JOIN blocks b ON b.hash = v.block_hash
+    WHERE NOT b.orphan
+),
 name_burns AS (
-    SELECT 
+    SELECT
         name,
         MAX(total_burned) as name_total_burned
-    FROM vmetaouts join blocks on blocks.hash = vmetaouts.block_hash
-    WHERE script_error IS NULL 
-        AND name IS NOT NULL and not orphan
+    FROM vmetaouts_stats
+    WHERE script_error IS NULL
+        AND name IS NOT NULL
     GROUP BY name
 )
-SELECT 
+SELECT
     lb.height as latest_block_height,
     lb.time as latest_block_time,
-    (SELECT COUNT(DISTINCT name) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan) as unique_names_count,
-    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE not blocks.orphan ) as valid_vmetaouts_count,
+    COUNT(DISTINCT CASE WHEN vs.name IS NOT NULL THEN vs.name END) as unique_names_count,
+    COUNT(*) as valid_vmetaouts_count,
     (SELECT SUM(name_total_burned) FROM name_burns) as total_burned_sum,
-    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'RESERVE') as reserve_count,
-    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'BID') as bid_count,
-    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'TRANSFER') as transfer_count,
-    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'ROLLOUT') as rollout_count,
-    (SELECT COUNT(*) FROM vmetaouts join blocks on vmetaouts.block_hash = blocks.hash WHERE name IS NOT NULL and not orphan and action = 'REVOKE') as revoke_count
-FROM latest_block lb;
+    COUNT(*) FILTER (WHERE vs.name IS NOT NULL AND vs.action = 'RESERVE') as reserve_count,
+    COUNT(*) FILTER (WHERE vs.name IS NOT NULL AND vs.action = 'BID') as bid_count,
+    COUNT(*) FILTER (WHERE vs.name IS NOT NULL AND vs.action = 'TRANSFER') as transfer_count,
+    COUNT(*) FILTER (WHERE vs.name IS NOT NULL AND vs.action = 'ROLLOUT') as rollout_count,
+    COUNT(*) FILTER (WHERE vs.name IS NOT NULL AND vs.action = 'REVOKE') as revoke_count
+FROM latest_block lb
+CROSS JOIN vmetaouts_stats vs
+GROUP BY lb.height, lb.time;
     `);
 
     return json(queryResult.rows[0])

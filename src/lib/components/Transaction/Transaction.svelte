@@ -1,39 +1,22 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import dayjs from 'dayjs';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
-    import TransactionDetails from '$lib/components/Transaction/TransactionDetails.svelte';
+    import TransactionSpaces from '$lib/components/Transaction/TransactionSpaces.svelte';
     import CopyButton from '$lib/components/CopyButton.svelte';
+    import { getMempoolUrl, formatBTC } from '$lib/utils/formatters';
     dayjs.extend(LocalizedFormat);
-    $: blockLink = data.block.height >= 0 ? 
+    $: blockLink = data.block.height >= 0 ?
         `/block/${data.block.height}` :
         data.block.height === -1 ?
         '/mempool'
             : `/block/${data.block.hash}`;
 
     export let data;
-
-    let highlightedOutputIndex: number | null = null;
-
-    onMount(() => {
-        const hash = window.location.hash;
-        console.log(hash)
-        if (hash && hash.startsWith('#output-')) {
-            highlightedOutputIndex = parseInt(hash.substring(8));
-
-            setTimeout(() => {
-                const element = document.getElementById(`output-${highlightedOutputIndex}`);
-                if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
-                }
-            }, 100);
-        }
-    });
 </script>
 
 <div class="container">
     <div class="header">
-        <h1 class="title">Transaction</h1> 
+        <h1 class="title">Transaction</h1>
         <span class="hash">{data.txid}</span>
         <CopyButton value={data.txid} />
     </div>
@@ -87,13 +70,52 @@
         </div>
         {/if}
         <div class="detail-item">
+            <span class="detail-value">{data.input_count}</span>
+            <span class="detail-label">Inputs</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-value">{data.output_count}</span>
+            <span class="detail-label">Outputs</span>
+        </div>
+        <div class="detail-item">
+            <span class="detail-value">{formatBTC(data.total_output_value)}</span>
+            <span class="detail-label">Total Output Value</span>
+        </div>
+        <div class="detail-item">
             <span class="detail-value">{data.vmetaouts.length}</span>
-            <span class="detail-label">Spaces Actions</span>
+            <span class="detail-label">Spaces Events</span>
         </div>
     </div>
-    <TransactionDetails transaction={data} showAllInputsOutputs={true} highlightedOutputIndex={highlightedOutputIndex}/>
+    {#if data.vmetaouts?.length > 0}
+        <TransactionSpaces vmetaouts={data.vmetaouts} />
+    {/if}
+    <div class="mempool-link-container">
+        <a href={getMempoolUrl(`tx/${data.txid}`)} target="_blank" rel="noopener noreferrer" class="mempool-link">
+            View full tx details on mempool.space →
+        </a>
+    </div>
 </div>
 
 <style>
 @import '$lib/styles/headers.css';
+
+.mempool-link-container {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: var(--border-width-1) solid var(--border-color);
+    text-align: center;
+}
+
+.mempool-link {
+    display: inline-block;
+    font-size: 1.5rem;
+    color: #0066cc;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.mempool-link:hover {
+    color: #0052a3;
+    text-decoration: underline;
+}
 </style>

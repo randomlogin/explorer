@@ -10,30 +10,42 @@
     // Get height from URL params
     $: height = $page.params.height;
     $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
+    $: onlyWithSpaces = $page.url.searchParams.get('filter') === 'spaces';
 
     let previousHeight: string | null = null;
     let previousPage: number | null = null;
+    let previousFilter: boolean | null = null;
 
-    $: if (browser && height && (height !== previousHeight || currentPage !== previousPage)) {
+    $: if (browser && height && (height !== previousHeight || currentPage !== previousPage || onlyWithSpaces !== previousFilter)) {
         loadBlockData();
     }
-    
+
     async function loadBlockData() {
         try {
-            await blockStore.fetchBlockData(height, currentPage);
+            await blockStore.fetchBlockData(height, currentPage, onlyWithSpaces);
             // Update previous values after successful fetch
             previousHeight = height;
             previousPage = currentPage;
+            previousFilter = onlyWithSpaces;
         } catch (error) {
             console.error('Failed to load block data:', error);
         }
     }
 
-
-
     async function handlePageChange(newPage: number) {
         const url = new URL(window.location.href);
         url.searchParams.set('page', newPage.toString());
+        await goto(url.toString(), { keepFocus: true, replaceState: true });
+    }
+
+    async function handleFilterChange(showOnlySpaces: boolean) {
+        const url = new URL(window.location.href);
+        if (showOnlySpaces) {
+            url.searchParams.set('filter', 'spaces');
+        } else {
+            url.searchParams.delete('filter');
+        }
+        url.searchParams.set('page', '1'); // Reset to first page when filtering
         await goto(url.toString(), { keepFocus: true, replaceState: true });
     }
 
@@ -62,6 +74,8 @@
                 limit: $blockStore.pagination.limit
             }}
             onPageChange={handlePageChange}
+            onFilterChange={handleFilterChange}
+            showOnlySpaceActions={onlyWithSpaces}
         />
     </section>
 {/if}

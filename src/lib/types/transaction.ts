@@ -14,8 +14,9 @@ export interface Transaction {
         hash?: string;
     };
     confirmations: number;
-    inputs: TransactionInput[];
-    outputs: TransactionOutput[];
+    input_count: number;
+    output_count: number;
+    total_output_value: number;
     vmetaouts: TransactionVmetaout[];
 }
 
@@ -33,17 +34,21 @@ export interface TransactionVmetaout {
     signature?: string;
 }
 
-export interface TransactionInput {
-    index: number;
-    hash_prevout: string;
-    index_prevout: number;
-    sequence: number;
-    coinbase: string | null;
-    txinwitness: string | null;
-    prev_scriptpubkey?: string;
-    sender_address?: string;
-    prev_value?: number;
-}
+// TransactionInput and TransactionOutput are no longer stored or returned by the API
+// We now only store aggregate counts and totals in the transactions table
+// For detailed input/output information, refer users to mempool.space
+
+// export interface TransactionInput {
+//     index: number;
+//     hash_prevout: string;
+//     index_prevout: number;
+//     sequence: number;
+//     coinbase: string | null;
+//     txinwitness: string | null;
+//     prev_scriptpubkey?: string;
+//     sender_address?: string;
+//     prev_value?: number;
+// }
 
 // export interface TransactionOutput {
 //     index: number;
@@ -56,22 +61,9 @@ export interface TransactionInput {
 //     } | null;
 // }
 
-export type SpaceAction = {
-    type: 'bid' | 'register' | 'transfer' | 'reserve';
-    value?: number;  // for bids
-    address?: string; // for transfers
-    name: string;  // Name involved in the action
-};
-
-// Update TransactionOutput type to include optional space_action
-export interface TransactionOutput {
-    index: number;
-    value: number;
-    scriptpubkey: string | null;
-    address: string | null;
-    spender: {
-        txid: string;
-        index: number;
-    } | null;
-    space_action?: SpaceAction;
-}
+// export type SpaceAction = {
+//     type: 'bid' | 'register' | 'transfer' | 'reserve';
+//     value?: number;  // for bids
+//     address?: string; // for transfers
+//     name: string;  // Name involved in the action
+// };

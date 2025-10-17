@@ -60,7 +60,7 @@
         </div>
         <div class="detail-item">
             <span class="detail-value">{blockHeader.vmetaout_count}</span>
-            <span class="detail-label">Spaces actions</span>
+            <span class="detail-label">Spaces Events</span>
         </div>
     </div>
 </div>

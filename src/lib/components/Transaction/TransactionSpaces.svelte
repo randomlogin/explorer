@@ -29,7 +29,7 @@
 </script>
 
 <div class="vmetaouts-section">
-    <h2 class="section-title">Spaces Actions</h2>
+    <h2 class="section-title">Spaces Events</h2>
     <div class="section-content">
         {#each vmetaouts.slice(0, displayCount) as vmetaout, index (vmetaout.name)}
             <div class="vmetaout-item" transition:fly={{ y: 20, duration: 300, delay: index * 50 }} >
