@@ -113,7 +113,7 @@
 }
 
 .primary-value {
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     color: var(--color-primary);
     font-weight: 550;
     font-family: monospace;

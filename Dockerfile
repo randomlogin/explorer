@@ -3,7 +3,15 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
-COPY .env.example .env
+
+# Accept build-time argument for network configuration
+ARG PUBLIC_BTC_NETWORK=mainnet
+ARG MARKETPLACE_URI
+
+# Set as environment variable for build
+ENV PUBLIC_BTC_NETWORK=$PUBLIC_BTC_NETWORK
+ENV MARKETPLACE_URI=$MARKETPLACE_URI
+
 RUN npm run build
 
 FROM node:20-alpine

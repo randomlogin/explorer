@@ -1,7 +1,11 @@
 <script lang="ts">
     import '$lib/styles/link.css';
     export let text: string;
-    $: truncatedText = text;
+    export let maxLength: number | undefined = undefined;
+
+    $: truncatedText = maxLength && text.length > maxLength
+        ? `${text.slice(0, Math.floor(maxLength / 2))}...${text.slice(-Math.floor(maxLength / 2))}`
+        : text;
 </script>
 
 <span class="truncatable-text mono-link" title={text}>

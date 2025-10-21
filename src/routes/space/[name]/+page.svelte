@@ -191,7 +191,7 @@
             {#if outpointTxid}
                 <div class="detail-item">
                     <span class="detail-value outpoint-value">
-                        <TransactionLink txid={outpointTxid} truncate={true} outputIndex={outpointIndex} />
+                        <TransactionLink txid={outpointTxid} truncate={true} outputIndex={outpointIndex} maxLength={20} />
                     </span>
                     <span class="detail-label">Outpoint</span>
                 </div>
