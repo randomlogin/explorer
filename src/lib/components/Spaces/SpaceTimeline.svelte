@@ -235,8 +235,8 @@ return [
   }
 
   .timeline-time {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    color: var(--font-size-muted);
     margin-left: var(--space-2);
   }
 
@@ -260,7 +260,7 @@ return [
   }
 
   .timeline-title {
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
     font-weight: 500;
     transition: var(--transition-colors);
     padding-top: 0.375rem;
@@ -268,8 +268,8 @@ return [
 
   .timeline-description {
     display: block;
-    font-size: var(--text-sm);
-    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    color: var(--font-size-muted);
     margin-top: var(--space-2);
   }
 

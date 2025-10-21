@@ -40,13 +40,13 @@
     }
 </script>
 
-<div class="filter-container mb-4">
-    <label class="flex items-center space-x-2 text-sm">
+<div class="filter-container">
+    <label class="filter-label">
         <input
             type="checkbox"
             checked={showOnlySpaceActions}
             on:change={handleFilterToggle}
-            class="form-checkbox h-4 w-4 text-orange-600"
+            class="filter-checkbox"
         />
         <span>Show only transactions with Spaces events</span>
     </label>
@@ -97,7 +97,7 @@
                         {#if transaction.vmetaouts?.length > 0}
                             <div class="spaces-indicator">
                                 <span class="spaces-count">{transaction.vmetaouts.length}</span>
-                                <span class="spaces-label">Space{transaction.vmetaouts.length !== 1 ? 's' : ''} Event{transaction.vmetaouts.length !== 1 ? 's' : ''}</span>
+                                <span class="spaces-label">Spaces Event{transaction.vmetaouts.length !== 1 ? 's' : ''}</span>
                             </div>
                         {/if}
                     </div>
@@ -155,6 +155,26 @@
 <style>
     @import '$lib/styles/variables.css';
 
+    .filter-container {
+        padding-left: var(--space-4);
+    }
+
+    .filter-label {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: var(--font-size-sm);
+        color: var(--font-size-primary);
+        cursor: pointer;
+    }
+
+    .filter-checkbox {
+        width: 1rem;
+        height: 1rem;
+        cursor: pointer;
+        accent-color: var(--color-primary);
+    }
+
     .transactions-container {
         display: flex;
         flex-direction: column;
@@ -171,7 +191,7 @@
         border: var(--border-width-1) solid var(--border-color);
         border-radius: var(--border-radius-xl);
         padding: var(--space-4);
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         position: relative;
         box-shadow: var(--shadow-sm);
         transition: var(--transition-all);
@@ -205,7 +225,7 @@
     }
 
     .transaction-number {
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-sm);
         white-space: nowrap;
         flex-shrink: 0; /* Prevent number from shrinking */
@@ -228,7 +248,7 @@
         flex-direction: column;
         align-items: flex-end;
         gap: var(--space-1);
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-sm);
         flex-shrink: 0; /* Prevent time from shrinking */
     }
@@ -281,7 +301,7 @@
     }
 
     .flow-label {
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-lg);
     }
 
@@ -303,12 +323,12 @@
     }
 
     .total-label {
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-lg);
     }
 
     .total-amount {
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         font-weight: 600;
         font-size: var(--font-size-lg);
     }
@@ -326,7 +346,7 @@
     }
 
     .spaces-label {
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-sm);
     }
 
@@ -351,13 +371,13 @@
     }
 
     .metadata-label {
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-sm);
         text-align: right;
     }
 
     .metadata-value {
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         font-size: var(--font-size-sm);
         font-weight: 500;
         white-space: nowrap;
@@ -365,8 +385,6 @@
 
     .spaces-section {
         margin-top: var(--space-6);
-        padding-top: var(--space-6);
-        border-top: var(--border-width-1) solid var(--border-color);
     }
 
     @media (max-width: 640px) {

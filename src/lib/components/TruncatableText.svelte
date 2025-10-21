@@ -17,6 +17,6 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         font-family: monospace;
-        font-size: var(--text-sm);
+        font-size: var(--font-size-sm);
     }
 </style>

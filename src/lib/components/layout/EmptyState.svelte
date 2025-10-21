@@ -19,7 +19,7 @@
         align-items: center;
         justify-content: center;
         padding: var(--space-16);
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         gap: var(--space-4);
         text-align: center;
         /* These ensure it centers in grid containers */
@@ -30,7 +30,7 @@
     }
 
     .empty-state svg {
-        stroke: var(--text-muted);
+        stroke: var(--font-size-muted);
         opacity: 0.5;
     }
 

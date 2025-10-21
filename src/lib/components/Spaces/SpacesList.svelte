@@ -177,7 +177,7 @@
         border: var(--border-width-1) solid var(--border-color);
         border-radius: var(--border-radius-lg);
         background: var(--bg-secondary);
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         font-size: var(--font-size-sm);
     }
 
@@ -186,7 +186,7 @@
         border: var(--border-width-1) solid var(--border-color);
         border-radius: var(--border-radius-lg);
         background: var(--bg-secondary);
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         cursor: pointer;
         transition: background-color 0.2s ease;
     }
@@ -202,7 +202,7 @@
     .loading, .error {
         text-align: center;
         padding: var(--space-8);
-        color: var(--text-muted);
+        color: var(--font-size-muted);
     }
 
     .error {

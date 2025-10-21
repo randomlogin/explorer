@@ -143,7 +143,7 @@
     .rollouts-title {
         font-size: var(--font-size-2xl);
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         transition: color 0.2s;
     }
 
@@ -198,7 +198,7 @@
     }
 
     .bid-amount {
-        color: var(--text-base);
+        color: var(--font-size-base);
         font-size: var(--font-size-sm);
         font-weight: 500;
         padding: var(--space-1) 0;
@@ -216,13 +216,13 @@
         background: var(--bg-secondary);
         border-radius: var(--radius-sm);
         font-family: var(--font-mono);
-        font-size: var(--text-xs);
-        color: var(--text-muted);
+        font-size: var(--font-size-xs);
+        color: var(--font-size-muted);
         white-space: nowrap;
     }
 
     .time-remaining {
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-sm);
         cursor: help;
         margin-top: auto;
@@ -242,13 +242,13 @@
         text-align: center;
         background: var(--bg-surface);
         border-radius: var(--radius-lg);
-        color: var(--text-muted);
+        color: var(--font-size-muted);
     }
 
     .empty-icon,
     .error-icon {
         display: block;
-        font-size: var(--text-3xl);
+        font-size: var(--font-size-3xl);
         margin-bottom: var(--space-2);
     }
 

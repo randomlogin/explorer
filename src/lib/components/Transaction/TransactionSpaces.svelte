@@ -130,24 +130,40 @@
 
     .vmetaouts-section {
         width: 100%;
+        background: var(--bg-secondary);
+        border: var(--border-width-1) solid var(--border-color);
+        border-radius: var(--border-radius-xl);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
     }
 
     .section-title {
         font-size: var(--font-size-xl);
-        margin-bottom: var(--space-4);
+        padding: var(--space-4) var(--space-6);
+        margin: 0;
+        border-bottom: var(--border-width-1) solid var(--border-color);
+        background: var(--bg-secondary);
     }
 
     .section-content {
         display: flex;
         flex-direction: column;
         gap: var(--space-4);
+        padding: var(--space-4) var(--space-6);
     }
 
     .vmetaout-item {
-        background: var(--bg-surface);
-        border-radius: var(--radius-lg);
+        background: var(--bg-primary);
+        border-radius: var(--border-radius-lg);
         padding: var(--space-4);
-        box-shadow: 0 2px 3px rgba(0,0,0,0.10);
+        border: var(--border-width-1) solid var(--border-color);
+        transition: var(--transition-all);
+    }
+
+    .vmetaout-item:hover {
+        transform: translateY(-2px);
+        border-color: var(--border-hover);
+        box-shadow: var(--shadow-md);
     }
 
     .vmetaout-header {
@@ -172,7 +188,7 @@
 
 
     .dot {
-        color: var(--text-muted);
+        color: var(--font-size-muted);
     }
 
     .revoke-reason {
@@ -207,7 +223,7 @@
     }
 
     .detail-label {
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-lg);
     }
 
@@ -242,13 +258,13 @@
         background: var(--bg-surface);
         border: var(--border-width-1) solid var(--border-color);
         border-radius: var(--radius-full);
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         font-size: var(--font-size-sm);
         cursor: pointer;
     }
 
     .show-more:hover {
         background: var(--bg-surface-hover);
-        color: var(--text-base);
+        color: var(--font-size-base);
     }
 </style>

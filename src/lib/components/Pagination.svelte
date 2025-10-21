@@ -110,7 +110,7 @@
   border: var(--border-width-1) solid var(--border-color);
   border-radius: var(--border-radius-md);
   background-color: var(--bg-secondary);
-  color: var(--text-primary);
+  color: var(--font-size-primary);
   cursor: pointer;
   transition: var(--transition-colors);
 }
@@ -133,7 +133,7 @@
 }
 
 .ellipsis {
-  color: var(--text-muted);
+  color: var(--font-size-muted);
   padding: 0 var(--space-2);
 }
 

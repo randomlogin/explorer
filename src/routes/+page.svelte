@@ -119,7 +119,7 @@
 
 .section-title-link {
     text-decoration: underline;
-    color: var(--text-primary);
+    color: var(--font-size-primary);
     transition: color 0.2s ease;
     display: inline-flex;
     align-items: center;
@@ -133,7 +133,7 @@
 .section-title {
     font-size: var(--font-size-2xl);
     font-weight: 600;
-    color: var(--text-primary);
+    color: var(--font-size-primary);
     margin: 0;  /* Remove default margin to ensure proper alignment */
 }
 
@@ -156,7 +156,7 @@
     align-items: center;
     gap: var(--space-4);
     padding: var(--space-8);
-    color: var(--text-muted);
+    color: var(--font-size-muted);
 }
 
 .loading-spinner {

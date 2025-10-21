@@ -38,20 +38,20 @@
 
    .tooltip-icon {
        cursor: help;
-       color: var(--text-secondary);
+       color: var(--font-size-secondary);
        transition: color 0.2s;
        pointer-events: all;
    }
 
    .tooltip-icon:hover {
-       color: var(--text-primary);
+       color: var(--font-size-primary);
    }
 
    .tooltip-text {
        visibility: hidden;
        position: absolute;
        background-color: var(--background-secondary);
-       color: var(--text-primary);
+       color: var(--font-size-primary);
        text-align: center;
        padding: 0.5rem 1rem;
        border-radius: 0.375rem;

@@ -140,13 +140,13 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 
 .detail-value {
     display: block;
-    font-size: var(--text-2xl);
+    font-size: var(--font-size-2xl);
     font-weight: var(--font-semibold);
-    color: var(--text-default);
+    color: var(--font-size-default);
 }
 
 .detail-label {
-    font-size: var(--text-sm);
-    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    color: var(--font-size-muted);
 }
 </style>

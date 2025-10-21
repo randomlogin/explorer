@@ -248,7 +248,7 @@
     }
 
     .space-name {
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         text-decoration: none;
         font-size: var(--font-size-xl);
         font-weight: 600;
@@ -291,14 +291,14 @@
 
     .meta-label {
         font-size: var(--font-size-sm);
-        color: var(--text-muted);
+        color: var(--font-size-muted);
         white-space: nowrap; /* Prevents label text from wrapping */
     }
 
     .meta-value {
         font-size: var(--font-size-base);
         font-weight: 500;
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         white-space: nowrap; /* Prevents wrapping */
         overflow: hidden; /* Hides overflow text */
         text-overflow: ellipsis; /* Adds ellipsis for overflow */

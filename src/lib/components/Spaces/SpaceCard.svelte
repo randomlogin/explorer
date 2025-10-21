@@ -122,7 +122,7 @@
 
   .status-label {
     font-size: var(--font-size-base);
-    color: var(--text-muted);
+    color: var(--font-size-muted);
   }
 
   .status-badge {
@@ -136,7 +136,7 @@
 
   .status-note {
     font-size: var(--font-size-base);
-    color: var(--text-muted);
+    color: var(--font-size-muted);
   }
 
   .bid-info {
@@ -154,7 +154,7 @@
   }
 
   .bid-label {
-    color: var(--text-muted);
+    color: var(--font-size-muted);
     flex-shrink: 0;
   }
 

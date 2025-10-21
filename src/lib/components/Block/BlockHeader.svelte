@@ -27,7 +27,10 @@
         </div>
         <div class="primary-item">
             <span class="primary-value">{blockHeader.confirmations >= 0 ? blockHeader.confirmations : 'N/A'}</span>
-            <span class="primary-label">Confirmations</span>
+            <span class="primary-label">
+                <span class="label-full">Confirmations</span>
+                <span class="label-short">Confirms</span>
+            </span>
         </div>
         <div class="primary-item">
             <span class="primary-value">{dayjs.unix(blockHeader.time).format('MMM D, HH:mm')}</span>
@@ -35,11 +38,17 @@
         </div>
         <div class="primary-item">
             <span class="primary-value">{blockHeader.tx_count}</span>
-            <span class="primary-label">Transactions</span>
+            <span class="primary-label">
+                <span class="label-full">Transactions</span>
+                <span class="label-short">TXs</span>
+            </span>
         </div>
         <div class="primary-item">
             <span class="primary-value">{blockHeader.vmetaout_count}</span>
-            <span class="primary-label">Spaces Events</span>
+            <span class="primary-label">
+                <span class="label-full">Spaces Events</span>
+                <span class="label-short">Spaces</span>
+            </span>
         </div>
     </div>
 
@@ -59,10 +68,13 @@
         </div>
         <div class="detail-item">
             <div class="detail-value-with-copy">
-                <span class="detail-value">{blockHeader.hash_merkle_root.slice(0, 8)}...{blockHeader.hash_merkle_root.slice(-8)}</span>
+                <span class="detail-value">{blockHeader.hash_merkle_root.slice(0, 4)}...{blockHeader.hash_merkle_root.slice(-4)}</span>
                 <CopyButton value={blockHeader.hash_merkle_root} />
             </div>
-            <span class="detail-label">Merkle Root</span>
+            <span class="detail-label">
+                <span class="label-full">Merkle Root</span>
+                <span class="label-short">Merkle</span>
+            </span>
         </div>
     </div>
 </div>
@@ -72,8 +84,13 @@
 .primary-info {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: var(--space-6);
+    gap: 0;
     margin-bottom: var(--space-8);
+    background: var(--bg-secondary);
+    border: var(--border-width-1) solid var(--border-color);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
 }
 
 .primary-item {
@@ -82,51 +99,133 @@
     gap: var(--space-2);
     align-items: center;
     text-align: center;
+    padding: var(--space-6);
+    border-right: var(--border-width-1) solid var(--border-color);
+    transition: var(--transition-colors);
+}
+
+.primary-item:last-child {
+    border-right: none;
+}
+
+.primary-item:hover {
+    background: var(--bg-primary);
 }
 
 .primary-value {
-    font-size: var(--font-size-3xl);
+    font-size: var(--font-size-2xl);
     color: var(--color-primary);
-    font-weight: 700;
+    font-weight: 550;
     font-family: monospace;
     white-space: nowrap;
 }
 
 .primary-label {
     font-size: var(--font-size-lg);
-    color: var(--text-muted);
+    color: var(--font-size-muted);
     font-weight: 500;
+}
+
+.label-short {
+    display: none;
 }
 
 .details {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-6);
+    gap: 0;
     margin-bottom: var(--space-8);
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+    background: var(--bg-secondary);
+    border: var(--border-width-1) solid var(--border-color);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.details > * {
+    padding: var(--space-2) var(--space-6);
+    border-right: var(--border-width-1) solid var(--border-color);
+    transition: var(--transition-colors);
+}
+
+.details > *:last-child {
+    border-right: none;
+}
+
+.details > *:hover {
+    background: var(--bg-primary);
 }
 
 .detail-value-with-copy {
     display: flex;
     align-items: center;
     gap: var(--space-2);
+    flex-wrap: nowrap;
+}
+
+.detail-value-with-copy .detail-value {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 @media (max-width: 768px) {
     .primary-info {
         grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-4);
+    }
+
+    /* Last item (Spaces Events) spans full width */
+    .primary-item:nth-child(5) {
+        grid-column: 1 / -1;
+        border-right: none;
+        border-top: var(--border-width-1) solid var(--border-color);
+    }
+
+    /* Row 1: items 1 and 2 */
+    .primary-item:nth-child(1) {
+        border-right: var(--border-width-1) solid var(--border-color);
+    }
+
+    .primary-item:nth-child(2) {
+        border-right: none;
+    }
+
+    /* Row 2: items 3 and 4 with top border */
+    .primary-item:nth-child(3),
+    .primary-item:nth-child(4) {
+        border-top: var(--border-width-1) solid var(--border-color);
+    }
+
+    .primary-item:nth-child(3) {
+        border-right: var(--border-width-1) solid var(--border-color);
+    }
+
+    .primary-item:nth-child(4) {
+        border-right: none;
     }
 
     .primary-value {
         font-size: var(--font-size-2xl);
     }
 
+    .label-full {
+        display: none;
+    }
+
+    .label-short {
+        display: inline;
+    }
+
     .details {
         grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-4);
+    }
+
+    .details > *:nth-child(2n) {
+        border-right: none;
+    }
+
+    .details > *:nth-child(n+3) {
+        border-top: var(--border-width-1) solid var(--border-color);
     }
 }
 

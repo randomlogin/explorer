@@ -301,7 +301,7 @@
         flex-direction: column;
         gap: var(--space-4);
         padding: var(--space-4);
-        color: var(--text-primary);
+        color: var(--font-size-primary);
         transition: var(--transition-colors);
         max-width: 100%;
         overflow-x: hidden;
@@ -332,7 +332,7 @@
 .title {
     font-weight: 700;
     font-size: var(--font-size-3xl);
-    color: var(--text-primary);
+    color: var(--font-size-primary);
 }
 
 .details {
@@ -359,7 +359,7 @@
 }
 
 .detail-label {
-    color: var(--text-muted);
+    color: var(--font-size-muted);
     transition: var(--transition-colors);
     font-size: var(--font-size-lg);
     font-weight: 500;
@@ -440,7 +440,7 @@
     text-align: left;
     font-size: var(--font-size-sm);
     font-weight: 500;
-    color: var(--text-muted);
+    color: var(--font-size-muted);
     border-bottom: var(--border-width-1) solid var(--border-color);
 }
 
@@ -494,7 +494,7 @@
     flex-wrap: wrap;
     gap: var(--space-2);
     font-size: var(--font-size-sm);
-    color: var(--text-muted);
+    color: var(--font-size-muted);
 }
 
 .text-right {
@@ -525,7 +525,7 @@
     align-items: center;
     padding: var(--space-1) var(--space-2);
     background-color: var(--bg-warning);
-    color: var(--text-warning);
+    color: var(--font-size-warning);
     border-radius: var(--border-radius-full);
     font-size: var(--font-size-xs);
     font-weight: 500;
@@ -586,11 +586,11 @@
 }
 
 .text-muted {
-    color: var(--text-muted);
+    color: var(--font-size-muted);
 }
 
 .future-block {
-    color: var(--text-muted);
+    color: var(--font-size-muted);
     font-family: var(--font-mono);
 }
 
