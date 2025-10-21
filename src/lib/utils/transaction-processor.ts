@@ -26,7 +26,12 @@ export function createTransaction(row: any): Transaction {
         };
 
         if (typeof row.max_height === 'number') {
-            transaction.confirmations = row.max_height - row.block_height + 1;
+            // For mempool transactions (block_height = -1), confirmations should be 0
+            if (row.block_height === -1) {
+                transaction.confirmations = 0;
+            } else {
+                transaction.confirmations = row.max_height - row.block_height + 1;
+            }
         }
     }
 

@@ -24,6 +24,14 @@ export const GET: RequestHandler = async function ({ url, params }) {
         onlyWithSpaces
     });
 
+    // If filtering by spaces and we have a totalCount, we know the block exists
+    // Return empty array if no transactions match the filter
+    if (onlyWithSpaces && totalCount !== null) {
+        const txs = processTransactions(queryResult);
+        return json({ transactions: txs, totalCount });
+    }
+
+    // If not filtering and we get no results, the block doesn't exist
     if (!queryResult.rows || queryResult.rows.length === 0) {
         return error(404, 'Block not found');
     }

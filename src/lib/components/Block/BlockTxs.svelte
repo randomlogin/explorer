@@ -4,9 +4,20 @@
     import TransactionSpaces from '$lib/components/Transaction/TransactionSpaces.svelte';
     import TransactionLink from '$lib/components/Transaction/TransactionLink.svelte';
     import BlockLink from '$lib/components/Block/BlockLink.svelte';
-    import { formatBTC } from '$lib/utils/formatters';
+    import ArrowIcon from '$lib/components/Icons/ArrowIcon.svelte';
+    import { formatBTC, formatNumberWithSpaces } from '$lib/utils/formatters';
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     dayjs.extend(LocalizedFormat);
+
+    function formatFeeRate(fee: number, vsize: number): string {
+        if (vsize === 0) return '0';
+        const feeRate = fee / vsize;
+        return feeRate.toFixed(2);
+    }
+
+    function isCoinbase(transaction: Transaction): boolean {
+        return transaction.index === 0;
+    }
 
     interface PaginationInfo {
         currentPage: number;
@@ -64,27 +75,70 @@
                 {/if}
             </div>
             <div class="transaction-aggregates">
-                <div class="aggregate-item">
-                    <span class="aggregate-label">Inputs:</span>
-                    <span class="aggregate-value">{transaction.input_count}</span>
-                </div>
-                <div class="aggregate-item">
-                    <span class="aggregate-label">Outputs:</span>
-                    <span class="aggregate-value">{transaction.output_count}</span>
-                </div>
-                <div class="aggregate-item">
-                    <span class="aggregate-label">Total Value:</span>
-                    <span class="aggregate-value">{formatBTC(transaction.total_output_value)}</span>
-                </div>
-                {#if transaction.vmetaouts?.length > 0}
-                    <div class="aggregate-item">
-                        <span class="aggregate-label">Spaces Events:</span>
-                        <span class="aggregate-value">{transaction.vmetaouts.length}</span>
+                <div class="flow-container">
+                    <div class="flow-section">
+                        <div class="flow-line">
+                            <div class="flow-item">
+                                <span class="flow-count">{transaction.input_count}</span>
+                                <span class="flow-label">input{transaction.input_count !== 1 ? 's' : ''}</span>
+                            </div>
+                            <div class="arrow-icon">
+                                <ArrowIcon size={48} />
+                            </div>
+                            <div class="flow-item">
+                                <span class="flow-count">{transaction.output_count}</span>
+                                <span class="flow-label">output{transaction.output_count !== 1 ? 's' : ''}</span>
+                            </div>
+                        </div>
+                        <div class="total-value">
+                            <span class="total-label">Total:</span>
+                            <span class="total-amount">{formatBTC(transaction.total_output_value)}</span>
+                        </div>
+                        {#if transaction.vmetaouts?.length > 0}
+                            <div class="spaces-indicator">
+                                <span class="spaces-count">{transaction.vmetaouts.length}</span>
+                                <span class="spaces-label">Space{transaction.vmetaouts.length !== 1 ? 's' : ''} Event{transaction.vmetaouts.length !== 1 ? 's' : ''}</span>
+                            </div>
+                        {/if}
                     </div>
-                {/if}
+                    <div class="metadata-section">
+                        <div class="metadata-grid">
+                            <div class="metadata-item">
+                                <span class="metadata-label">Fee:</span>
+                                <span class="metadata-value">
+                                    {#if isCoinbase(transaction)}
+                                        Coinbase
+                                    {:else}
+                                        {formatBTC(transaction.fee)}
+                                    {/if}
+                                </span>
+                            </div>
+                            {#if !isCoinbase(transaction)}
+                                <div class="metadata-item">
+                                    <span class="metadata-label">Rate:</span>
+                                    <span class="metadata-value">{formatFeeRate(transaction.fee, transaction.vsize)} sat/vB</span>
+                                </div>
+                            {/if}
+                            <div class="metadata-item">
+                                <span class="metadata-label">Size:</span>
+                                <span class="metadata-value">{formatNumberWithSpaces(transaction.size)} bytes</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">vSize:</span>
+                                <span class="metadata-value">{formatNumberWithSpaces(transaction.vsize)} vB</span>
+                            </div>
+                            <div class="metadata-item">
+                                <span class="metadata-label">Weight:</span>
+                                <span class="metadata-value">{formatNumberWithSpaces(transaction.weight)} WU</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             {#if transaction.vmetaouts?.length > 0}
-                <TransactionSpaces vmetaouts={transaction.vmetaouts} />
+                <div class="spaces-section">
+                    <TransactionSpaces vmetaouts={transaction.vmetaouts} />
+                </div>
             {/if}
         </div>
     {/each}
@@ -184,28 +238,135 @@
     }
 
     .transaction-aggregates {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--space-4);
         margin-top: var(--space-4);
         padding-top: var(--space-4);
         border-top: var(--border-width-1) solid var(--border-color);
-        font-size: var(--font-size-sm);
     }
 
-    .aggregate-item {
+    .flow-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--space-6);
+    }
+
+    .flow-section {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-3);
+        flex: 1;
+    }
+
+    .flow-line {
+        display: flex;
+        align-items: center;
+        gap: var(--space-6);
+        font-size: var(--font-size-base);
+    }
+
+    .flow-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1);
+    }
+
+    .flow-count {
+        color: var(--color-primary);
+        font-weight: 700;
+        font-size: var(--font-size-3xl);
+        line-height: 1;
+    }
+
+    .flow-label {
+        color: var(--text-muted);
+        font-size: var(--font-size-lg);
+    }
+
+    .arrow-icon {
+        color: var(--color-primary);
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .arrow-icon :global(svg) {
+        filter: drop-shadow(0 2px 4px rgba(255, 120, 0, 0.2));
+    }
+
+    .total-value {
         display: flex;
         gap: var(--space-2);
         align-items: baseline;
     }
 
-    .aggregate-label {
+    .total-label {
         color: var(--text-muted);
+        font-size: var(--font-size-lg);
     }
 
-    .aggregate-value {
+    .total-amount {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: var(--font-size-lg);
+    }
+
+    .spaces-indicator {
+        display: flex;
+        gap: var(--space-2);
+        align-items: baseline;
+    }
+
+    .spaces-count {
         color: var(--color-primary);
         font-weight: 600;
+        font-size: var(--font-size-base);
+    }
+
+    .spaces-label {
+        color: var(--text-muted);
+        font-size: var(--font-size-sm);
+    }
+
+    .metadata-section {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        padding-left: var(--space-6);
+        border-left: var(--border-width-1) solid var(--border-color);
+        flex-shrink: 0;
+    }
+
+    .metadata-grid {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: var(--space-2) var(--space-4);
+        align-items: baseline;
+    }
+
+    .metadata-item {
+        display: contents;
+    }
+
+    .metadata-label {
+        color: var(--text-muted);
+        font-size: var(--font-size-sm);
+        text-align: right;
+    }
+
+    .metadata-value {
+        color: var(--text-primary);
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    .spaces-section {
+        margin-top: var(--space-6);
+        padding-top: var(--space-6);
+        border-top: var(--border-width-1) solid var(--border-color);
     }
 
     @media (max-width: 640px) {
@@ -228,6 +389,44 @@
             align-items: flex-start;
             margin-top: var(--space-2);
             width: 100%;
+        }
+
+        .flow-container {
+            flex-direction: column;
+            gap: var(--space-4);
+        }
+
+        .flow-section {
+            width: 100%;
+        }
+
+        .flow-line {
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: var(--space-3);
+        }
+
+        .flow-count {
+            font-size: 2rem;
+        }
+
+        .arrow-icon :global(svg) {
+            width: 40px;
+            height: 40px;
+        }
+
+        .metadata-section {
+            width: 100%;
+            align-items: center;
+            padding-left: 0;
+            padding-top: var(--space-4);
+            border-left: none;
+            border-top: var(--border-width-1) solid var(--border-color);
+        }
+
+        .metadata-grid {
+            width: 100%;
+            max-width: 400px;
         }
     }
 </style>

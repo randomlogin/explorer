@@ -25,17 +25,16 @@
 
 .title {
     font-weight: 700;
-    font-size: var(--text-3xl);
+    font-size: var(--font-size-3xl);
     color: var(--text-primary);
 }
 
 .hash {
-    position: relative;
-    top: var(--space-2);
     word-break: break-all;
     color: var(--text-muted);
     transition: var(--transition-colors);
     font-family: monospace;
+    font-size: var(--font-size-lg);
 }
 
 .details {
@@ -58,7 +57,7 @@
 }
 
 .detail-value {
-    font-size: var(--text-xl);
+    font-size: var(--font-size-xl);
     color: var(--color-primary);
     font-weight: 600;
     transition: var(--transition-colors);
@@ -68,7 +67,7 @@
 
 @media (max-width: 640px) {
     .detail-value {
-        font-size: var(--text-lg);
+        font-size: var(--font-size-lg);
     }
     
     .details {
@@ -79,6 +78,6 @@
 .detail-label {
     color: var(--text-muted);
     transition: var(--transition-colors);
-    font-size: var(--text-lg);
+    font-size: var(--font-size-lg);
     font-weight: 500;
 }

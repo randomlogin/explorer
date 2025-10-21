@@ -154,12 +154,12 @@
                    }}
                    >
                    {#if result.type === "transaction"}
-                     Transaction: {result.value.txid}
+                     Transaction: {result.value.txid.slice(0, 8)}...{result.value.txid.slice(-8)}
                    {:else if result.type === "block"}
                      {#if result.value.height == -2 }
-                     Orphaned block: {result.value.hash}
+                     Orphaned block: {result.value.hash.slice(0, 8)}...{result.value.hash.slice(-8)}
                      {:else }
-                     Block #{result.value.height}: {result.value.hash}
+                     Block #{result.value.height}: {result.value.hash.slice(0, 8)}...{result.value.hash.slice(-8)}
                      {/if}
                    {:else if result.type === "external-transaction"}
                      <span class="flex items-center gap-2">

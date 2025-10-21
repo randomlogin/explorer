@@ -227,7 +227,7 @@
                                         <tr class="table-row" class:mempool={vmetaout.block_height === -1}>
                                             <td class="table-cell">
                                                 <div class="action-cell">
-                                                    <div class={getActionColor(vmetaout.action)}>
+                                                    <div class="action-type {getActionColor(vmetaout.action)}">
                                                         {vmetaout.action}
                                                     </div>
                                                 </div>
@@ -294,6 +294,7 @@
 
 <style>
     @import '$lib/styles/headers.css';
+    @import '$lib/styles/common.css';
 
     .container {
         display: flex;
@@ -330,7 +331,7 @@
 
 .title {
     font-weight: 700;
-    font-size: var(--text-3xl);
+    font-size: var(--font-size-3xl);
     color: var(--text-primary);
 }
 
@@ -349,7 +350,7 @@
 }
 
 .detail-value {
-    font-size: var(--text-xl);
+    font-size: var(--font-size-xl);
     color: var(--color-primary);
     font-weight: 600;
     transition: var(--transition-colors);
@@ -360,7 +361,7 @@
 .detail-label {
     color: var(--text-muted);
     transition: var(--transition-colors);
-    font-size: var(--text-lg);
+    font-size: var(--font-size-lg);
     font-weight: 500;
     line-height: 1.5;
 }
@@ -377,7 +378,7 @@
     gap: var(--space-2);
     padding: var(--space-2) var(--space-4);
     border-radius: var(--border-radius-3xl);
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
     font-weight: 500;
     background-color: var(--bg-secondary);
 }
@@ -406,7 +407,7 @@
 }
 
 .section-title {
-    font-size: var(--text-xl);
+    font-size: var(--font-size-xl);
     font-weight: 600;
     margin-bottom: var(--space-6);
 }
@@ -437,7 +438,7 @@
 .table-header {
     padding: var(--space-4);
     text-align: left;
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
     font-weight: 500;
     color: var(--text-muted);
     border-bottom: var(--border-width-1) solid var(--border-color);
@@ -466,7 +467,7 @@
 
 .table-cell {
     padding: var(--space-4);
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
 }
 
 .action-cell {
@@ -492,7 +493,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
     color: var(--text-muted);
 }
 
@@ -526,7 +527,7 @@
     background-color: var(--bg-warning);
     color: var(--text-warning);
     border-radius: var(--border-radius-full);
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
     font-weight: 500;
     margin-left: var(--space-2);
 }
@@ -549,7 +550,7 @@
 
 .script-error, .revoke-reason {
     color: var(--color-error);
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
     background-color: var(--bg-error-50);
     padding: var(--space-2);
     border-radius: var(--border-radius-md);
@@ -577,11 +578,11 @@
 }
 
 .text-xs {
-    font-size: var(--text-xs);
+    font-size: var(--font-size-xs);
 }
 
 .text-sm {
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
 }
 
 .text-muted {
@@ -636,12 +637,12 @@
     }
 
     .detail-value {
-        font-size: var(--text-lg);
+        font-size: var(--font-size-lg);
         word-break: break-word;
     }
 
     .detail-label {
-        font-size: var(--text-base);
+        font-size: var(--font-size-base);
         white-space: nowrap;
     }
 
@@ -676,12 +677,12 @@
     }
 
     .bid-amount {
-        font-size: var(--text-xs);
+        font-size: var(--font-size-xs);
         min-width: 90px;
     }
 
     .title {
-        font-size: var(--text-2xl);
+        font-size: var(--font-size-2xl);
     }
 
     .status-badge {
@@ -695,9 +696,9 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-1) var(--space-2);
-    color: var(--color-primary);
-    text-decoration: none;
-    font-size: var(--text-sm);
+    color: var(--color-link);
+    text-decoration: underline;
+    font-size: var(--font-size-sm);
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
@@ -707,13 +708,11 @@
 }
 
 .marketplace-link:hover {
-    color: var(--color-primary-dark);
-    background-color: var(--color-primary-light, rgba(59, 130, 246, 0.1));
-    text-decoration: underline;
+    color: var(--color-link-hover);
 }
 
 .marketplace-link:visited {
-    color: var(--color-primary);
+    color: var(--color-link);
 }
 
 .marketplace-icon {

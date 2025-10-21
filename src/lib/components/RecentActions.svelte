@@ -124,7 +124,7 @@
                         <div class="action-card {gridView ? 'grid-card' : 'list-card'}" class:loading-overlay={isLoadingData}>
                             <div class="action-header">
                                 <div class="action-main">
-                                    <span class="action-badge {getActionColor(action.action)}">{action.action}</span>
+                                    <span class="action-type {getActionColor(action.action)}">{action.action}</span>
                                     <a href="{spaceRoute}/{action.name}" class="space-name">{displayUnicodeSpace(action.name)}</a>
                                 </div>
                                 {#if action.action === 'BID' && action.total_burned}
@@ -171,6 +171,8 @@
                             </div>
 </section>
 <style>
+    @import '$lib/styles/common.css';
+
     /* Base Layout */
     .recent-actions {
         width: 100%;
@@ -178,7 +180,7 @@
     }
 
     .section-title {
-        font-size: var(--text-2xl);
+        font-size: var(--font-size-2xl);
         font-weight: 600;
         margin-bottom: var(--space-6);
     }
@@ -193,7 +195,7 @@
         position: relative;
         width: 100%;
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
         gap: var(--space-6);
     }
 
@@ -245,19 +247,10 @@
         gap: var(--space-4);
     }
 
-    .action-badge {
-        font-size: var(--font-size-sm);
-        font-weight: 500;
-        padding: var(--space-1) var(--space-3);
-        border-radius: var(--border-radius-lg);
-        min-width: 80px;
-        text-align: center;
-    }
-
     .space-name {
         color: var(--text-primary);
         text-decoration: none;
-        font-size: var(--font-size-lg);
+        font-size: var(--font-size-xl);
         font-weight: 600;
         flex: 1;
         overflow: hidden;
@@ -271,7 +264,7 @@
 
     .bid-value {
         font-weight: 600;
-        font-size: var(--font-size-lg);
+        font-size: var(--font-size-xl);
         color: var(--color-primary);
     }
 
@@ -297,13 +290,13 @@
     }
 
     .meta-label {
-        font-size: var(--font-size-xs);
+        font-size: var(--font-size-sm);
         color: var(--text-muted);
         white-space: nowrap; /* Prevents label text from wrapping */
     }
 
     .meta-value {
-        font-size: var(--font-size-sm);
+        font-size: var(--font-size-base);
         font-weight: 500;
         color: var(--text-primary);
         white-space: nowrap; /* Prevents wrapping */
@@ -397,7 +390,7 @@
     }
 
     .block-link {
-        font-size: var(--font-size-xs);
+        font-size: var(--font-size-base);
         line-height: 1.2;
         max-width: 22%;
         overflow-wrap: anywhere;

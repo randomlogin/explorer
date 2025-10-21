@@ -92,7 +92,7 @@
 
   .space-name {
     font-weight: 600;
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-xl);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -121,23 +121,21 @@
   }
 
   .status-label {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--text-muted);
   }
 
   .status-badge {
     display: inline-flex;
     align-items: center;
-    background-color: var(--color-warning);
-    color: var(--color-white);
-    padding: var(--space-2) var(--space-3);
     border-radius: var(--border-radius-lg);
     font-weight: 500;
     white-space: nowrap;
+    font-size: var(--font-size-base);
   }
 
   .status-note {
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     color: var(--text-muted);
   }
 
@@ -151,7 +149,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
     gap: var(--space-2);
   }
 

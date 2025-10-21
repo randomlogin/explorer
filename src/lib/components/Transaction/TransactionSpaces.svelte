@@ -1,5 +1,7 @@
 <script lang="ts">
     import { formatBTC, displayUnicodeSpace } from '$lib/utils/formatters';
+    import { parseAddress } from '$lib/utils/address-parsers';
+    import { Buffer } from 'buffer';
     import { fly } from 'svelte/transition';
 
     export let vmetaouts;
@@ -26,10 +28,20 @@
             default: return 'text-gray-600';
         }
     }
+
+    function getTransferAddress(scriptPubKey: string): string | null {
+        try {
+            const buffer = Buffer.from(scriptPubKey, 'hex');
+            return parseAddress(buffer);
+        } catch (error) {
+            console.warn('Failed to parse transfer address:', error);
+            return null;
+        }
+    }
 </script>
 
 <div class="vmetaouts-section">
-    <h2 class="section-title">Spaces Events</h2>
+    <h4 class="section-title">Spaces Events</h4>
     <div class="section-content">
         {#each vmetaouts.slice(0, displayCount) as vmetaout, index (vmetaout.name)}
             <div class="vmetaout-item" transition:fly={{ y: 20, duration: 300, delay: index * 50 }} >
@@ -40,16 +52,15 @@
                         </a>
                         {#if vmetaout.action}
                             <span class="dot">•</span>
-                            <span class="action {getActionColor(vmetaout.action)}">
+                            <span class="action-type {getActionColor(vmetaout.action)}">
                                 {vmetaout.action}
                             </span>
                         {/if}
+                        {#if vmetaout.action === 'BID'}
+                            <span class="dot">•</span>
+                            <span class="bid-value">{formatBTC(vmetaout.total_burned)}</span>
+                        {/if}
                     </div>
-                    {#if vmetaout.action === 'BID'}
-                        <div class="bid-value">
-                            <span class="value-amount">{formatBTC(vmetaout.total_burned)}</span>
-                        </div>
-                    {/if}
                 </div>
                 {#if vmetaout.action === 'REVOKE' && vmetaout.reason}
                     <div class="revoke-reason">
@@ -58,7 +69,16 @@
                 {/if}
 
                 <div class="vmetaout-details">
-                    {#if vmetaout.burn_increment}
+                    {#if vmetaout.action === 'TRANSFER' && vmetaout.scriptPubKey}
+                        {@const address = getTransferAddress(vmetaout.scriptPubKey)}
+                        {#if address}
+                            <div class="detail-item address-item">
+                                <span class="detail-label">Transferred to</span>
+                                <span class="detail-value">{address}</span>
+                            </div>
+                        {/if}
+                    {/if}
+                    {#if vmetaout.burn_increment && vmetaout.action !== 'REVOKE'}
                         <div class="detail-item">
                             <span class="detail-label">Burn Increment</span>
                             <span class="detail-value">{formatBTC(vmetaout.burn_increment)}</span>
@@ -91,9 +111,6 @@
                     </div>
                 {/if}
 
-                {#if index < displayCount - 1}
-                    <div class="separator" />
-                {/if}
                     </div>
         {/each}
 
@@ -109,17 +126,15 @@
     </div>
 
 <style>
+    @import '$lib/styles/common.css';
+
     .vmetaouts-section {
-        margin-top: var(--space-6);
         width: 100%;
     }
 
     .section-title {
-        font-size: var(--text-xl);
-        font-weight: 700;
+        font-size: var(--font-size-xl);
         margin-bottom: var(--space-4);
-        padding-bottom: var(--space-2);
-        border-bottom: var(--border-width-1) solid var(--border-color);
     }
 
     .section-content {
@@ -131,27 +146,23 @@
     .vmetaout-item {
         background: var(--bg-surface);
         border-radius: var(--radius-lg);
-        padding: var(--space-6);
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        padding: var(--space-4);
+        box-shadow: 0 2px 3px rgba(0,0,0,0.10);
     }
 
     .vmetaout-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: var(--space-4);
+        margin-bottom: var(--space-2);
     }
 
     .name-action {
         display: flex;
         align-items: center;
         gap: var(--space-3);
+        font-size: var(--font-size-xl);
     }
 
     .space-name {
-        font-size: var(--text-lg);
-        font-weight: 600;
-        color: var(--color-primary);
+        font-weight: 700;
         text-decoration: none;
     }
 
@@ -159,9 +170,9 @@
         text-decoration: underline;
     }
 
-    .action {
-        font-weight: 500;
-        font-size: var(--text-sm);
+
+    .dot {
+        color: var(--text-muted);
     }
 
     .revoke-reason {
@@ -170,7 +181,7 @@
         background-color: rgb(254 226 226);
         color: rgb(185 28 28);
         border-radius: var(--radius-md);
-        font-size: var(--text-sm);
+        font-size: var(--font-size-sm);
     }
 
     .bid-value {
@@ -188,15 +199,23 @@
         display: flex;
         flex-direction: column;
         gap: var(--space-1);
+        min-width: 0;
+    }
+
+    .address-item {
+        grid-column: 1 / -1;
     }
 
     .detail-label {
         color: var(--text-muted);
-        font-size: var(--text-sm);
+        font-size: var(--font-size-lg);
     }
 
     .detail-value {
+        font-size: var(--font-size-lg);
         font-weight: 500;
+        word-break: break-all;
+        overflow-wrap: break-word;
     }
 
     .error-message {
@@ -204,7 +223,7 @@
         padding: var(--space-3);
         background-color: rgb(254 226 226);
         border-radius: var(--radius-md);
-        font-size: var(--text-sm);
+        font-size: var(--font-size-sm);
     }
 
     .error-label {
@@ -217,13 +236,6 @@
         color: rgb(185 28 28);
     }
 
-    .separator {
-        height: var(--border-width-1);
-        background: var(--border-color);
-        margin: var(--space-4) 0;
-        opacity: 0.5;
-    }
-
     .show-more {
         margin-top: var(--space-2);
         padding: var(--space-2) var(--space-4);
@@ -231,7 +243,7 @@
         border: var(--border-width-1) solid var(--border-color);
         border-radius: var(--radius-full);
         color: var(--text-muted);
-        font-size: var(--text-sm);
+        font-size: var(--font-size-sm);
         cursor: pointer;
     }
 

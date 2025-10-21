@@ -141,7 +141,7 @@
     }
 
     .rollouts-title {
-        font-size: var(--text-2xl);
+        font-size: var(--font-size-2xl);
         font-weight: 600;
         color: var(--text-primary);
         transition: color 0.2s;
@@ -186,7 +186,7 @@
         font-weight: 500;
         color: var(--color-primary);
         text-decoration: none;
-        font-size: var(--text-lg);
+        font-size: var(--font-size-lg);
         line-height: 1.2;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -199,7 +199,7 @@
 
     .bid-amount {
         color: var(--text-base);
-        font-size: var(--text-sm);
+        font-size: var(--font-size-sm);
         font-weight: 500;
         padding: var(--space-1) 0;
     }
@@ -223,7 +223,7 @@
 
     .time-remaining {
         color: var(--text-muted);
-        font-size: var(--text-sm);
+        font-size: var(--font-size-sm);
         cursor: help;
         margin-top: auto;
         padding-top: var(--space-1);
@@ -254,7 +254,7 @@
 
     .empty-text,
     .error-text {
-        font-size: var(--text-lg);
+        font-size: var(--font-size-lg);
     }
 
     .error-card {

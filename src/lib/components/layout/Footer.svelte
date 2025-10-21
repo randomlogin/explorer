@@ -29,10 +29,11 @@
   padding-bottom: var(--space-4);
   margin-top: var(--space-8);
   border-top: var(--border-width-1) solid var(--border-color);
+  flex-shrink: 0;
 }
 
 .footer-container {
-  max-width: var(--container-width, 1280px);
+  max-width: 800px;
   margin-left: auto;
   margin-right: auto;
   padding-left: var(--space-4);
@@ -48,18 +49,19 @@
 .footer-link {
   display: flex;
   align-items: center;
-  color: var(--color-primary);
-  text-decoration: none;
+  color: var(--color-link);
+  text-decoration: underline;
   transition: var(--transition-colors);
 }
 
 .footer-link:hover {
-  color: var(--color-primary-dark, #c76a1c);
+  color: var(--color-link-hover);
 }
 
 .footer-icon {
   width: 1.5rem;
   height: 1.5rem;
   margin-right: var(--space-2);
+  filter: brightness(0);
 }
 </style>
