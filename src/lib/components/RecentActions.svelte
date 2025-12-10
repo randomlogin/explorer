@@ -18,7 +18,7 @@
 
 
     interface RecentAction {
-        action: 'RESERVE' | 'BID' | 'TRANSFER' | 'ROLLOUT' | 'REVOKE';
+        action: 'RESERVE' | 'BID' | 'TRANSFER' | 'ROLLOUT' | 'REVOKE' | 'COMMITMENT' | 'COMMITMENT REVOCATION';
         name: string;
         txid: string;
         height: number;

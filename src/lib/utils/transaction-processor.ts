@@ -39,6 +39,7 @@ export function createTransaction(row: any): Transaction {
     // Add commitment data if present
     if (row.commitment_name && row.commitment_state_root) {
         transaction.commitment_name = row.commitment_name;
+        transaction.commitment_history_hash = row.history_hash;
         transaction.commitment_state_root = row.commitment_state_root;
     }
 
@@ -69,6 +70,7 @@ function createCommitment(row: any): SpaceCommitment | null {
     return {
         name: row.commitment_name,
         state_root: row.commitment_state_root ? row.commitment_state_root.toString('hex') : null,
+        state_root: row.commitment_history_hash ? row.commitment_history_hash.toString('hex') : null,
         revocation: row.commitment_revocation || false
     };
 }

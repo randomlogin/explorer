@@ -20,6 +20,7 @@ export const load: PageLoad = async ({ fetch, params }) => {
         throw new Error(`Failed to fetch stats: ${spaceCommitmentsResponse.statusText}`);
     }
 
+
     const spaceHistory = await spaceHistoryResponse.json();
     const stats = await statsResponse.json();
     const commitments = await spaceCommitmentsResponse.json();

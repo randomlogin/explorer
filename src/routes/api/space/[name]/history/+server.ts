@@ -76,6 +76,7 @@ export const GET: RequestHandler = async function ({ params, url }) {
             v.reason,
             v.script_error,
             NULL::bytea as state_root,
+            NULL::bytea as history_hash,
             false as revocation,
             'vmetaout' as event_type,
             b.height AS block_height,
@@ -101,6 +102,7 @@ export const GET: RequestHandler = async function ({ params, url }) {
             NULL as reason,
             NULL as script_error,
             c.state_root,
+            c.history_hash,
             c.revocation,
             'commitment' as event_type,
             b.height AS block_height,
@@ -134,6 +136,7 @@ export const GET: RequestHandler = async function ({ params, url }) {
         block_hash: row.block_hash.toString('hex'),
         txid: row.txid.toString('hex'),
         state_root: row.state_root ? row.state_root.toString('hex') : null,
+        history_hash: row.history_hash ? row.history_hash.toString('hex') : null,
     });
 
     const total = historyResult.rows[0]?.total_actions || 0;

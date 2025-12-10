@@ -3,6 +3,8 @@
   import Header from "$lib/components/layout/Header.svelte";
   import Footer from "$lib/components/layout/Footer.svelte";
   import '$lib/styles/variables.css';
+  
+  export let data;
 </script>
 
 <div class="app-container">
@@ -10,7 +12,7 @@
   <main class="main-content max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10 w-full">
     <slot />
   </main>
-  <Footer />
+  <Footer {data} />
 </div>
 
 <style>

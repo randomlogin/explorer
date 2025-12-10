@@ -56,6 +56,7 @@ export const GET: RequestHandler = async function ({ params }) {
             txid,
             name AS commitment_name,
             state_root AS commitment_state_root,
+            history_hash AS commitment_history_hash,
             revocation AS commitment_revocation
         FROM commitments
         WHERE txid = ${txid}
@@ -76,6 +77,7 @@ export const GET: RequestHandler = async function ({ params }) {
         tx_vmetaout.vmetaout_reason,
         tx_commitments.commitment_name,
         encode(tx_commitments.commitment_state_root, 'hex') AS commitment_state_root,
+        encode(tx_commitments.commitment_history_hash, 'hex') AS commitment_history_hash,
         tx_commitments.commitment_revocation
     FROM transaction_data
     LEFT JOIN tx_vmetaout ON transaction_data.txid = tx_vmetaout.txid

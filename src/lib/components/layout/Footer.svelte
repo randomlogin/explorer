@@ -1,21 +1,20 @@
 <script>
   import { footerLinks } from '$lib/links';
+  export let data;
 </script>
 
 <footer class="footer">
   <div class="footer-container">
     <nav class="footer-nav">
       {#each footerLinks as { href, text, image }}
-        <a 
-          {href} 
-          target="_blank" 
-          rel="noopener noreferrer" 
-          class="footer-link"
-        >
+        <a {href} target="_blank" rel="noopener noreferrer" class="footer-link" >
           <img src={image} alt={text} class="footer-icon" />
           {text}
         </a>
       {/each}
+        {#if data }
+          <a class="footer-link" >{data.appVersion}</a>
+        {/if}
     </nav>
   </div>
 </footer>

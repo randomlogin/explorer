@@ -19,8 +19,8 @@ export interface Transaction {
     total_output_value: number;
     vmetaouts: TransactionVmetaout[];
     commitments: SpaceCommitment[];
-    commitment_name?: string;
-    commitment_state_root?: string;
+    // commitment_name?: string;
+    // commitment_state_root?: string;
 }
 
 export interface TransactionVmetaout {
@@ -40,6 +40,7 @@ export interface TransactionVmetaout {
 export interface SpaceCommitment {
     name: string;
     state_root: string | null;
+    history_hash: string | null;
     revocation: boolean;
 }
 

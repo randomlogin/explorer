@@ -8,38 +8,55 @@ export const GET: RequestHandler = async function ({ url }) {
     const limit = Number(url.searchParams.get('limit')) || 20;
     const offset = (page - 1) * limit;
 
-    // Get total count
+    // Get total count (vmetaouts + commitments)
     const countResult = await db.execute(sql`
-        SELECT COUNT(*) as total
-        FROM vmetaouts v
-        JOIN blocks b ON v.block_hash = b.hash
-        WHERE b.height >= 0 AND v.name IS NOT NULL;
+        SELECT
+            (SELECT COUNT(*) FROM vmetaouts v JOIN blocks b ON v.block_hash = b.hash WHERE b.height >= 0 AND v.name IS NOT NULL) +
+            (SELECT COUNT(*) FROM commitments c JOIN blocks b ON c.block_hash = b.hash WHERE b.orphan = false) as total
     `);
 
     const total = Number(countResult.rows[0].total);
 
-    // Get paginated results
+    // Get paginated results (vmetaouts + commitments)
     const queryResult = await db.execute(sql`
-        SELECT 
-            v.*,
-            b.height,
-            b.time
-        FROM vmetaouts v
-        JOIN blocks b ON v.block_hash = b.hash
-        WHERE b.height >= 0 AND v.name IS NOT NULL
-        ORDER BY b.height DESC
+        WITH all_events AS (
+            SELECT
+                v.action::text as action,
+                v.name,
+                encode(v.txid, 'hex') as txid,
+                b.height,
+                b.time,
+                v.total_burned,
+                NULL as revocation,
+                'vmetaout' as event_type
+            FROM vmetaouts v
+            JOIN blocks b ON v.block_hash = b.hash
+            WHERE b.height >= 0 AND v.name IS NOT NULL
+
+            UNION ALL
+
+            SELECT
+                CASE WHEN c.revocation THEN 'COMMITMENT REVOCATION' ELSE 'COMMITMENT' END as action,
+                c.name,
+                encode(c.txid, 'hex') as txid,
+                b.height,
+                b.time,
+                NULL as total_burned,
+                c.revocation,
+                'commitment' as event_type
+            FROM commitments c
+            JOIN blocks b ON c.block_hash = b.hash
+            WHERE b.orphan = false
+        )
+        SELECT *
+        FROM all_events
+        ORDER BY height DESC, time DESC
         LIMIT ${limit}
-        OFFSET ${offset};
+        OFFSET ${offset}
     `);
 
-    const processedResult = queryResult.rows.map(row => ({
-        ...row,
-        block_hash: row.block_hash.toString('hex'),
-        txid: row.txid.toString('hex'),
-    }));
-
     return json({
-        items: processedResult,
+        items: queryResult.rows,
         pagination: {
             total,
             page,

@@ -19,6 +19,7 @@
             action: c.revocation ? 'COMMITMENT REVOCATION' : 'COMMITMENT',
             state_root: c.state_root,
             revocation: c.revocation,
+            history_hash: c.history_hash,
             // No other vmetaout fields for commitments
             value: null,
             burn_increment: null,
@@ -133,6 +134,13 @@
                             <span class="detail-value mono-text" class:strikethrough={vmetaout.revocation}>{vmetaout.state_root}</span>
                         </div>
                     {/if}
+                    {#if vmetaout.history_hash}
+                        <div class="detail-item address-item">
+                            <span class="detail-label">History Hash</span>
+                            <span class="detail-value mono-text">{vmetaout.history_hash}</span>
+                        </div>
+                    {/if}
+
                 </div>
 
                 {#if vmetaout.script_error}

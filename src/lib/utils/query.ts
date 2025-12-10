@@ -87,6 +87,7 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination, on
             commitments.name as commitment_name,
             commitments.state_root as commitment_state_root,
             commitments.revocation as commitment_revocation,
+            commitments.history_hash as commitment_history_hash,
             ROW_NUMBER() OVER (PARTITION BY commitments.txid ORDER BY commitments.name ASC) AS rn
         FROM commitments
         WHERE commitments.txid IN (SELECT txid FROM limited_transactions)
@@ -116,6 +117,7 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination, on
 
         limited_commitments.commitment_name,
         limited_commitments.commitment_state_root,
+        limited_commitments.commitment_history_hash,
         limited_commitments.commitment_revocation
 
     FROM limited_transactions

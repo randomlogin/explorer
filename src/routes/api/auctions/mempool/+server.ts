@@ -10,37 +10,54 @@ export const GET: RequestHandler = async function ({ url }) {
 
     const mempoolBlockHash = Buffer.from('deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef', 'hex');
 
-    // Get total count
+    // Get total count (vmetaouts + commitments)
     const countResult = await db.execute(sql`
-        SELECT COUNT(*) as total
-        FROM vmetaouts 
-        WHERE block_hash = ${mempoolBlockHash}
-        AND name IS NOT NULL;
+        SELECT
+            (SELECT COUNT(*) FROM vmetaouts WHERE block_hash = ${mempoolBlockHash} AND name IS NOT NULL) +
+            (SELECT COUNT(*) FROM commitments WHERE block_hash = ${mempoolBlockHash}) as total
     `);
 
     const total = Number(countResult.rows[0].total);
 
-    // Get paginated results
+    // Get paginated results (vmetaouts + commitments)
     const queryResult = await db.execute(sql`
-        SELECT 
-            *,
-            -1 as height
-        FROM vmetaouts 
-        WHERE block_hash = ${mempoolBlockHash}
-        AND name IS NOT NULL
+        WITH all_events AS (
+            SELECT
+                action::text as action,
+                name,
+                encode(txid, 'hex') as txid,
+                -1 as height,
+                NULL::bigint as time,
+                total_burned,
+                NULL as revocation,
+                'vmetaout' as event_type
+            FROM vmetaouts
+            WHERE block_hash = ${mempoolBlockHash}
+            AND name IS NOT NULL
+
+            UNION ALL
+
+            SELECT
+                CASE WHEN revocation THEN 'COMMITMENT REVOCATION' ELSE 'COMMITMENT' END as action,
+                name,
+                encode(txid, 'hex') as txid,
+                -1 as height,
+                NULL::bigint as time,
+                NULL as total_burned,
+                revocation,
+                'commitment' as event_type
+            FROM commitments
+            WHERE block_hash = ${mempoolBlockHash}
+        )
+        SELECT *
+        FROM all_events
         ORDER BY name DESC
         LIMIT ${limit}
-        OFFSET ${offset};
+        OFFSET ${offset}
     `);
 
-    const processedResult = queryResult.rows.map(row => ({
-        ...row,
-        block_hash: row.block_hash.toString('hex'),
-        txid: row.txid.toString('hex'),
-    }));
-
     return json({
-        items: processedResult,
+        items: queryResult.rows,
         pagination: {
             total,
             page,

@@ -26,6 +26,7 @@ export const GET: RequestHandler = async function ({ params, url }) {
 			encode(c.block_hash, 'hex') as block_hash,
 			encode(c.txid, 'hex') as txid,
 			encode(c.state_root, 'hex') as state_root,
+			encode(c.history_hash, 'hex') as history_hash,
 			c.revocation,
 			b.height as block_height,
 			b.time as block_time,

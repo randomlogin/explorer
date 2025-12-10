@@ -31,12 +31,11 @@
     let status: string;
     let numberOfBids: number;
     let highestBid: number;
-    let winningBid: number;
     let bidsPresent: boolean;
     let outpointTxid: string | null = null;
     let outpointIndex: number | null = null;
     let isListedInMarketplace: boolean = false;
-    let latestCommitment: any = null;
+    let latestCommitment: string | null = null;
 
     $: {
         if (data) {
@@ -59,8 +58,8 @@
 
             status = computeSpaceStatus(latestVmetaout, currentBlockHeight);
             highestBid = data.stats.highest_bid
-            winningBid = data.stats.winning_bid
             }
+
     }
 
     function computeSpaceStatus(vmetaout: Vmetaout | null, currentHeight: number): string {
@@ -201,21 +200,33 @@
                     <span class="detail-label">Outpoint</span>
                 </div>
             {/if}
-            {#if latestCommitment }
-                <div class="detail-item">
-                        {#if !latestCommitment.revocation}
+            <div class="detail-item">
+                {#if latestCommitment && !latestCommitment.revocation}
                     <span class="detail-value commitment-value">
-                            <div class="commitment-display">
-                                <TruncatableText text={latestCommitment.state_root} maxLength={20} />
-                                <CopyButton value={latestCommitment.state_root} size={14} />
-                            </div>
+                        <div class="commitment-display">
+                            <TruncatableText text={latestCommitment.state_root} maxLength={20} />
+                            <CopyButton value={latestCommitment.state_root} size={14} />
+                        </div>
                     </span>
-                        {:else}
-                            Empty
-                        {/if}
-                    <span class="detail-label">Latest Commitment</span>
-                </div>
-            {/if}
+                {:else}
+                    Empty
+                {/if}
+                <span class="detail-label">State Root</span>
+            </div>
+            <div class="detail-item">
+                {#if latestCommitment }
+                    <span class="detail-value commitment-value">
+                        <div class="commitment-display">
+                            <TruncatableText text={latestCommitment.history_hash} maxLength={20} />
+                            <CopyButton value={latestCommitment.history_hash} size={14} />
+                        </div>
+                    </span>
+                {:else}
+                    Empty
+                {/if}
+                <span class="detail-label">History Hash</span>
+            </div>
+
         </div>
 
         <div class="space-content">
@@ -286,6 +297,14 @@
                                                                 <CopyButton value={vmetaout.state_root} size={14} />
                                                             </div>
                                                         {/if}
+                                                        {#if vmetaout.history_hash}
+                                                            <div class="state-root-info" >
+                                                                <span class="state-root-label">History Hash</span>
+                                                                <TruncatableText text={vmetaout.history_hash} maxLength={32} />
+                                                                <CopyButton value={vmetaout.history_hash} size={14} />
+                                                            </div>
+                                                        {/if}
+
                                                     </div>
                                                 {/if}
                                             </td>
@@ -354,53 +373,53 @@
         display: flex;
         align-items: center;
         flex-shrink: 0;
-}
+    }
 
-.title {
-    font-weight: 700;
-    font-size: var(--font-size-3xl);
-    color: var(--font-size-primary);
-}
+    .title {
+        font-weight: 700;
+        font-size: var(--font-size-3xl);
+        color: var(--font-size-primary);
+    }
 
-.details {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: var(--space-6) var(--space-8);
-    margin-bottom: var(--space-8);
-    width: 100%;
-}
+    .details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: var(--space-3) var(--space-4);
+        margin-bottom: var(--space-8);
+        width: 100%;
+    }
 
-.detail-item {
-    display: flex;
-    flex-direction: column-reverse;
-    gap: var(--space-2);
-}
+    .detail-item {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: var(--space-1);
+    }
 
-.detail-value {
-    font-size: var(--font-size-xl);
-    color: var(--color-primary);
-    font-weight: 600;
-    transition: var(--transition-colors);
-    line-height: 1.2;
-    min-height: 1.2em;
-}
+    .detail-value {
+        font-size: var(--font-size-lg);
+        color: var(--color-primary);
+        font-weight: 600;
+        transition: var(--transition-colors);
+        line-height: 1.2;
+        min-height: 1.2em;
+    }
 
-.detail-label {
-    color: var(--font-size-muted);
-    transition: var(--transition-colors);
-    font-size: var(--font-size-lg);
-    font-weight: 500;
-    line-height: 1.5;
-}
+    .detail-label {
+        color: var(--font-size-muted);
+        transition: var(--transition-colors);
+        font-size: var(--font-size-lg);
+        font-weight: 500;
+        line-height: 1.5;
+    }
 
-.future-block-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-}
+    .future-block-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+    }
 
-.status-badge {
-    display: flex;
+    .status-badge {
+        display: flex;
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-4);

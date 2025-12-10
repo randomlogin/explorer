@@ -18,6 +18,8 @@ export function getActionColor(action: string): string {
         case 'TRANSFER': return 'text-purple-500';
         case 'ROLLOUT': return 'text-yellow-500';
         case 'REVOKE': return 'text-red-500';
+        case 'COMMITMENT': return 'text-cyan-500';
+        case 'COMMITMENT REVOCATION': return 'text-red-500';
         default: return 'text-gray-500';
     }
 }
