@@ -14,11 +14,6 @@ if (env.DB_CREDENTIALS) {
     throw new Error('No database configuration found.');
   }
 
-  // const pool = new Pool({ 
-  //   connectionString: dbUrl,
-  //   query_timeout: 3000,
-  // });
-  //
   const pool = new Pool({ 
     connectionString: dbUrl,
     query_timeout: 3000,         // 3 seconds (was 30000)
@@ -28,6 +23,7 @@ if (env.DB_CREDENTIALS) {
     max: 15,                     // Max connections in pool
     min: 5,                      // Min connections to maintain
   });
+
 
   pool.on('error', (err, client) => {
     console.error('Database pool error:', {

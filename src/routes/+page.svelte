@@ -93,20 +93,12 @@
 }
 
 .rollout-section,
-.actions-section {
-    background: var(--bg-elevated);
-    border-radius: var(--border-radius-lg);
-    padding: var(--space-4);
-    box-shadow: var(--shadow-sm);
-    min-height: auto;
-    height: auto;
-}
-
+.actions-section,
 .auctions-section {
     position: relative;
-    border-top: var(--border-width-1) solid var(--border-color);
-    padding-top: var(--space-8);
     padding: var(--space-4) 0;
+    min-height: auto;
+    height: auto;
 }
 
 .auctions-header {
@@ -206,13 +198,9 @@
     }
 
     .rollout-section,
-    .actions-section {
-        padding: var(--space-3);
-        margin-bottom: var(--space-6);
-    }
-
+    .actions-section,
     .auctions-section {
-        padding: var(--space-4) var(--space-3);
+        padding: var(--space-4) 0;
     }
 }
 </style>

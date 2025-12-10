@@ -80,6 +80,16 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination, on
             ROW_NUMBER() OVER (PARTITION BY vmetaouts.txid ORDER BY vmetaouts.name ASC) AS rn
         FROM vmetaouts
         WHERE vmetaouts.txid IN (SELECT txid FROM limited_transactions)
+    ),
+    limited_commitments AS (
+        SELECT
+            commitments.txid as commitment_txid,
+            commitments.name as commitment_name,
+            commitments.state_root as commitment_state_root,
+            commitments.revocation as commitment_revocation,
+            ROW_NUMBER() OVER (PARTITION BY commitments.txid ORDER BY commitments.name ASC) AS rn
+        FROM commitments
+        WHERE commitments.txid IN (SELECT txid FROM limited_transactions)
     )
     SELECT
         limited_transactions.txid AS txid,
@@ -102,10 +112,15 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination, on
         limited_vmetaouts.vmetaout_total_burned,
         limited_vmetaouts.vmetaout_claim_height,
         limited_vmetaouts.vmetaout_expire_height,
-        limited_vmetaouts.vmetaout_script_error
+        limited_vmetaouts.vmetaout_script_error,
+
+        limited_commitments.commitment_name,
+        limited_commitments.commitment_state_root,
+        limited_commitments.commitment_revocation
 
     FROM limited_transactions
     LEFT JOIN limited_vmetaouts ON limited_vmetaouts.vmetaout_txid = limited_transactions.txid AND limited_vmetaouts.rn BETWEEN ${pagination.spaces_offset} AND ${pagination.spaces_offset+pagination.spaces_limit}
+    LEFT JOIN limited_commitments ON limited_commitments.commitment_txid = limited_transactions.txid AND limited_commitments.rn BETWEEN ${pagination.spaces_offset} AND ${pagination.spaces_offset+pagination.spaces_limit}
     ORDER BY limited_transactions.index;
     `);
     return { queryResult, totalCount };

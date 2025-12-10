@@ -50,6 +50,15 @@ export const GET: RequestHandler = async function ({ params }) {
             scriptPubKey AS vmetaout_scriptPubKey
         FROM vmetaouts
         WHERE txid = ${txid} AND name is not null
+    ),
+    tx_commitments AS (
+        SELECT
+            txid,
+            name AS commitment_name,
+            state_root AS commitment_state_root,
+            revocation AS commitment_revocation
+        FROM commitments
+        WHERE txid = ${txid}
     )
 
     SELECT
@@ -64,9 +73,13 @@ export const GET: RequestHandler = async function ({ params }) {
         tx_vmetaout.vmetaout_script_error,
         tx_vmetaout.vmetaout_scriptPubKey,
         tx_vmetaout.vmetaout_signature,
-        tx_vmetaout.vmetaout_reason
+        tx_vmetaout.vmetaout_reason,
+        tx_commitments.commitment_name,
+        encode(tx_commitments.commitment_state_root, 'hex') AS commitment_state_root,
+        tx_commitments.commitment_revocation
     FROM transaction_data
     LEFT JOIN tx_vmetaout ON transaction_data.txid = tx_vmetaout.txid
+    LEFT JOIN tx_commitments ON transaction_data.txid = tx_commitments.txid
     `);
 
     if (queryResult.rows.length === 0) {

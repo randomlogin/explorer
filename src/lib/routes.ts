@@ -52,7 +52,9 @@ export const ROUTES = {
         
         space: {
             history: (name: string, page = 1) => `/api/space/${name}/history?page=${page}`,
-            stats: (name: string) => `/api/space/${name}/stats`
+            stats: (name: string) => `/api/space/${name}/stats`,
+            commitment: (name: string) => `/api/space/${name}/commitment`,
+            commitments: (name: string, page = 1) => `/api/space/${name}/commitments?page=${page}`
         },
         
         stats: '/api/stats',

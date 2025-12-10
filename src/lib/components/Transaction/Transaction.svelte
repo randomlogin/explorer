@@ -3,6 +3,7 @@
     import LocalizedFormat from 'dayjs/plugin/localizedFormat';
     import TransactionSpaces from '$lib/components/Transaction/TransactionSpaces.svelte';
     import CopyButton from '$lib/components/CopyButton.svelte';
+    import TruncatableText from '$lib/components/TruncatableText.svelte';
     import { getMempoolUrl, formatBTC } from '$lib/utils/formatters';
     dayjs.extend(LocalizedFormat);
     $: blockLink = data.block.height >= 0 ?
@@ -20,7 +21,6 @@
         <span class="hash">{data.txid}</span>
         <CopyButton value={data.txid} />
     </div>
-    <!-- Primary Info -->
     <div class="primary-info">
         <div class="primary-item">
             <span class="primary-value">{data.input_count} → {data.output_count}</span>
@@ -30,7 +30,7 @@
             </span>
         </div>
         <div class="primary-item">
-            <span class="primary-value">{data.vmetaouts.length}</span>
+            <span class="primary-value">{(data.vmetaouts?.length || 0) + (data.commitments?.length || 0)}</span>
             <span class="primary-label">
                 <span class="label-full">Spaces events</span>
                 <span class="label-short">Spaces</span>
@@ -105,8 +105,8 @@
             </span>
         </div>
     </div>
-    {#if data.vmetaouts?.length > 0}
-        <TransactionSpaces vmetaouts={data.vmetaouts} />
+    {#if data.vmetaouts?.length > 0 || data.commitments?.length > 0}
+        <TransactionSpaces vmetaouts={data.vmetaouts || []} commitments={data.commitments || []} />
     {/if}
     <div class="mempool-link-container">
         <a href={getMempoolUrl(`tx/${data.txid}`)} target="_blank" rel="noopener noreferrer" class="mempool-link">
@@ -304,5 +304,81 @@
     .primary-value {
         font-size: var(--font-size-xl);
     }
+}
+
+.commitments-section {
+    width: 100%;
+    background: var(--bg-secondary);
+    border: var(--border-width-1) solid var(--border-color);
+    border-radius: var(--border-radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-8);
+}
+
+.commitments-section .section-title {
+    font-size: var(--font-size-xl);
+    padding: var(--space-4) var(--space-6);
+    margin: 0;
+    border-bottom: var(--border-width-1) solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.commitments-section .section-content {
+    padding: var(--space-4) var(--space-6);
+}
+
+.commitment-item {
+    background: var(--bg-primary);
+    border-radius: var(--border-radius-lg);
+    padding: var(--space-4);
+    border: var(--border-width-1) solid var(--border-color);
+    transition: var(--transition-all);
+}
+
+.commitment-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-hover);
+    box-shadow: var(--shadow-md);
+}
+
+.commitment-header {
+    margin-bottom: var(--space-3);
+}
+
+.commitment-header .space-name {
+    font-weight: 700;
+    font-size: var(--font-size-xl);
+    text-decoration: none;
+}
+
+.commitment-header .space-name:hover {
+    text-decoration: underline;
+}
+
+.commitment-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.commitment-details .detail-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.commitment-details .detail-label {
+    color: var(--font-size-muted);
+    font-size: var(--font-size-lg);
+}
+
+.state-root-value {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-family: monospace;
+    font-size: var(--font-size-base);
+    word-break: break-all;
 }
 </style>

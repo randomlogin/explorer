@@ -1,47 +1,22 @@
 <script lang="ts">
     import { page } from '$app/stores';
-    import { goto } from '$app/navigation';
-    import { browser } from '$app/environment';
     import { blockStore, totalPages } from '$lib/stores/blockStore';
-    /* import BlockHeader from '$lib/components/Block/BlockHeader.svelte'; */
     import BlockTxs from '$lib/components/Block/BlockTxs.svelte';
-    import { onDestroy } from 'svelte';
-
-    // Get hash from URL params
-    $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
+    import { useBlockPage } from '$lib/composables/useBlockPage';
 
     const MEMPOOL_HASH = "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef";
 
-    // Track previous values to prevent unnecessary reloads
-    let previousHash: string | null = null;
-    let previousPage: number | null = null;
+    // Get params from URL
+    $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
+    $: onlyWithSpaces = $page.url.searchParams.get('filter') === 'spaces';
+
+    // Use shared block page logic
+    const { loadBlockData, shouldReload, handlePageChange, handleFilterChange } = useBlockPage();
 
     // Handle initial load and subsequent navigation
-    $: if (browser && MEMPOOL_HASH && (MEMPOOL_HASH !== previousHash || currentPage !== previousPage)) {
-        loadBlockData();
+    $: if (shouldReload(MEMPOOL_HASH, currentPage, onlyWithSpaces)) {
+        loadBlockData(MEMPOOL_HASH, currentPage, onlyWithSpaces);
     }
-
-    async function loadBlockData() {
-        try {
-            await blockStore.fetchBlockData(MEMPOOL_HASH, currentPage);
-            // Update previous values after successful fetch
-            previousHash = MEMPOOL_HASH;
-            previousPage = currentPage;
-        } catch (error) {
-            console.error('Failed to load mempool data:', error);
-        }
-    }
-
-    async function handlePageChange(newPage: number) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('page', newPage.toString());
-        await goto(url.toString(), { keepFocus: true, replaceState: true });
-    }
-
-    // Clear block data when component is destroyed
-    onDestroy(() => {
-        blockStore.clearBlock();
-    });
 </script>
 
 {#if $blockStore.error}
@@ -61,6 +36,8 @@
                 limit: $blockStore.pagination.limit
             }}
             onPageChange={handlePageChange}
+            onFilterChange={handleFilterChange}
+            showOnlySpaceActions={onlyWithSpaces}
         />
     </section>
 {/if}

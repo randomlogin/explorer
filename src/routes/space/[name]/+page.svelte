@@ -7,6 +7,8 @@
     import SpaceTimeline from '$lib/components/Spaces/SpaceTimeline.svelte';
     import BlockLink from '$lib/components/Block/BlockLink.svelte';
     import Pagination from '$lib/components/Pagination.svelte';
+    import TruncatableText from '$lib/components/TruncatableText.svelte';
+    import CopyButton from '$lib/components/CopyButton.svelte';
     import type { Vmetaout } from '$lib/types/space';
     import { ROUTES } from '$lib/routes';
     import { env }  from '$env/dynamic/public';
@@ -34,6 +36,7 @@
     let outpointTxid: string | null = null;
     let outpointIndex: number | null = null;
     let isListedInMarketplace: boolean = false;
+    let latestCommitment: any = null;
 
     $: {
         if (data) {
@@ -49,6 +52,8 @@
             outpointIndex = data.stats.outpoint_index !== undefined ? Number(data.stats.outpoint_index) : null;
 
             isListedInMarketplace = data.stats.is_listed_in_marketplace || false;
+
+            latestCommitment = data.latestCommitment || null;
 
             bidsPresent = data.items.filter(item => item.burn_increment !== null).length > 0;
 
@@ -177,7 +182,7 @@
                 <div class="detail-item">
                     <span class="detail-value">
                         {#if expiryHeight <= currentBlockHeight}
-                            <BlockLink {expiryHeight} inline={true}/>
+                            <BlockLink height={expiryHeight} inline={true}/>
                         {:else}
                             <div class="future-block-info">
                                 <span class="future-block">Block #{expiryHeight}</span>
@@ -194,6 +199,21 @@
                         <TransactionLink txid={outpointTxid} truncate={true} outputIndex={outpointIndex} maxLength={20} />
                     </span>
                     <span class="detail-label">Outpoint</span>
+                </div>
+            {/if}
+            {#if latestCommitment }
+                <div class="detail-item">
+                        {#if !latestCommitment.revocation}
+                    <span class="detail-value commitment-value">
+                            <div class="commitment-display">
+                                <TruncatableText text={latestCommitment.state_root} maxLength={20} />
+                                <CopyButton value={latestCommitment.state_root} size={14} />
+                            </div>
+                    </span>
+                        {:else}
+                            Empty
+                        {/if}
+                    <span class="detail-label">Latest Commitment</span>
                 </div>
             {/if}
         </div>
@@ -247,7 +267,7 @@
                                                     </div>
                                                 </div>
 
-                                                {#if vmetaout.script_error || vmetaout.reason}
+                                                {#if vmetaout.script_error || vmetaout.reason || vmetaout.state_root}
                                                     <div class="error-container">
                                                         {#if vmetaout.script_error}
                                                             <div class="script-error">
@@ -257,6 +277,13 @@
                                                         {#if vmetaout.reason}
                                                             <div class="revoke-reason">
                                                                 Reason: {vmetaout.reason}
+                                                            </div>
+                                                        {/if}
+                                                        {#if vmetaout.state_root}
+                                                            <div class="state-root-info" class:revoked={vmetaout.revocation}>
+                                                                <span class="state-root-label">State Root:</span>
+                                                                <TruncatableText text={vmetaout.state_root} maxLength={32} />
+                                                                <CopyButton value={vmetaout.state_root} size={14} />
                                                             </div>
                                                         {/if}
                                                     </div>
@@ -560,6 +587,30 @@
     font-family: var(--font-mono);
 }
 
+.state-root-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+    padding: var(--space-2);
+    background-color: rgb(219 234 254);
+    color: rgb(30 58 138);
+    border-radius: var(--border-radius-md);
+    font-family: var(--font-mono);
+}
+
+.state-root-info.revoked {
+    text-decoration: line-through;
+    opacity: 0.6;
+    background-color: rgb(254 226 226);
+    color: rgb(185 28 28);
+}
+
+.state-root-label {
+    font-weight: 600;
+    white-space: nowrap;
+}
+
 /* Utility classes */
 .flex {
     display: flex;
@@ -719,5 +770,16 @@
     width: 16px;
     height: 16px;
     flex-shrink: 0;
+}
+
+.commitment-display {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.revoked-commitment {
+    text-decoration: line-through;
+    opacity: 0.6;
 }
 </style>

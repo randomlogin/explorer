@@ -3,18 +3,18 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
 import { addressToScriptPubKey } from '$lib/utils/address-parsers';
-import { PUBLIC_BTC_NETWORK } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 // Helper to get mempool.space API URL
 function getMempoolApiUrl(path: string): string {
-    const isTestnet = PUBLIC_BTC_NETWORK && PUBLIC_BTC_NETWORK !== 'mainnet';
-    const network = isTestnet ? `${PUBLIC_BTC_NETWORK}/` : '';
+    const isTestnet = env.PUBLIC_BTC_NETWORK && env.PUBLIC_BTC_NETWORK !== 'mainnet';
+    const network = isTestnet ? `${env.PUBLIC_BTC_NETWORK}/` : '';
     return `https://mempool.space/${network}api/${path}`;
 }
 
 function getMempoolUrl(path: string): string {
-    const isTestnet = PUBLIC_BTC_NETWORK && PUBLIC_BTC_NETWORK !== 'mainnet';
-    const network = isTestnet ? `${PUBLIC_BTC_NETWORK}/` : '';
+    const isTestnet = env.PUBLIC_BTC_NETWORK && env.PUBLIC_BTC_NETWORK !== 'mainnet';
+    const network = isTestnet ? `${env.PUBLIC_BTC_NETWORK}/` : '';
     return `https://mempool.space/${network}${path}`;
 }
 
@@ -168,13 +168,44 @@ export const GET: RequestHandler = async function ({ url }) {
     // the rest should be a space
     const strippedSpace = search.startsWith('@') ? search.substring(1) : search;
     const names = await db.execute(sql`
-        SELECT DISTINCT 
-            name,
-            similarity(name, ${strippedSpace}) AS similarity_score
-        FROM vmetaouts
-        WHERE similarity(name, ${strippedSpace}) > 0
-        ORDER BY similarity_score DESC, name ASC
-        LIMIT 3
+        WITH matching_spaces AS (
+            SELECT DISTINCT
+                name,
+                similarity(name, ${strippedSpace}) AS similarity_score
+            FROM vmetaouts
+            WHERE similarity(name, ${strippedSpace}) > 0
+            ORDER BY similarity_score DESC, name ASC
+            LIMIT 3
+        ),
+        latest_actions AS (
+            SELECT DISTINCT ON (v.name)
+                v.name,
+                v.action,
+                v.claim_height,
+                v.expire_height,
+                b.height AS block_height
+            FROM vmetaouts v
+            JOIN blocks b ON v.block_hash = b.hash
+            WHERE v.name IN (SELECT name FROM matching_spaces)
+                AND b.orphan = false
+                AND v.action != 'REJECT'
+            ORDER BY v.name, b.height DESC
+        ),
+        current_height AS (
+            SELECT MAX(height) as height FROM blocks
+        )
+        SELECT
+            ms.name,
+            ms.similarity_score,
+            la.action,
+            la.claim_height,
+            la.expire_height,
+            la.block_height,
+            ch.height as current_height
+        FROM matching_spaces ms
+        LEFT JOIN latest_actions la ON ms.name = la.name
+        CROSS JOIN current_height ch
+        ORDER BY ms.similarity_score DESC, ms.name ASC
     `);
     for (const space of names.rows) {
         result.push({ type: "space", value: space });

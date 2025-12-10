@@ -7,11 +7,12 @@ export const GET: RequestHandler = async function () {
     try {
         const queryResult = await db.execute(sql`
             SELECT 
-                root_anchor,
+                spaces_root,
+                pointers_root,
                 hash,
                 height
             FROM blocks
-            WHERE root_anchor IS NOT NULL
+            WHERE spaces_root IS NOT NULL
             ORDER BY height DESC LIMIT 120;
         `);
         
@@ -19,15 +20,15 @@ export const GET: RequestHandler = async function () {
             return json([]);
         }
 
-        // Transform the data to the required format
         const formattedAnchors = queryResult.rows.map(row => ({
-            root: row.root_anchor.toString('hex'),
+            spaces_root: row.spaces_root.toString('hex'),
+            ptrs_root: row.pointers_root.toString('hex'),
             block: {
                 hash: row.hash.toString('hex'),
                 height: row.height
             }
         }));
-        
+
         return json(formattedAnchors);
     } catch (error) {
         console.error('Error fetching root anchors:', error);

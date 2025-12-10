@@ -1,7 +1,7 @@
 // declare module 'punycode';
 
 import * as punycode from 'punycode';
-import { PUBLIC_BTC_NETWORK } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 
 export function formatNumberWithSpaces(num: number): string {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
@@ -234,8 +234,8 @@ export function displayUnicodeSpace(space : string) {
  * @returns {string} - The full mempool.space URL
  */
 export function getMempoolUrl(path: string): string {
-    const isTestnet = PUBLIC_BTC_NETWORK && PUBLIC_BTC_NETWORK !== 'mainnet';
-    const network = isTestnet ? `${PUBLIC_BTC_NETWORK}/` : '';
+    const isTestnet = env.PUBLIC_BTC_NETWORK && env.PUBLIC_BTC_NETWORK !== 'mainnet';
+    const network = isTestnet ? `${env.PUBLIC_BTC_NETWORK}/` : '';
     return `https://mempool.space/${network}${path}`;
 }
 

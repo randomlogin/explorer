@@ -92,10 +92,10 @@
 
   .space-name {
     font-weight: 600;
-    font-size: var(--font-size-xl);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    font-size: var(--font-size-base);
+    overflow-wrap: break-word;
+    word-break: break-all;
+    line-height: 1.3;
   }
 
   .space-card-body {
@@ -131,11 +131,11 @@
     border-radius: var(--border-radius-lg);
     font-weight: 500;
     white-space: nowrap;
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
   }
 
   .status-note {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
     color: var(--font-size-muted);
   }
 

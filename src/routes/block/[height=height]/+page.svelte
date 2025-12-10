@@ -1,57 +1,22 @@
 <script lang="ts">
     import { page } from '$app/stores';
-    import { goto } from '$app/navigation';
-    import { browser } from '$app/environment';
     import { blockStore, totalPages } from '$lib/stores/blockStore';
     import BlockHeader from '$lib/components/Block/BlockHeader.svelte';
     import BlockTxs from '$lib/components/Block/BlockTxs.svelte';
-    import { onDestroy } from 'svelte';
+    import { useBlockPage } from '$lib/composables/useBlockPage';
 
-    // Get height from URL params
+    // Get params from URL
     $: height = $page.params.height;
     $: currentPage = parseInt($page.url.searchParams.get('page') || '1');
     $: onlyWithSpaces = $page.url.searchParams.get('filter') === 'spaces';
 
-    let previousHeight: string | null = null;
-    let previousPage: number | null = null;
-    let previousFilter: boolean | null = null;
+    // Use shared block page logic
+    const { loadBlockData, shouldReload, handlePageChange, handleFilterChange } = useBlockPage();
 
-    $: if (browser && height && (height !== previousHeight || currentPage !== previousPage || onlyWithSpaces !== previousFilter)) {
-        loadBlockData();
+    // Handle initial load and subsequent navigation
+    $: if (shouldReload(height, currentPage, onlyWithSpaces)) {
+        loadBlockData(height, currentPage, onlyWithSpaces);
     }
-
-    async function loadBlockData() {
-        try {
-            await blockStore.fetchBlockData(height, currentPage, onlyWithSpaces);
-            // Update previous values after successful fetch
-            previousHeight = height;
-            previousPage = currentPage;
-            previousFilter = onlyWithSpaces;
-        } catch (error) {
-            console.error('Failed to load block data:', error);
-        }
-    }
-
-    async function handlePageChange(newPage: number) {
-        const url = new URL(window.location.href);
-        url.searchParams.set('page', newPage.toString());
-        await goto(url.toString(), { keepFocus: true, replaceState: true });
-    }
-
-    async function handleFilterChange(showOnlySpaces: boolean) {
-        const url = new URL(window.location.href);
-        if (showOnlySpaces) {
-            url.searchParams.set('filter', 'spaces');
-        } else {
-            url.searchParams.delete('filter');
-        }
-        url.searchParams.set('page', '1'); // Reset to first page when filtering
-        await goto(url.toString(), { keepFocus: true, replaceState: true });
-    }
-
-    onDestroy(() => {
-        blockStore.clearBlock();
-    });
 </script>
 
 {#if $blockStore.error}

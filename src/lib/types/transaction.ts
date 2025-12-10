@@ -18,6 +18,9 @@ export interface Transaction {
     output_count: number;
     total_output_value: number;
     vmetaouts: TransactionVmetaout[];
+    commitments: SpaceCommitment[];
+    commitment_name?: string;
+    commitment_state_root?: string;
 }
 
 export interface TransactionVmetaout {
@@ -32,6 +35,12 @@ export interface TransactionVmetaout {
     reason?: string;
     scriptPubKey: string;
     signature?: string;
+}
+
+export interface SpaceCommitment {
+    name: string;
+    state_root: string | null;
+    revocation: boolean;
 }
 
 // TransactionInput and TransactionOutput are no longer stored or returned by the API

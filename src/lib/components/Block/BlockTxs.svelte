@@ -94,10 +94,11 @@
                             <span class="total-label">Total:</span>
                             <span class="total-amount">{formatBTC(transaction.total_output_value)}</span>
                         </div>
-                        {#if transaction.vmetaouts?.length > 0}
+                        {#if transaction.vmetaouts?.length > 0 || transaction.commitments?.length > 0}
+                            {@const eventCount = (transaction.vmetaouts?.length || 0) + (transaction.commitments?.length || 0)}
                             <div class="spaces-indicator">
-                                <span class="spaces-count">{transaction.vmetaouts.length}</span>
-                                <span class="spaces-label">Spaces Event{transaction.vmetaouts.length !== 1 ? 's' : ''}</span>
+                                <span class="spaces-count">{eventCount}</span>
+                                <span class="spaces-label">Spaces Event{eventCount !== 1 ? 's' : ''}</span>
                             </div>
                         {/if}
                     </div>
@@ -135,9 +136,9 @@
                     </div>
                 </div>
             </div>
-            {#if transaction.vmetaouts?.length > 0}
+            {#if transaction.vmetaouts?.length > 0 || transaction.commitments?.length > 0}
                 <div class="spaces-section">
-                    <TransactionSpaces vmetaouts={transaction.vmetaouts} />
+                    <TransactionSpaces vmetaouts={transaction.vmetaouts || []} commitments={transaction.commitments || []} />
                 </div>
             {/if}
         </div>

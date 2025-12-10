@@ -250,12 +250,12 @@
     .space-name {
         color: var(--font-size-primary);
         text-decoration: none;
-        font-size: var(--font-size-xl);
+        font-size: var(--font-size-base);
         font-weight: 600;
         flex: 1;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
+        white-space: normal;
     }
 
     .space-name:hover {

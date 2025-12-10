@@ -3,13 +3,36 @@
     import { parseAddress } from '$lib/utils/address-parsers';
     import { Buffer } from 'buffer';
     import { fly } from 'svelte/transition';
+    import type { SpaceCommitment } from '$lib/types/transaction';
 
     export let vmetaouts;
+    export let commitments: SpaceCommitment[] = [];
 
     export let maxDisplay = 5;
     export let showAll = false;
 
-    $: displayCount = showAll ? vmetaouts.length : Math.min(maxDisplay, vmetaouts.length);
+    // Combine vmetaouts and commitments as events - normalize to common structure
+    $: allEvents = [
+        ...vmetaouts,
+        ...commitments.map((c: SpaceCommitment) => ({
+            name: c.name,
+            action: c.revocation ? 'COMMITMENT REVOCATION' : 'COMMITMENT',
+            state_root: c.state_root,
+            revocation: c.revocation,
+            // No other vmetaout fields for commitments
+            value: null,
+            burn_increment: null,
+            total_burned: null,
+            claim_height: null,
+            expire_height: null,
+            script_error: null,
+            scriptPubKey: null,
+            signature: null,
+            reason: c.revocation ? 'commitment_revoked' : null
+        }))
+    ];
+
+    $: displayCount = showAll ? allEvents.length : Math.min(maxDisplay, allEvents.length);
 
     function formatReason(reason: string): string {
         return reason
@@ -21,10 +44,12 @@
     function getActionColor(action: string | undefined): string {
         switch (action) {
             case 'REVOKE': return 'text-red-600';
+            case 'COMMITMENT REVOCATION': return 'text-red-600';
             case 'BID': return 'text-green-600';
             case 'TRANSFER': return 'text-purple-600';
             case 'ROLLOUT': return 'text-yellow-600';
             case 'RESERVE': return 'text-blue-600';
+            case 'COMMITMENT': return 'text-blue-600';
             default: return 'text-gray-600';
         }
     }
@@ -43,7 +68,7 @@
 <div class="vmetaouts-section">
     <h4 class="section-title">Spaces Events</h4>
     <div class="section-content">
-        {#each vmetaouts.slice(0, displayCount) as vmetaout, index (vmetaout.name)}
+        {#each allEvents.slice(0, displayCount) as vmetaout, index (`${vmetaout.name}_${vmetaout.action}`)}
             <div class="vmetaout-item" transition:fly={{ y: 20, duration: 300, delay: index * 50 }} >
                 <div class="vmetaout-header">
                     <div class="name-action">
@@ -102,6 +127,12 @@
                             <span class="detail-value">{vmetaout.expire_height}</span>
                         </div>
                     {/if}
+                    {#if vmetaout.state_root}
+                        <div class="detail-item address-item">
+                            <span class="detail-label">State Root {vmetaout.revocation ? '(Revoked)' : ''}</span>
+                            <span class="detail-value mono-text" class:strikethrough={vmetaout.revocation}>{vmetaout.state_root}</span>
+                        </div>
+                    {/if}
                 </div>
 
                 {#if vmetaout.script_error}
@@ -114,12 +145,12 @@
                     </div>
         {/each}
 
-        {#if vmetaouts.length > maxDisplay && !showAll}
-            <button 
+        {#if allEvents.length > maxDisplay && !showAll}
+            <button
                 class="show-more"
                 on:click={() => showAll = true}
                 >
-                Show {vmetaouts.length - maxDisplay} more actions
+                Show {allEvents.length - maxDisplay} more events
             </button>
         {/if}
             </div>
@@ -232,6 +263,16 @@
         font-weight: 500;
         word-break: break-all;
         overflow-wrap: break-word;
+    }
+
+    .mono-text {
+        font-family: monospace;
+        font-size: var(--font-size-sm);
+    }
+
+    .strikethrough {
+        text-decoration: line-through;
+        opacity: 0.6;
     }
 
     .error-message {

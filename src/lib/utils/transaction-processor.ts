@@ -1,4 +1,4 @@
-import type { Transaction, TransactionVmetaout } from '$lib/types/transaction';
+import type { Transaction, TransactionVmetaout, SpaceCommitment } from '$lib/types/transaction';
 
 export function createTransaction(row: any): Transaction {
     const transaction: Transaction = {
@@ -14,7 +14,8 @@ export function createTransaction(row: any): Transaction {
         input_count: row.input_count || 0,
         output_count: row.output_count || 0,
         total_output_value: row.total_output_value || 0,
-        vmetaouts: []
+        vmetaouts: [],
+        commitments: []
     };
 
     // Add block and confirmations only if block data exists
@@ -35,12 +36,18 @@ export function createTransaction(row: any): Transaction {
         }
     }
 
+    // Add commitment data if present
+    if (row.commitment_name && row.commitment_state_root) {
+        transaction.commitment_name = row.commitment_name;
+        transaction.commitment_state_root = row.commitment_state_root;
+    }
+
     return transaction;
 }
 
 function createVMetaOutput(row: any): TransactionVmetaout | null {
     if (!row.vmetaout_name) return null;
-    
+
     return {
         value: row.vmetaout_value,
         name: row.vmetaout_name,
@@ -56,14 +63,21 @@ function createVMetaOutput(row: any): TransactionVmetaout | null {
     };
 }
 
-// No longer needed - we only store aggregate counts and totals
-// export function createTransactionInput(row: any): TransactionInput { ... }
-// export function createTransactionOutput(row: any, parseAddresses: boolean): TransactionOutput { ... }
+function createCommitment(row: any): SpaceCommitment | null {
+    if (!row.commitment_name) return null;
+
+    return {
+        name: row.commitment_name,
+        state_root: row.commitment_state_root ? row.commitment_state_root.toString('hex') : null,
+        revocation: row.commitment_revocation || false
+    };
+}
 
 export function processTransactions(queryResult: any): Transaction[] {
     const txs: Transaction[] = [];
     const transactionMap = new Map<string, Transaction>();
     const vmetaoutMap = new Map<string, boolean>();
+    const commitmentMap = new Map<string, boolean>();
 
     for (const row of queryResult.rows) {
         const txid = row.txid.toString('hex');
@@ -82,6 +96,16 @@ export function processTransactions(queryResult: any): Transaction[] {
             if (vmetaout) {
                 transaction.vmetaouts.push(vmetaout);
                 vmetaoutMap.set(vmetaoutKey, true);
+            }
+        }
+
+        const commitmentKey = `${txid}_${row.commitment_name}`;  // Using txid + name as unique identifier
+
+        if (row.commitment_name && !commitmentMap.has(commitmentKey)) {
+            const commitment = createCommitment(row);
+            if (commitment) {
+                transaction.commitments.push(commitment);
+                commitmentMap.set(commitmentKey, true);
             }
         }
     }
