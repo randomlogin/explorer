@@ -38,7 +38,7 @@ export const GET: RequestHandler = async function ({ params, url }) {
 		CROSS JOIN counts
 		WHERE c.name = ${spaceName}
 		AND b.orphan = false
-		ORDER BY b.height DESC, t.index DESC
+		ORDER BY b.height DESC, t.index DESC, c.revocation ASC
 		LIMIT ${ITEMS_PER_PAGE}
 		OFFSET ${offset}
 	`);

@@ -13,11 +13,13 @@ export const ROUTES = {
         },
         
         space: '/space',
-        
+
+        sptr: '/sptr',
+
         block: '/block',
-        
+
         transaction: '/tx',
-        
+
         address: '/address'
     },
 
@@ -54,9 +56,16 @@ export const ROUTES = {
             history: (name: string, page = 1) => `/api/space/${name}/history?page=${page}`,
             stats: (name: string) => `/api/space/${name}/stats`,
             commitment: (name: string) => `/api/space/${name}/commitment`,
-            commitments: (name: string, page = 1) => `/api/space/${name}/commitments?page=${page}`
+            commitments: (name: string, page = 1) => `/api/space/${name}/commitments?page=${page}`,
+            sptrDelegations: (name: string) => `/api/space/${name}/sptr-delegations`
         },
-        
+
+        sptr: {
+            details: (sptr: string) => `/api/sptr/${sptr}`,
+            delegations: (sptr: string, limit = 50, offset = 0) =>
+                `/api/sptr/${sptr}/delegations?limit=${limit}&offset=${offset}`
+        },
+
         stats: '/api/stats',
         
         transactions: (txid: string) => `/api/transactions/${txid}`

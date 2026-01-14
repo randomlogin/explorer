@@ -70,7 +70,7 @@ function createCommitment(row: any): SpaceCommitment | null {
     return {
         name: row.commitment_name,
         state_root: row.commitment_state_root ? row.commitment_state_root.toString('hex') : null,
-        state_root: row.commitment_history_hash ? row.commitment_history_hash.toString('hex') : null,
+        history_hash: row.commitment_history_hash ? row.commitment_history_hash.toString('hex') : null,
         revocation: row.commitment_revocation || false
     };
 }
@@ -101,7 +101,7 @@ export function processTransactions(queryResult: any): Transaction[] {
             }
         }
 
-        const commitmentKey = `${txid}_${row.commitment_name}`;  // Using txid + name as unique identifier
+        const commitmentKey = `${txid}_${row.commitment_name}_${row.commitment_revocation}`;  // Using txid + name + revocation as unique identifier
 
         if (row.commitment_name && !commitmentMap.has(commitmentKey)) {
             const commitment = createCommitment(row);

@@ -28,9 +28,11 @@ export const GET: RequestHandler = async function ({ url }) {
                 b.time,
                 v.total_burned,
                 NULL as revocation,
-                'vmetaout' as event_type
+                'vmetaout' as event_type,
+                t.index as tx_index
             FROM vmetaouts v
             JOIN blocks b ON v.block_hash = b.hash
+            JOIN transactions t ON t.txid = v.txid AND t.block_hash = v.block_hash
             WHERE b.height >= 0 AND v.name IS NOT NULL
 
             UNION ALL
@@ -43,14 +45,16 @@ export const GET: RequestHandler = async function ({ url }) {
                 b.time,
                 NULL as total_burned,
                 c.revocation,
-                'commitment' as event_type
+                'commitment' as event_type,
+                t.index as tx_index
             FROM commitments c
             JOIN blocks b ON c.block_hash = b.hash
+            JOIN transactions t ON t.txid = c.txid AND t.block_hash = c.block_hash
             WHERE b.orphan = false
         )
         SELECT *
         FROM all_events
-        ORDER BY height DESC, time DESC
+        ORDER BY height DESC, tx_index DESC, CASE WHEN revocation THEN 1 ELSE 0 END ASC
         LIMIT ${limit}
         OFFSET ${offset}
     `);

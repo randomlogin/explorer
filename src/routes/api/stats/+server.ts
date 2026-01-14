@@ -22,6 +22,12 @@ vmetaouts_stats AS (
     INNER JOIN blocks b ON b.hash = v.block_hash
     WHERE NOT b.orphan
 ),
+commitments_stats AS (
+    SELECT COUNT(*) as total_commitments
+    FROM commitments c
+    INNER JOIN blocks b ON b.hash = c.block_hash
+    WHERE NOT b.orphan
+),
 name_burns AS (
     SELECT
         name,
@@ -35,7 +41,7 @@ SELECT
     lb.height as latest_block_height,
     lb.time as latest_block_time,
     COUNT(DISTINCT CASE WHEN vs.name IS NOT NULL THEN vs.name END) as unique_names_count,
-    COUNT(*) as valid_vmetaouts_count,
+    (COUNT(*) + (SELECT total_commitments FROM commitments_stats)) as valid_vmetaouts_count,
     (SELECT SUM(name_total_burned) FROM name_burns) as total_burned_sum,
     COUNT(*) FILTER (WHERE vs.name IS NOT NULL AND vs.action = 'RESERVE') as reserve_count,
     COUNT(*) FILTER (WHERE vs.name IS NOT NULL AND vs.action = 'BID') as bid_count,

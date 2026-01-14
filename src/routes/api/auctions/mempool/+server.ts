@@ -23,35 +23,39 @@ export const GET: RequestHandler = async function ({ url }) {
     const queryResult = await db.execute(sql`
         WITH all_events AS (
             SELECT
-                action::text as action,
-                name,
-                encode(txid, 'hex') as txid,
+                v.action::text as action,
+                v.name,
+                encode(v.txid, 'hex') as txid,
                 -1 as height,
                 NULL::bigint as time,
-                total_burned,
+                v.total_burned,
                 NULL as revocation,
-                'vmetaout' as event_type
-            FROM vmetaouts
-            WHERE block_hash = ${mempoolBlockHash}
-            AND name IS NOT NULL
+                'vmetaout' as event_type,
+                t.index as tx_index
+            FROM vmetaouts v
+            JOIN transactions t ON t.txid = v.txid AND t.block_hash = v.block_hash
+            WHERE v.block_hash = ${mempoolBlockHash}
+            AND v.name IS NOT NULL
 
             UNION ALL
 
             SELECT
-                CASE WHEN revocation THEN 'COMMITMENT REVOCATION' ELSE 'COMMITMENT' END as action,
-                name,
-                encode(txid, 'hex') as txid,
+                CASE WHEN c.revocation THEN 'COMMITMENT REVOCATION' ELSE 'COMMITMENT' END as action,
+                c.name,
+                encode(c.txid, 'hex') as txid,
                 -1 as height,
                 NULL::bigint as time,
                 NULL as total_burned,
-                revocation,
-                'commitment' as event_type
-            FROM commitments
-            WHERE block_hash = ${mempoolBlockHash}
+                c.revocation,
+                'commitment' as event_type,
+                t.index as tx_index
+            FROM commitments c
+            JOIN transactions t ON t.txid = c.txid AND t.block_hash = c.block_hash
+            WHERE c.block_hash = ${mempoolBlockHash}
         )
         SELECT *
         FROM all_events
-        ORDER BY name DESC
+        ORDER BY tx_index DESC, CASE WHEN revocation THEN 1 ELSE 0 END ASC
         LIMIT ${limit}
         OFFSET ${offset}
     `);

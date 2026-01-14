@@ -102,6 +102,15 @@ export const GET: RequestHandler = async function ({ params }) {
                 WHERE v.name = ${spaceName}
                 AND b.orphan = false
             ),
+            commitment_stats AS (
+                -- Get all commitments (both commitments and revocations)
+                SELECT
+                    COUNT(*) as total_commitments
+                FROM commitments c
+                JOIN blocks b ON c.block_hash = b.hash
+                WHERE c.name = ${spaceName}
+                AND b.orphan = false
+            ),
             latest_outpoint AS (
                 -- Get the latest valid outpoint for this name
                 SELECT DISTINCT ON (v.name)
@@ -156,14 +165,15 @@ export const GET: RequestHandler = async function ({ params }) {
                 CASE WHEN a.is_active THEN a.highest_bid ELSE NULL END as highest_bid,
                 CASE WHEN a.is_active THEN a.pre_rollout_bids ELSE 0 END as pre_rollout_bids,
                 CASE WHEN a.is_active THEN a.post_rollout_bids ELSE 0 END as post_rollout_bids,
-                h.total_actions,
+                (h.total_actions + COALESCE(cs.total_commitments, 0)) as total_actions,
                 h.total_bids_all_time,
                 h.highest_bid_all_time,
                 encode(o.txid, 'hex') as outpoint_txid,
                 o.index as outpoint_index
             FROM historical_stats h
             LEFT JOIN auction_status a ON true
-            LEFT JOIN latest_outpoint o ON true;
+            LEFT JOIN latest_outpoint o ON true
+            LEFT JOIN commitment_stats cs ON true;
         `),
         checkMarketplaceListing(spaceName)
     ]);

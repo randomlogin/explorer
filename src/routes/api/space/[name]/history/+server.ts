@@ -125,7 +125,8 @@ export const GET: RequestHandler = async function ({ params, url }) {
         ELSE 0
     END DESC,
     e.block_height DESC,
-    e.tx_index DESC
+    e.tx_index DESC,
+    CASE WHEN e.revocation THEN 1 ELSE 0 END ASC
     LIMIT ${ITEMS_PER_PAGE}
     OFFSET ${offset}
     `);

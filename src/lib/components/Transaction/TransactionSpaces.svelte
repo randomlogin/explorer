@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { formatBTC, displayUnicodeSpace } from '$lib/utils/formatters';
+    import { formatBTC, displayUnicodeSpace, getActionColor } from '$lib/utils/formatters';
     import { parseAddress } from '$lib/utils/address-parsers';
     import { Buffer } from 'buffer';
     import { fly } from 'svelte/transition';
@@ -12,25 +12,34 @@
     export let showAll = false;
 
     // Combine vmetaouts and commitments as events - normalize to common structure
+    // Sort commitments so non-revocations come before revocations for the same space
     $: allEvents = [
         ...vmetaouts,
-        ...commitments.map((c: SpaceCommitment) => ({
-            name: c.name,
-            action: c.revocation ? 'COMMITMENT REVOCATION' : 'COMMITMENT',
-            state_root: c.state_root,
-            revocation: c.revocation,
-            history_hash: c.history_hash,
-            // No other vmetaout fields for commitments
-            value: null,
-            burn_increment: null,
-            total_burned: null,
-            claim_height: null,
-            expire_height: null,
-            script_error: null,
-            scriptPubKey: null,
-            signature: null,
-            reason: c.revocation ? 'commitment_revoked' : null
-        }))
+        ...commitments
+            .sort((a, b) => {
+                // If same name, non-revocations come first (commitment before revocation)
+                if (a.name === b.name) {
+                    return (a.revocation ? 1 : 0) - (b.revocation ? 1 : 0);
+                }
+                return 0;
+            })
+            .map((c: SpaceCommitment) => ({
+                name: c.name,
+                action: c.revocation ? 'COMMITMENT REVOCATION' : 'COMMITMENT',
+                state_root: c.state_root,
+                revocation: c.revocation,
+                history_hash: c.history_hash,
+                // No other vmetaout fields for commitments
+                value: null,
+                burn_increment: null,
+                total_burned: null,
+                claim_height: null,
+                expire_height: null,
+                script_error: null,
+                scriptPubKey: null,
+                signature: null,
+                reason: c.revocation ? 'commitment_revoked' : null
+            }))
     ];
 
     $: displayCount = showAll ? allEvents.length : Math.min(maxDisplay, allEvents.length);
@@ -40,19 +49,6 @@
             .split('_')
             .map(word => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
-    }
-
-    function getActionColor(action: string | undefined): string {
-        switch (action) {
-            case 'REVOKE': return 'text-red-600';
-            case 'COMMITMENT REVOCATION': return 'text-red-600';
-            case 'BID': return 'text-green-600';
-            case 'TRANSFER': return 'text-purple-600';
-            case 'ROLLOUT': return 'text-yellow-600';
-            case 'RESERVE': return 'text-blue-600';
-            case 'COMMITMENT': return 'text-blue-600';
-            default: return 'text-gray-600';
-        }
     }
 
     function getTransferAddress(scriptPubKey: string): string | null {

@@ -36,6 +36,7 @@
     let outpointIndex: number | null = null;
     let isListedInMarketplace: boolean = false;
     let latestCommitment: string | null = null;
+    let sptrDelegations: any[] = [];
 
     $: {
         if (data) {
@@ -53,6 +54,8 @@
             isListedInMarketplace = data.stats.is_listed_in_marketplace || false;
 
             latestCommitment = data.latestCommitment || null;
+
+            sptrDelegations = data.sptrDelegations || [];
 
             bidsPresent = data.items.filter(item => item.burn_increment !== null).length > 0;
 
@@ -195,7 +198,7 @@
             {#if outpointTxid}
                 <div class="detail-item">
                     <span class="detail-value outpoint-value">
-                        <TransactionLink txid={outpointTxid} truncate={true} outputIndex={outpointIndex} maxLength={20} />
+                        <TransactionLink txid={outpointTxid} truncate={true} outputIndex={outpointIndex} maxLength={14} />
                     </span>
                     <span class="detail-label">Outpoint</span>
                 </div>
@@ -204,7 +207,7 @@
                 {#if latestCommitment && !latestCommitment.revocation}
                     <span class="detail-value commitment-value">
                         <div class="commitment-display">
-                            <TruncatableText text={latestCommitment.state_root} maxLength={20} />
+                            <TruncatableText text={latestCommitment.state_root} maxLength={14} />
                             <CopyButton value={latestCommitment.state_root} size={14} />
                         </div>
                     </span>
@@ -217,7 +220,7 @@
                 {#if latestCommitment }
                     <span class="detail-value commitment-value">
                         <div class="commitment-display">
-                            <TruncatableText text={latestCommitment.history_hash} maxLength={20} />
+                            <TruncatableText text={latestCommitment.history_hash} maxLength={14} />
                             <CopyButton value={latestCommitment.history_hash} size={14} />
                         </div>
                     </span>
@@ -226,6 +229,22 @@
                 {/if}
                 <span class="detail-label">History Hash</span>
             </div>
+        {#if sptrDelegations.length > 0}
+            <!-- <div class="details"> -->
+                {#each sptrDelegations as delegation}
+                    <div class="detail-item">
+                        <span class="detail-value">
+                            <a href="/sptr/{delegation.sptr}" class="page-link">
+                                <TruncatableText text={delegation.sptr} maxLength={16} />
+                            </a>
+                        </span>
+                        <span class="detail-label">Delegation SPTR</span>
+                    </div>
+                {/each}
+            <!-- </div> -->
+        {/if}
+
+
 
         </div>
 
@@ -293,14 +312,15 @@
                                                         {#if vmetaout.state_root}
                                                             <div class="state-root-info" class:revoked={vmetaout.revocation}>
                                                                 <span class="state-root-label">State Root:</span>
-                                                                <TruncatableText text={vmetaout.state_root} maxLength={32} />
+                                                                <TruncatableText text={vmetaout.state_root} maxLength={40} />
                                                                 <CopyButton value={vmetaout.state_root} size={14} />
                                                             </div>
                                                         {/if}
-                                                        {#if vmetaout.history_hash}
+                                                        {#if vmetaout.history_hash && !vmetaout.revocation}
                                                             <div class="state-root-info" >
                                                                 <span class="state-root-label">History Hash</span>
-                                                                <TruncatableText text={vmetaout.history_hash} maxLength={32} />
+                                                                <TruncatableText text={vmetaout.history_hash}
+                                                                    maxLength={40} />
                                                                 <CopyButton value={vmetaout.history_hash} size={14} />
                                                             </div>
                                                         {/if}

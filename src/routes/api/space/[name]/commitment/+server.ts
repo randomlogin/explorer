@@ -25,7 +25,7 @@ export const GET: RequestHandler = async function ({ params }) {
 		JOIN transactions t ON t.block_hash = c.block_hash AND t.txid = c.txid
 		WHERE c.name = ${spaceName}
 		AND b.orphan = false
-		ORDER BY b.height DESC, t.index DESC
+		ORDER BY b.height DESC, t.index DESC, c.revocation ASC
 		LIMIT 1
 	`);
 

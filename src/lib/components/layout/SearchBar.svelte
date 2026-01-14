@@ -63,6 +63,7 @@
 
   async function navigateToResult(result: any) {
     const { type, value } = result;
+    console.log(result)
     let path = '';
 
     switch(type) {
@@ -76,6 +77,9 @@
         break;
       case "space":
         path = `/space/${value.name}`;
+        break;
+      case "sptr":
+        path = `/sptr/${value.sptr}`;
         break;
       case "external-transaction":
       case "external-block":
@@ -173,6 +177,8 @@
                      </span>
                    {:else if result.type === "space"}
                      Space: {result.value.name}
+                   {:else if result.type === "sptr"}
+                     SPTR: {result.value.sptr.slice(0, 12)}...{result.value.sptr.slice(-8)} <span class="text-xs opacity-70">({result.value.is_spent ? 'spent' : 'unspent'})</span>
                    {:else if result.type === "address"}
                      Address: {result.value.address}
                    {/if}

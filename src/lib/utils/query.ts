@@ -22,7 +22,7 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination, on
 
     // Add filter for transactions with Space actions if requested
     const spacesFilter = onlyWithSpaces
-        ? sql`AND EXISTS (SELECT 1 FROM vmetaouts WHERE vmetaouts.txid = transactions.txid AND vmetaouts.name IS NOT NULL)`
+        ? sql`AND (EXISTS (SELECT 1 FROM vmetaouts WHERE vmetaouts.txid = transactions.txid AND vmetaouts.name IS NOT NULL) OR EXISTS (SELECT 1 FROM commitments WHERE commitments.txid = transactions.txid))`
         : sql``;
 
     // Get count if filtering
@@ -34,10 +34,16 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination, on
             WHERE transactions.block_hash = (
                 SELECT hash FROM blocks WHERE ${blockCondition}
             )
-            AND EXISTS (
-                SELECT 1 FROM vmetaouts
-                WHERE vmetaouts.txid = transactions.txid
-                AND vmetaouts.name IS NOT NULL
+            AND (
+                EXISTS (
+                    SELECT 1 FROM vmetaouts
+                    WHERE vmetaouts.txid = transactions.txid
+                    AND vmetaouts.name IS NOT NULL
+                )
+                OR EXISTS (
+                    SELECT 1 FROM commitments
+                    WHERE commitments.txid = transactions.txid
+                )
             )
         `);
         totalCount = countResult.rows[0]?.count || 0;

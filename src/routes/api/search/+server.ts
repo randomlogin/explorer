@@ -25,6 +25,7 @@ export const GET: RequestHandler = async function ({ url }) {
     const result = [];
     const hashRegexp = /^[a-fA-F0-9]{64}$/;
     const heightRegexp = /^\d+$/;
+    const sptrRegexp = /^sptr[a-zA-Z0-9]{59}$/;
     let foundLocally = false;
 
     // Try to parse as address first
@@ -48,6 +49,34 @@ export const GET: RequestHandler = async function ({ url }) {
     // } catch (e) {
     //     // Not a valid address, continue with other searches
     // }
+
+    // Check if it's a space pointer (sptr)
+    if (sptrRegexp.test(search)) {
+        const sptrResult = await db.execute(sql`
+            SELECT
+                sp.sptr,
+                encode(sp.txid, 'hex') as txid,
+                sp.vout,
+                sp.value,
+                sp.spent_block_hash IS NOT NULL as is_spent,
+                b.height as block_height
+            FROM space_pointers sp
+            JOIN blocks b ON sp.block_hash = b.hash
+            JOIN transactions t ON sp.block_hash = t.block_hash AND sp.txid = t.txid
+            WHERE sp.sptr = ${search}
+            AND b.orphan = false
+            ORDER BY b.height DESC, t.index DESC, sp.vout DESC
+            LIMIT 1
+        `);
+
+        if (sptrResult.rows[0]) {
+            foundLocally = true;
+            result.push({
+                type: "sptr",
+                value: sptrResult.rows[0]
+            });
+        }
+    }
 
     //looks like hash, search for txid or block hash
     if (hashRegexp.test(search)) {
