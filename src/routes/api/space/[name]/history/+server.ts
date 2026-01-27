@@ -56,7 +56,9 @@ export const GET: RequestHandler = async function ({ params, url }) {
     WITH counts AS (
         SELECT
             (SELECT COUNT(*) FROM vmetaouts v JOIN blocks b ON v.block_hash = b.hash WHERE v.name = ${spaceName} AND b.orphan is false) +
-            (SELECT COUNT(*) FROM commitments c JOIN blocks b ON c.block_hash = b.hash WHERE c.name = ${spaceName} AND b.orphan is false) as total_actions,
+            (SELECT COUNT(*) FROM commitments c JOIN blocks b ON c.block_hash = b.hash WHERE c.name = ${spaceName} AND b.orphan is false) +
+            (SELECT COUNT(*) FROM sptr_delegations sd JOIN blocks b ON sd.block_hash = b.hash WHERE sd.name = ${spaceName} AND b.orphan is false) +
+            (SELECT COUNT(*) FROM sptr_delegations sd JOIN blocks b ON sd.revoked_block_hash = b.hash WHERE sd.name = ${spaceName} AND b.orphan is false AND sd.revoked = true) as total_actions,
             COUNT(CASE WHEN action = 'BID' THEN 1 END) as bid_count
         FROM vmetaouts v
         JOIN blocks b ON v.block_hash = b.hash
@@ -112,6 +114,58 @@ export const GET: RequestHandler = async function ({ params, url }) {
         JOIN blocks b ON c.block_hash = b.hash
         JOIN transactions t ON t.txid = c.txid AND t.block_hash = c.block_hash
         WHERE c.name = ${spaceName} AND b.orphan is false
+
+        UNION ALL
+
+        SELECT
+            sd.block_hash,
+            sd.txid,
+            sd.name,
+            NULL as burn_increment,
+            NULL as total_burned,
+            NULL as value,
+            'DELEGATION' as action,
+            NULL as claim_height,
+            NULL as expire_height,
+            NULL as reason,
+            NULL as script_error,
+            NULL as state_root,
+            NULL as history_hash,
+            false as revocation,
+            'delegation' as event_type,
+            b.height AS block_height,
+            b.time AS block_time,
+            t.index as tx_index
+        FROM sptr_delegations sd
+        JOIN blocks b ON sd.block_hash = b.hash
+        JOIN transactions t ON t.txid = sd.txid AND t.block_hash = sd.block_hash
+        WHERE sd.name = ${spaceName} AND b.orphan is false
+
+        UNION ALL
+
+        SELECT
+            sd.revoked_block_hash as block_hash,
+            sd.revoked_txid as txid,
+            sd.name,
+            NULL as burn_increment,
+            NULL as total_burned,
+            NULL as value,
+            'DELEGATION REVOCATION' as action,
+            NULL as claim_height,
+            NULL as expire_height,
+            NULL as reason,
+            NULL as script_error,
+            NULL as state_root,
+            NULL as history_hash,
+            true as revocation,
+            'delegation_revocation' as event_type,
+            b.height AS block_height,
+            b.time AS block_time,
+            t.index as tx_index
+        FROM sptr_delegations sd
+        JOIN blocks b ON sd.revoked_block_hash = b.hash
+        JOIN transactions t ON t.txid = sd.revoked_txid AND t.block_hash = sd.revoked_block_hash
+        WHERE sd.name = ${spaceName} AND sd.revoked = true AND b.orphan is false
     )
     SELECT
         e.*,

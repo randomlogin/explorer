@@ -60,6 +60,23 @@ export const GET: RequestHandler = async function ({ params }) {
             revocation AS commitment_revocation
         FROM commitments
         WHERE txid = ${txid}
+    ),
+    tx_delegations AS (
+        SELECT
+            txid,
+            sptr AS delegation_sptr,
+            name AS delegation_name,
+            vout AS delegation_vout
+        FROM sptr_delegations
+        WHERE txid = ${txid}
+        UNION ALL
+        SELECT
+            revoked_txid as txid,
+            sptr AS delegation_sptr,
+            name AS delegation_name,
+            revoked_vout AS delegation_vout
+        FROM sptr_delegations
+        WHERE revoked_txid = ${txid} AND revoked = true
     )
 
     SELECT
@@ -78,10 +95,14 @@ export const GET: RequestHandler = async function ({ params }) {
         tx_commitments.commitment_name,
         encode(tx_commitments.commitment_state_root, 'hex') AS commitment_state_root,
         encode(tx_commitments.commitment_history_hash, 'hex') AS commitment_history_hash,
-        tx_commitments.commitment_revocation
+        tx_commitments.commitment_revocation,
+        tx_delegations.delegation_sptr,
+        tx_delegations.delegation_name,
+        tx_delegations.delegation_vout
     FROM transaction_data
     LEFT JOIN tx_vmetaout ON transaction_data.txid = tx_vmetaout.txid
     LEFT JOIN tx_commitments ON transaction_data.txid = tx_commitments.txid
+    LEFT JOIN tx_delegations ON transaction_data.txid = tx_delegations.txid
     `);
 
     if (queryResult.rows.length === 0) {

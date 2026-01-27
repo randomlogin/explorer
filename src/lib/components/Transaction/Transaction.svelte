@@ -105,8 +105,8 @@
             </span>
         </div>
     </div>
-    {#if data.vmetaouts?.length > 0 || data.commitments?.length > 0}
-        <TransactionSpaces vmetaouts={data.vmetaouts || []} commitments={data.commitments || []} />
+    {#if data.vmetaouts?.length > 0 || data.commitments?.length > 0 || data.delegations?.length > 0}
+        <TransactionSpaces vmetaouts={data.vmetaouts || []} commitments={data.commitments || []} delegations={data.delegations || []} />
     {/if}
     <div class="mempool-link-container">
         <a href={getMempoolUrl(`tx/${data.txid}`)} target="_blank" rel="noopener noreferrer" class="mempool-link">

@@ -1,4 +1,4 @@
-import type { Transaction, TransactionVmetaout, SpaceCommitment } from '$lib/types/transaction';
+import type { Transaction, TransactionVmetaout, SpaceCommitment, SpaceDelegation } from '$lib/types/transaction';
 
 export function createTransaction(row: any): Transaction {
     const transaction: Transaction = {
@@ -15,7 +15,8 @@ export function createTransaction(row: any): Transaction {
         output_count: row.output_count || 0,
         total_output_value: row.total_output_value || 0,
         vmetaouts: [],
-        commitments: []
+        commitments: [],
+        delegations: []
     };
 
     // Add block and confirmations only if block data exists
@@ -75,11 +76,22 @@ function createCommitment(row: any): SpaceCommitment | null {
     };
 }
 
+function createDelegation(row: any): SpaceDelegation | null {
+    if (!row.delegation_sptr || !row.delegation_name) return null;
+
+    return {
+        sptr: row.delegation_sptr,
+        name: row.delegation_name,
+        vout: row.delegation_vout
+    };
+}
+
 export function processTransactions(queryResult: any): Transaction[] {
     const txs: Transaction[] = [];
     const transactionMap = new Map<string, Transaction>();
     const vmetaoutMap = new Map<string, boolean>();
     const commitmentMap = new Map<string, boolean>();
+    const delegationMap = new Map<string, boolean>();
 
     for (const row of queryResult.rows) {
         const txid = row.txid.toString('hex');
@@ -108,6 +120,16 @@ export function processTransactions(queryResult: any): Transaction[] {
             if (commitment) {
                 transaction.commitments.push(commitment);
                 commitmentMap.set(commitmentKey, true);
+            }
+        }
+
+        const delegationKey = `${txid}_${row.delegation_sptr}_${row.delegation_name}_${row.delegation_vout}`;  // Using txid + sptr + name + vout as unique identifier
+
+        if (row.delegation_sptr && !delegationMap.has(delegationKey)) {
+            const delegation = createDelegation(row);
+            if (delegation) {
+                transaction.delegations.push(delegation);
+                delegationMap.set(delegationKey, true);
             }
         }
     }

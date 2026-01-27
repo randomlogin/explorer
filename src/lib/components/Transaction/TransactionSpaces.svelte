@@ -3,15 +3,16 @@
     import { parseAddress } from '$lib/utils/address-parsers';
     import { Buffer } from 'buffer';
     import { fly } from 'svelte/transition';
-    import type { SpaceCommitment } from '$lib/types/transaction';
+    import type { SpaceCommitment, SpaceDelegation } from '$lib/types/transaction';
 
     export let vmetaouts;
     export let commitments: SpaceCommitment[] = [];
+    export let delegations: SpaceDelegation[] = [];
 
     export let maxDisplay = 5;
     export let showAll = false;
 
-    // Combine vmetaouts and commitments as events - normalize to common structure
+    // Combine vmetaouts, commitments, and delegations as events - normalize to common structure
     // Sort commitments so non-revocations come before revocations for the same space
     $: allEvents = [
         ...vmetaouts,
@@ -38,7 +39,26 @@
                 script_error: null,
                 scriptPubKey: null,
                 signature: null,
-                reason: c.revocation ? 'commitment_revoked' : null
+                reason: c.revocation ? 'commitment_revoked' : null,
+                sptr: null
+            })),
+        ...delegations.map((d: SpaceDelegation) => ({
+                name: d.name,
+                action: 'DELEGATION',
+                sptr: d.sptr,
+                // No other vmetaout fields for delegations
+                value: null,
+                burn_increment: null,
+                total_burned: null,
+                claim_height: null,
+                expire_height: null,
+                script_error: null,
+                scriptPubKey: null,
+                signature: null,
+                reason: null,
+                state_root: null,
+                history_hash: null,
+                revocation: false
             }))
     ];
 
@@ -136,6 +156,12 @@
                             <span class="detail-value mono-text">{vmetaout.history_hash}</span>
                         </div>
                     {/if}
+                    {#if vmetaout.sptr}
+                        <div class="detail-item address-item">
+                            <span class="detail-label">SPTR</span>
+                            <a href="/sptr/{vmetaout.sptr}" class="detail-value mono-text sptr-link">{vmetaout.sptr}</a>
+                        </div>
+                    {/if}
 
                 </div>
 
@@ -221,6 +247,14 @@
         text-decoration: underline;
     }
 
+    .sptr-link {
+        color: var(--color-link);
+        text-decoration: none;
+    }
+
+    .sptr-link:hover {
+        text-decoration: underline;
+    }
 
     .dot {
         color: var(--font-size-muted);

@@ -20,6 +20,8 @@ export function getActionColor(action: string): string {
         case 'REVOKE': return 'text-red-500';
         case 'COMMITMENT': return 'text-cyan-500';
         case 'COMMITMENT REVOCATION': return 'text-red-500';
+        case 'DELEGATION': return 'text-indigo-500';
+        case 'DELEGATION REVOCATION': return 'text-red-500';
         default: return 'text-gray-500';
     }
 }

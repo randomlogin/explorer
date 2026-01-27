@@ -136,9 +136,9 @@
                     </div>
                 </div>
             </div>
-            {#if transaction.vmetaouts?.length > 0 || transaction.commitments?.length > 0}
+            {#if transaction.vmetaouts?.length > 0 || transaction.commitments?.length > 0 || transaction.delegations?.length > 0}
                 <div class="spaces-section">
-                    <TransactionSpaces vmetaouts={transaction.vmetaouts || []} commitments={transaction.commitments || []} />
+                    <TransactionSpaces vmetaouts={transaction.vmetaouts || []} commitments={transaction.commitments || []} delegations={transaction.delegations || []} />
                 </div>
             {/if}
         </div>

@@ -2,7 +2,6 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from 'pg';
 const { Pool } = pg;
 import { env } from '$env/dynamic/private';
-import * as schema from '$lib/schema';
 
 let dbUrl: string;
 if (env.DB_CREDENTIALS) {
@@ -16,16 +15,16 @@ if (env.DB_CREDENTIALS) {
 
   const pool = new Pool({ 
     connectionString: dbUrl,
-    query_timeout: 3000,         // 3 seconds (was 30000)
-    statement_timeout: 3000,     // PostgreSQL statement timeout
-    connectionTimeoutMillis: 5000, // Connection acquisition timeout
-    idleTimeoutMillis: 30000,    // How long connections stay idle
-    max: 15,                     // Max connections in pool
-    min: 5,                      // Min connections to maintain
+    query_timeout: 3000,         
+    statement_timeout: 3000,     
+    connectionTimeoutMillis: 5000, 
+    idleTimeoutMillis: 30000,    
+    max: 15,                     
+    min: 5,                      
   });
 
 
-  pool.on('error', (err, client) => {
+  pool.on('error', (err) => {
     console.error('Database pool error:', {
       message: err.message,
       code: err.code,
@@ -40,5 +39,5 @@ if (env.DB_CREDENTIALS) {
 
   });
 
-  const db = drizzle(pool, { schema });
+  const db = drizzle(pool, { });
   export default db;

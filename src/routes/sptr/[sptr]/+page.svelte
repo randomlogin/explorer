@@ -41,7 +41,9 @@
             <h1 class="title">Space Pointer</h1>
             <div class="status-badge {getStatusColor(sptrDetails.is_spent)}">
                 <span class="status-indicator"></span>
-                <span class="status-text">{sptrDetails.is_spent ? 'Spent' : 'Unspent'}</span>
+        {#if sptrDetails.is_spent}
+                <span class="status-text">Spent</span>
+                {/if}
             </div>
         </div>
     </div>
