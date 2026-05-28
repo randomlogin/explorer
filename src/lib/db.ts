@@ -13,14 +13,14 @@ if (env.DB_CREDENTIALS) {
     throw new Error('No database configuration found.');
   }
 
-  const pool = new Pool({ 
+  export const pool = new Pool({
     connectionString: dbUrl,
-    query_timeout: 3000,         
-    statement_timeout: 3000,     
-    connectionTimeoutMillis: 5000, 
-    idleTimeoutMillis: 30000,    
-    max: 15,                     
-    min: 5,                      
+    query_timeout: 3000,
+    statement_timeout: 3000,
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 30000,
+    max: 15,
+    min: 5,
   });
 
 

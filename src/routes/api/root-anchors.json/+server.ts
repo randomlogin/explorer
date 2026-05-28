@@ -22,7 +22,7 @@ export const GET: RequestHandler = async function () {
 
         const formattedAnchors = queryResult.rows.map(row => ({
             spaces_root: row.spaces_root.toString('hex'),
-            ptrs_root: row.pointers_root.toString('hex'),
+            ptrs_root: row.pointers_root ? row.pointers_root.toString('hex') : null,
             block: {
                 hash: row.hash.toString('hex'),
                 height: row.height
