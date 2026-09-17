@@ -23,12 +23,20 @@ export const GET: RequestHandler = async function ({ request, url }) {
     const sortBy = (url.searchParams.get('sortBy') || 'height');
     // const sortBy = (url.searchParams.get('sortBy') || 'bid_count');
     const sortDirection = (url.searchParams.get('direction') || 'asc');
-    return json(await getAuctions({ 
-        db, 
+
+    if (!['height', 'name', 'total_burned', 'bid_count', 'value'].includes(sortBy)) {
+        throw error(400, 'Invalid sortBy parameter');
+    }
+    if (sortDirection !== 'asc' && sortDirection !== 'desc') {
+        throw error(400, 'Invalid direction parameter');
+    }
+
+    return json(await getAuctions({
+        db,
         ended: false,  // or false for current auctions
-        limit, 
+        limit,
         offset,
-        sortBy: sortBy as 'height' | 'name' | 'total_burned' | 'bid_count',
+        sortBy: sortBy as 'height' | 'name' | 'total_burned' | 'bid_count' | 'value',
         sortDirection: sortDirection as 'asc' | 'desc'
     }));
 }

@@ -1,4 +1,42 @@
 import { sql } from 'drizzle-orm';
+import { pool } from '$lib/db';
+
+type AuctionSortBy = 'height' | 'name' | 'total_burned' | 'bid_count' | 'value';
+type SortDirection = 'asc' | 'desc';
+
+// ORDER BY can't be a bind parameter, so sortBy/sortDirection are validated against this
+// allowlist and spliced into static query text — one named statement per combination, so
+// each connection only pays Postgres's planning cost once instead of on every request.
+// (Mirrors current_rollouts/auction_stats sort semantics from the original inline query.)
+const AUCTION_SORT_CLAUSES: Record<Exclude<AuctionSortBy, 'value'>, { statsOrder: (dir: SortDirection) => string; finalOrder: (dir: SortDirection) => string }> = {
+    height: {
+        statsOrder: (dir) => `s.auction_end_height ${dir}, r.name ASC`,
+        finalOrder: (dir) => `auction_end_height ${dir}, name ASC`
+    },
+    name: {
+        statsOrder: (dir) => `s.auction_end_height ${dir}, r.name ASC`,
+        finalOrder: (dir) => `name ${dir}`
+    },
+    total_burned: {
+        statsOrder: (dir) => `s.max_total_burned ${dir}, s.auction_end_height ASC`,
+        finalOrder: (dir) => `max_total_burned ${dir}, auction_end_height ASC`
+    },
+    bid_count: {
+        statsOrder: (dir) => `s.bid_count ${dir}, s.auction_end_height ASC`,
+        finalOrder: (dir) => `bid_count ${dir}, auction_end_height ASC`
+    }
+};
+
+function normalizeAuctionSort(sortBy: AuctionSortBy, sortDirection: SortDirection) {
+    const normalizedSortBy = sortBy === 'value' ? 'total_burned' : sortBy;
+    if (!(normalizedSortBy in AUCTION_SORT_CLAUSES)) {
+        throw new Error(`Invalid sortBy: ${sortBy}`);
+    }
+    if (sortDirection !== 'asc' && sortDirection !== 'desc') {
+        throw new Error(`Invalid sortDirection: ${sortDirection}`);
+    }
+    return { normalizedSortBy: normalizedSortBy as Exclude<AuctionSortBy, 'value'>, sortDirection };
+}
 
 interface BlockTxsQueryParams {
     db: DB;
@@ -135,21 +173,24 @@ export async function getBlockTransactions({ db, blockIdentifier, pagination, on
 }
 
 export async function getAuctions({
-    db,
     limit = 20,
     offset = 0,
     sortBy = 'height',
     sortDirection = 'desc'
+}: {
+    db?: unknown;
+    ended?: boolean;
+    limit?: number;
+    offset?: number;
+    sortBy?: AuctionSortBy;
+    sortDirection?: SortDirection;
 }) {
-    const orderByClause = {
-        height: sql`auction_end_height ${sql.raw(sortDirection)}, name ASC`,
-        name: sql`name ${sql.raw(sortDirection)}`,
-        total_burned: sql`max_total_burned ${sql.raw(sortDirection)}, auction_end_height ASC`,
-        value: sql`max_total_burned ${sql.raw(sortDirection)}, auction_end_height ASC`,
-        bid_count: sql`bid_count ${sql.raw(sortDirection)}, auction_end_height ASC`
-    }[sortBy];
+    const { normalizedSortBy, sortDirection: dir } = normalizeAuctionSort(sortBy, sortDirection);
+    const { statsOrder, finalOrder } = AUCTION_SORT_CLAUSES[normalizedSortBy];
 
-    const queryResult = await db.execute(sql`
+    const queryResult = await pool.query({
+        name: `get_auctions_current_v1_${normalizedSortBy}_${dir}`,
+        text: `
  WITH current_rollouts AS (
     -- Get the ROLLOUT with highest claim_height for each name
     SELECT DISTINCT ON (v.name)
@@ -229,13 +270,9 @@ export async function getAuctions({
             COUNT(*) OVER() as total_count
         FROM current_rollouts r
         JOIN auction_stats s ON s.name = r.name
-        ORDER BY ${
-            sortBy === 'total_burned' ? sql`s.max_total_burned ${sql.raw(sortDirection)}, s.auction_end_height ASC` :
-            sortBy === 'bid_count' ? sql`s.bid_count ${sql.raw(sortDirection)}, s.auction_end_height ASC` :
-            sql`s.auction_end_height ${sql.raw(sortDirection)}, r.name ASC`
-        }
-        LIMIT ${limit}
-        OFFSET ${offset}
+        ORDER BY ${statsOrder(dir)}
+        LIMIT $1
+        OFFSET $2
     ),
     latest_actions AS (
         -- Get latest valid bid/rollout for each auction
@@ -257,8 +294,10 @@ export async function getAuctions({
         ORDER BY v.name, b.height DESC, t.index DESC
     )
     SELECT * FROM latest_actions
-    ORDER BY ${orderByClause}
-    `);
+    ORDER BY ${finalOrder(dir)}
+    `,
+        values: [limit, offset]
+    });
 
     const totalCount = queryResult.rows[0]?.total_count || 0;
     const page = Math.floor(offset / limit) + 1;
