@@ -57,7 +57,8 @@ export const ROUTES = {
             stats: (name: string) => `/api/space/${name}/stats`,
             commitment: (name: string) => `/api/space/${name}/commitment`,
             commitments: (name: string, page = 1) => `/api/space/${name}/commitments?page=${page}`,
-            sptrDelegations: (name: string) => `/api/space/${name}/sptr-delegations`
+            sptrDelegations: (name: string) => `/api/space/${name}/sptr-delegations`,
+            marketplace: (name: string) => `/api/space/${name}/marketplace`
         },
 
         sptr: {

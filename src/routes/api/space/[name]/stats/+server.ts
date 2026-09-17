@@ -2,23 +2,6 @@ import db from '$lib/db';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { sql } from 'drizzle-orm';
-import { env }  from '$env/dynamic/private';
-
-const MARKETPLACE_URI = env.MARKETPLACE_URI || 'https://spaces.market/';
-
-async function checkMarketplaceListing(spaceName: string): Promise<boolean> {
-    try {
-        const response = await fetch(`${MARKETPLACE_URI}/api/space/${spaceName}`, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json', },
-            signal: AbortSignal.timeout(2500)
-        });
-        return response.ok;
-    } catch (error) {
-        // console.warn(`Failed to check marketplace for space ${spaceName}:`, error);
-        return false;
-    }
-}
 
 export const GET: RequestHandler = async function ({ params }) {
     const spaceName = params.name;
@@ -27,8 +10,7 @@ export const GET: RequestHandler = async function ({ params }) {
         throw error(400, 'Space name is required');
     }
 
-    const [queryResult, isListedInMarketplace] = await Promise.all([
-        db.execute(sql`
+    const queryResult = await db.execute(sql`
             WITH current_rollout AS (
                 -- Get the latest non-revoked ROLLOUT
                 SELECT DISTINCT ON (v.name)
@@ -174,9 +156,7 @@ export const GET: RequestHandler = async function ({ params }) {
             LEFT JOIN auction_status a ON true
             LEFT JOIN latest_outpoint o ON true
             LEFT JOIN commitment_stats cs ON true;
-        `),
-        checkMarketplaceListing(spaceName)
-    ]);
+        `);
 
     if (queryResult.rows.length === 0) {
         return json({
@@ -192,13 +172,9 @@ export const GET: RequestHandler = async function ({ params }) {
             total_bids_all_time: 0,
             highest_bid_all_time: null,
             outpoint_txid: null,
-            outpoint_index: null,
-            is_listed_in_marketplace: isListedInMarketplace
+            outpoint_index: null
         });
     }
 
-    return json({
-        ...queryResult.rows[0],
-        is_listed_in_marketplace: isListedInMarketplace
-    });
+    return json(queryResult.rows[0]);
 };

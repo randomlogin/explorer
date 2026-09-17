@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { formatDuration, formatBTC, displayUnicodeSpace, getActionColor, normalizeSpace } from "$lib/utils/formatters";
     import dayjs from "dayjs";
     import LocalizedFormat from "dayjs/plugin/localizedFormat";
@@ -51,8 +52,6 @@
             outpointTxid = data.stats.outpoint_txid || null;
             outpointIndex = data.stats.outpoint_index !== undefined ? Number(data.stats.outpoint_index) : null;
 
-            isListedInMarketplace = data.stats.is_listed_in_marketplace || false;
-
             latestCommitment = data.latestCommitment || null;
 
             sptrDelegations = data.sptrDelegations || [];
@@ -64,6 +63,17 @@
             }
 
     }
+
+    onMount(() => {
+        // Fetched separately (not in +page.ts load) so a slow/unresponsive marketplace
+        // API never blocks the page's initial render.
+        fetch(ROUTES.api.space.marketplace(rawSpaceName))
+            .then(res => res.ok ? res.json() : null)
+            .then(result => {
+                if (result) isListedInMarketplace = result.is_listed_in_marketplace || false;
+            })
+            .catch(() => {});
+    });
 
     function computeSpaceStatus(vmetaout: Vmetaout | null, currentHeight: number): string {
         if (!vmetaout) return 'Open';
